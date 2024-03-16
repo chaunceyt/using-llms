@@ -6,7 +6,7 @@ My goal is to learn to fine-tune an LLM using a custom dataset on my local syste
 - Ollama to run LLMs locally
 - ollama llama.cpp to create .gguf versions of a specific Model on huggingface
 - [llama.cpp](https://github.com/ggerganov/llama.cpp) to create .gguf versions of a specific Model on huggingface
-- MLX for fine-tuning (was able to get the [example](https://github.com/ml-explore/mlx-examples/tree/main/lora) to work system)
+- MLX for fine-tuning (was able to get the [example](https://github.com/ml-explore/mlx-examples/tree/main/lora) to work on my Mac)
 - huggingface used to download models and .gguf
 - stable-diffusion image generation from text prompt(s).
 
