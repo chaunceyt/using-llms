@@ -18,7 +18,10 @@ cd llama.cpp/
 pip install -r requirements.txt
 make
 ```
-# https://www.youtube.com/watch?v=IVDNhQIzyIY&ab_channel=ArceeAI
+
+-  https://www.youtube.com/watch?v=IVDNhQIzyIY&ab_channel=ArceeAI
+
+```
 git clone https://github.com/arcee-ai/mergekit.git
 cd mergekit
 pip install -e . 
