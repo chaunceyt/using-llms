@@ -106,3 +106,27 @@ k8sgpt auth update openai --model <model-name> --baseurl http://192.168.12.30:11
 k8sgpt --analyze
 k8sgpt --analyze --explain
 ```
+
+## Using MaziyarPanahi/BioMistral-7B-GGUF
+
+-  https://huggingface.co/MaziyarPanahi/BioMistral-7B-GGUF
+
+
+```
+wget https://huggingface.co/MaziyarPanahi/BioMistral-7B-GGUF/resolve/main/BioMistral-7B.Q4_K_M.gguf
+
+mv BioMistral-7B.Q4_K_M.gguf biomistral-7bq4km.gguf
+
+```
+
+`vi modelfile`
+
+```
+FROM ./biomistral-7bq4km.gguf
+
+PARAMETER temperature 0.2
+
+TEMPLATE """
+<s>[INST]{{ .Prompt }}[/INST]</s>
+"""
+```

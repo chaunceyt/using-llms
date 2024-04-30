@@ -1,0 +1,38 @@
+k8sgpt auth update openai --model moe:v1 --baseurl $OLLAMA_HOST/v1
+Model updated successfully
+Base URL updated successfully
+openai updated in the AI backend provider list
+Model updated successfully
+Base URL updated successfully
+openai updated in the AI backend provider list
+k8sgpt analyze --explain -c
+ 100% |████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| (3/3, 3 it/min)
+AI Provider: openai
+
+0: Pod demo/nginx-deployment-866dc6df9c-78k7p(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-78k7p
+
+Error: Describes container nginx termination within pod nginx-deployment-866dc6df9c-78k7p, reason Error.
+Solution: Error analyzing: Kube errmsg. Focus pod nginx-deployment-866dc6df9c-78k7p, container nginx.
+	1. Get detailed info: kubectl describe pod nginx-deployment-866dc6df9c-78k7p
+	2. Identify error cause & fix container/app issues.
+	3. Restart or recreate pod (if appropriate): kubectl restart pod | create deployment update.
+1: Pod demo/nginx-deployment-866dc6df9c-v6dtb(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-v6dtb
+
+Error: Describes container nginx termination within pod nginx-deployment-866dc6df9c-v6dtb, reason Error.
+Solution: Error occured in nginx container of specific pod.
+1. Identify pod name: nginx-deployment-866dc6df9c-v6dtb
+2. Locate/check related deployment/pod logs for error insights.
+3. Examine container 'nginx' issues within said pod.
+4. Investigate YAML config, resource constraints or code bugs as cause.
+5. Troubleshoot & rectify issue, re-deploy if necessary.
+2: Pod demo/nginx-deployment-866dc6df9c-vmxjf(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-vmxjf
+
+Error: Describes container nginx termination within pod nginx-deployment-866dc6df9c-vmxjf with reason as Error.
+Solution: Error occured in nginx container of the pod; Focus on diagnosing nginx-deployment-866dc6df9c-vmxjf.
+  1. Examine logs for recent events (`kubectl logs nginx-deployment-866dc6df9c-vmxjf -c nginx`)
+  2. Inspect container health (`kubectl describe pod nginx-deployment-866dc6df9c-vmxjf`)
+  3. Review deployment configuration & YAML for misconfigurations
+  4. If needed, rollback to previous stable version or redeploy

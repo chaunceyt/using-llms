@@ -1,0 +1,36 @@
+ k8sgpt auth update openai --model llama3:70b --baseurl $OLLAMA_HOST/v1
+Model updated successfully
+Base URL updated successfully
+openai updated in the AI backend provider list
+Model updated successfully
+Base URL updated successfully
+openai updated in the AI backend provider list
+k8sgpt analyze --explain -c
+ 100% |██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| (3/3, 2 it/min)
+AI Provider: openai
+
+0: Pod demo/nginx-deployment-866dc6df9c-78k7p(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-78k7p
+Error: The container "nginx" in pod "nginx-deployment-866dc6df9c-78k7p" has terminated with an error.
+
+Solution:
+1. Check the container logs for errors: `kubectl logs -f nginx-deployment-866dc6df9c-78k7p`
+2. Verify the container configuration and deployment YAML file.
+3. Restart the container or redeploy the application if necessary.
+1: Pod demo/nginx-deployment-866dc6df9c-v6dtb(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-v6dtb
+Error: The container "nginx" in pod "nginx-deployment-866dc6df9c-v6dtb" terminated with an error.
+
+Solution:
+1. Check container logs: `kubectl logs -f nginx-deployment-866dc6df9c-v6dtb`
+2. Verify container configuration and deployment YAML.
+3. Restart the container or redeploy the pod if necessary.
+2: Pod demo/nginx-deployment-866dc6df9c-vmxjf(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-vmxjf
+Error: The container "nginx" in pod "nginx-deployment-866dc6df9c-vmxjf" terminated with an error.
+
+Solution:
+1. Check container logs: `kubectl logs -f nginx-deployment-866dc6df9c-vmxjf`
+2. Verify container configuration and deployment YAML.
+3. Restart the container or redeploy the application.
+4. If issue persists, check node and cluster resources.

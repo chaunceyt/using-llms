@@ -1,0 +1,52 @@
+ k8sgpt auth update openai --model qwen:14b --baseurl $OLLAMA_HOST/v1
+Model updated successfully
+Base URL updated successfully
+openai updated in the AI backend provider list
+Model updated successfully
+Base URL updated successfully
+openai updated in the AI backend provider list
+k8sgpt analyze --explain -c
+ 100% |████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| (3/3, 7 it/min)
+AI Provider: openai
+
+0: Pod demo/nginx-deployment-866dc6df9c-78k7p(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-78k7p
+Error: The Kubernetes pod "nginx-deployment-866dc6df9c-78k7p" experienced an Error during container execution for 'nginx'.
+
+Solution:
+1. Check the logs of the nginx container using `kubectl logs <pod-name> -c nginx`.
+2. Look for any error messages or warnings that might indicate the cause of the error.
+3. If you find a specific issue, update your deployment configuration (using `kubectl edit deployment <deployment-name>`), fix the problem in the updated image, and then redeploy with `kubectl rollout restart deployment <deployment-name>`.
+4. Monitor the pod's status after applying the changes to ensure that the issue has been resolved.
+
+1: Pod demo/nginx-deployment-866dc6df9c-v6dtb(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-v6dtb
+Error: The container 'nginx' in pod 'nginx-deployment-866dc6df9c-v6dtb' experienced an error during termination.
+
+Solution:
+1. Check the Kubernetes logs for more details about the error.
+   ```
+   kubectl logs nginx-deployment-866dc6df9c-v6dtb
+   ```
+
+2. If the error is related to a resource (e.g., disk space), ensure that there's enough resources available.
+
+3. Verify if there are any updates or patches required for the Kubernetes cluster or the container image.
+
+4. If none of the above resolves the issue, consider reaching out to Kubernetes support forums or consulting with an experienced Kubernetes administrator.
+
+2: Pod demo/nginx-deployment-866dc6df9c-vmxjf(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-vmxjf
+Error: Container "nginx" in pod "nginx-deployment-866dc6df9c-vmxjf" experienced an error during termination.
+Solution:
+
+1. Check logs: Run `kubectl logs nginx-deployment-866dc6df9c-vmxjf` to see if there are any specific error messages.
+
+2. Inspect pod status: Use `kubectl describe pod nginx-deployment-866dc6df9c-vmxjf` to check the current state and termination reasons.
+
+3. Review resource limits: Ensure that the container has enough resources (CPU, memory) allocated.
+
+4. Restart the container or pod: If the error persists, try restarting the container with `kubectl restart container nginx nginx-deployment-866dc6df9c-vmxjf` or the entire pod with `kubectl delete pod nginx-deployment-866dc6df9c-vmxjf`.
+
+After following these steps, monitor the logs and status of the pod to ensure that the issue has been resolved.
+

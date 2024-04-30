@@ -115,6 +115,14 @@ ollama run mistral-merged:v1
 
 - https://towardsdatascience.com/create-mixtures-of-experts-with-mergekit-11b318c99562
 
+Mixtures of Experts
+
+- Chat model https://huggingface.co/mlabonne/AlphaMonarch-7B
+- Code model https://huggingface.co/beowolx/CodeNinja-1.0-OpenChat-7B
+- Role-play model https://huggingface.co/SanjiWatsuki/Kunoichi-DPO-v2-7B
+- Math model https://huggingface.co/mlabonne/NeuralDaredevil-7B
+
+
 ```
 base_model: mlabonne/AlphaMonarch-7B
 experts:

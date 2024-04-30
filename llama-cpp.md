@@ -17,3 +17,17 @@ python3 convert.py ./model/ --outfile ./models/Mistral-7B-Instruct-v0.1-q4_0.ggu
 ./server -m Mistral-7B-Instruct-v0.1-q4_0.gguf --port 8888 --host 0.0.0.0 --ctx-size 10240 --parallel 4 -ngl 0 -n 512
 ./server -m Mistral-7B-Instruct-v0.1-q4_0.gguf --port 8888 --host localhost --ctx-size 10240 --parallel 4 -ngl 0 -n 512
 ```
+
+
+Using: cognitivecomputations/dolphin-2.8-mistral-7b-v02
+
+- https://huggingface.co/cognitivecomputations/dolphin-2.8-mistral-7b-v02
+
+```
+git lfs install
+ git clone https://huggingface.co/cognitivecomputations/dolphin-2.8-mistral-7b-v02
+cd llama.cpp
+python convert.py ../dolphin-2.8-mistral-7b-v02 --outfile ../dolphin-2.8-mistral-7b-v02-f16.gguf --outtype f16
+./quantize  ../dolphin-2.8-mistral-7b-v02-f16.gguf ../dolphin-2.8-mistral-7b-v02-q4_k_m.gguf q4_k_m
+
+```

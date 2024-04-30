@@ -42,3 +42,16 @@
 - https://fka.gumroad.com/l/art-of-chatgpt-prompting 
 - https://github.com/ollama/ollama/blob/main/docs/import.md
 - https://chat.openai.com/share/eef389ac-7181-4eef-bd91-fa4b45661da9
+- https://aviralrma.medium.com/understanding-llm-parameters-c2db4b07f0ee
+- https://towardsdatascience.com/fine-tune-a-mistral-7b-model-with-direct-preference-optimization-708042745aac
+- https://github.com/nalaso/devika/tree/main?tab=readme-ov-file#getting-started
+- https://blog.gopenai.com/how-to-fine-tune-llama-2-on-mac-studio-4b42f317c975
+- https://towardsdatascience.com/mlx-vs-mps-vs-cuda-a-benchmark-c5737ca6efc9
+- https://github.com/eliben/code-for-blog/tree/master/2023/ollama-go-langchain
+- https://github.com/eliben/code-for-blog/tree/master/2023/go-rag-openai
+- https://towardsdatascience.com/apple-m2-max-gpu-vs-nvidia-v100-p100-and-t4-8b0d18d08894
+- https://github.com/langchain-ai/rag-from-scratch/blob/main/rag_from_scratch_1_to_4.ipynb
+- https://github.com/gkamradt/LLMTest_NeedleInAHaystack
+- https://www.youtube.com/watch?v=KXG2f-So9oo&ab_channel=AIExplained
+- https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_adaptive_rag_cohere.ipynb
+- https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0

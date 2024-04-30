@@ -1,0 +1,45 @@
+ k8sgpt auth update openai --model gemma:2b --baseurl  $OLLAMA_HOST/v1
+Model updated successfully
+Base URL updated successfully
+openai updated in the AI backend provider list
+Model updated successfully
+Base URL updated successfully
+openai updated in the AI backend provider list
+ k8sgpt analyze --explain -c
+ 100% |████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| (3/3, 25 it/min)
+AI Provider: openai
+
+0: Pod demo/nginx-deployment-866dc6df9c-78k7p(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-78k7p
+**Error:** Error container=nginx pod=nginx-deployment-866dc6df9c-78k7p -- last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-78k7p --
+
+**Solution:**
+
+1. Check the logs of the container named `nginx` in the pod `nginx-deployment-866dc6df9c-78k7p`.
+2. Identify the specific error causing the container to crash.
+3. Address the underlying cause of the error and take necessary steps to fix it.
+4. Restart the container and pod to apply the changes.
+1: Pod demo/nginx-deployment-866dc6df9c-v6dtb(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-v6dtb
+**Error:** Error container=nginx pod=nginx-deployment-866dc6df9c-v6dtb -- last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-v6dtb
+
+**Solution:**
+
+1. Check the logs of the container `nginx` in the pod `nginx-deployment-866dc6df9c-v6dtb`.
+2. Identify the specific error causing the container to terminate.
+3. Address the underlying cause of the error and apply necessary corrective measures.
+4. Ensure that the container is running with the appropriate resources and configuration.
+5. Verify that the pod is scheduled and running correctly.
+2: Pod demo/nginx-deployment-866dc6df9c-vmxjf(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-vmxjf
+**Error:** Error container=nginx pod=nginx-deployment-866dc6df9c-vmxjf -- last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-vmxjf
+
+**Solution:**
+
+1. Review the Kubernetes logs for the container and pod named `nginx`.
+2. Identify the specific error message that is preventing the container from running.
+3. Analyze the error message to determine the cause of the problem.
+4. Based on the cause, take appropriate steps to resolve the issue.
+5. For example, if the error indicates a missing container, ensure that the necessary containers are running.
+6. If the error points to a pod resource issue, adjust the pod's resource requests and limits.
+7. Once the issue is resolved, restart the container and pod to apply the changes.

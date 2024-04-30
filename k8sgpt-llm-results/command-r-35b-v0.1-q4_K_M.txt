@@ -1,0 +1,23 @@
+ k8sgpt auth update openai --model command-r:35b-v0.1-q4_K_M --baseurl $OLLAMA_HOST/v1
+Model updated successfully
+Base URL updated successfully
+openai updated in the AI backend provider list
+Model updated successfully
+Base URL updated successfully
+openai updated in the AI backend provider listd
+k8sgpt analyze --explain -c
+ 100% |████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| (3/3, 4 it/min)
+AI Provider: openai
+
+0: Pod demo/nginx-deployment-866dc6df9c-78k7p(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-78k7p
+Error: The pod didn't terminate successfully due to an issue with the 'nginx' container.
+Solution: Check the container logs for errors and ensure the nginx service is healthy; otherwise, investigate and fix any observed issues.
+1: Pod demo/nginx-deployment-866dc6df9c-v6dtb(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-v6dtb
+Error: Your Kubernetes pod named 'nginx-deployment-866dc6df9c-v6dtb' has an issue with the 'nginx' container.
+Solution: Check the container logs for errors and verify the application's health. Ensure the container termination policy is set appropriately.
+2: Pod demo/nginx-deployment-866dc6df9c-vmxjf(Deployment/nginx-deployment)
+- Error: the last termination reason is Error container=nginx pod=nginx-deployment-866dc6df9c-vmxjf
+Error: The pod didn't terminate successfully as the container 'nginx' failed.
+Solution: Check the container logs for errors and ensure the 'nginx' container is configured correctly, or debug using Kubernetes commands like `kubectl describe pod nginx-deployment-866dc6df9c-vmxjf`.
