@@ -55,3 +55,17 @@
 - https://www.youtube.com/watch?v=KXG2f-So9oo&ab_channel=AIExplained
 - https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_adaptive_rag_cohere.ipynb
 - https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0
+- https://www.youtube.com/watch?v=r3DC_gjFCSA&ab_channel=Weights%26Biases
+- https://github.com/RexiaAI/codeExamples/tree/main
+- https://github.com/sugarforever/chat-ollama
+- https://medium.com/@odhitom09/running-openais-server-locally-with-llama-cpp-5f29e0d955b7
+- https://github.com/danielmiessler/fabric
+- https://medium.com/the-ai-forum/create-a-blog-writer-multi-agent-system-using-crewai-and-ollama-f47654a5e1cd
+- [Beyond the Hype: A Realistic Look at Large Language Models • Jodie Burchell • GOTO 2024](https://www.youtube.com/watch?v=Pv0cfsastFs)
+- https://github.com/arcee-ai/aws-samples
+- https://www.databricks.com/blog/llm-inference-performance-engineering-best-practices
+- https://www.toolify.ai/gpts/build-a-powerful-llm-app-with-langchain-golang-111552
+- https://www.deeplearning.ai/short-courses/langchain-for-llm-application-development/
+- https://github.com/eliben/code-for-blog/tree/master/2023/ollama-go-langchain
+- https://tmc.github.io/langchaingo/docs/
+- https://www.linkedin.com/posts/devevantelista_rag-with-golang-langchain-and-qdrant-activity-7171356252210380800-TjWQ

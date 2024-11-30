@@ -10,6 +10,13 @@ ollama pull <model-name>
 ollama run <model-name> --verbose
 ```
 
+Environment variables
+
+```
+export OLLAMA_NUM_PARALLEL=4 # Allows each model to handle four requests at the same time
+export OLLAMA_MAX_LOADED_MODELS=3 # how many models can be loaded simultaneously
+```
+
 API call example
 
 ```
