@@ -12,7 +12,7 @@ My goal is to learn to fine-tune an LLM using a custom dataset, develop RAGs, ch
 - Retrieval-Augmented Generation (RAG) "[delivers](https://www.youtube.com/watch?v=T-D1OfcDW1M) two big advantages, namely: the model gets the most up-to-date and trustworthy facts, and you can see where the model got its info, lending more credibility to what it generates."
 - [Mergekit](https://github.com/arcee-ai/mergekit/tree/main) - a toolkit for merging pre-trained language models
 - [crewai](https://docs.crewai.com/) - framework for creating AI agents
-- [open-webui](https://github.com/open-webui/open-webui) as the frontend for Ollama.
+- Very useful frontend for Ollama is [open-webui](https://github.com/open-webui/open-webui).
 
 ## Compute
 
