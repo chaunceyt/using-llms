@@ -13,6 +13,9 @@ My goal is to learn to fine-tune an LLM using a custom dataset, develop RAGs, ch
 - [Mergekit](https://github.com/arcee-ai/mergekit/tree/main) - a toolkit for merging pre-trained language models
 - [crewai](https://docs.crewai.com/) - framework for creating AI agents
 - Very useful frontend for Ollama is [open-webui](https://github.com/open-webui/open-webui).
+- Learning to use [k8sgpt-operator](https://github.com/k8sgpt-ai/k8sgpt-operator) and [k8sgpt](https://github.com/k8sgpt-ai/k8sgpt) cli
+- Looking at [gptscript](https://github.com/gptscript-ai/gptscript) for AI automation.
+- Working on an operator that provisions [AIChat Workspaces]](https://github.com/chaunceyt/aichat-workspace-operator) powered by Open WebUI and Ollama. An attempt to simulate a LLM as a Service.
 
 ## Compute
 
@@ -24,16 +27,36 @@ Apple M3 Max chip with 16‑core CPU, 40‑core GPU, 16‑core Neural Engine wit
 - Organizations: NASA/IBM, healthcare, FinGPT
 - Risks: Hallucinations, Bias, security
 
+## Prompting vs Fine-tuning
+
+Methods that influence model behavior,  prompting and fine-tuning.
+
+- [good-read](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview#prompting-vs-finetuning) from anthropic docs.
+
+Prompting
+
+* requires less resources
+* uses the base model, which can make it cheaper
+* prompts are reusable across different versions
+
+
+### Example system prompts
+
+Below are some example SYSTEM prompt that will improve response from LLM.
+
+- good example of a SYSTEM prompt. [Claude 3.5 Sonnet](https://docs.anthropic.com/en/release-notes/system-prompts) release notes for their prompt.
+- useful SYSTEM prompt [examples](https://github.com/danielmiessler/fabric/tree/main/patterns)
+- Ollama's [modelfile](https://github.com/ollama/ollama/blob/main/docs/modelfile.md) make it easy to create new models with custom SYSTEM prompts
+
 ## What can LLM do?
 
 ### Chat
 Some common examples used:
 
-- Write an email
-- Summarize a book
-- Plan a trip
-- create a study guide
-- useful [examples](https://github.com/danielmiessler/fabric/tree/main/patterns)
+- Text classification
+- Sentiment analysis
+- Question answering
+- Language translation
 
 ### Code
 
@@ -60,7 +83,7 @@ Many are able to perform the following functions. This will increase the number 
 - google/gemma2:2b
 
 ### small
-- google/gemmma2 (9b)
+- google/gemma2 (9b)
 - meta-llama/Llama-3.2-8B-instruct
 - qwen/qwen2..5-Coder-7B-instruct
 - mistral/mistral:7b-instruct
