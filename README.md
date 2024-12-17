@@ -15,7 +15,7 @@ My goal is to learn to fine-tune an LLM using a custom dataset, develop RAGs, ch
 - Very useful frontend for Ollama is [open-webui](https://github.com/open-webui/open-webui).
 - Learning to use [k8sgpt-operator](https://github.com/k8sgpt-ai/k8sgpt-operator) and [k8sgpt](https://github.com/k8sgpt-ai/k8sgpt) cli
 - Looking at [gptscript](https://github.com/gptscript-ai/gptscript) for AI automation.
-- Working on an operator that provisions [AIChat Workspaces]](https://github.com/chaunceyt/aichat-workspace-operator) powered by Open WebUI and Ollama. An attempt to simulate a LLM as a Service.
+- Working on an operator that provisions [AIChat Workspaces](https://github.com/chaunceyt/aichat-workspace-operator) powered by Open WebUI and Ollama. An attempt to simulate a LLM as a Service.
 
 ## Compute
 
