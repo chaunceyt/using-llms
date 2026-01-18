@@ -12,9 +12,13 @@ Below are the compile parameters I use.
 ```
 git clone https://github.com/ggml-org/llama.cpp.git
 cd llama.cpp
+
+conda create -m llm-work python=3.11 -y
+conda activate llm-work
+
 pip install -r requirements.txt
 
-cmake -B build -DGGML_RPC=ON 
+cmake -B build -DGGML_RPC=ON -BUILD_SHARED_LIBS=ON
 cmake --build build --config Release
 
 ```
@@ -23,6 +27,9 @@ Update `$PATH`
 
 ```
 export PATH=$PATH:/Users/<username>/llama.cpp/build/bin
+
+# https://github.com/hybridgroup/yzma
+export YZMA_LIB=/Users/<username>/llama.cpp/build/bin
 ```
 
 ### Keeping up with changes upstream
@@ -31,10 +38,10 @@ Keep up with updates, since new LLM support is added quickly,
 Monitor: https://github.com/ggml-org/llama.cpp/releases
 
 ```
-git fetch --all
-git switch -c b7501 b7501
+git fetch --all  # use the latest tag below.
+git switch -c <latest-tag> <latest-tag>
 
-cmake -B build -DGGML_RPC=ON 
+cmake -B build -DGGML_RPC=ON -BUILD_SHARED_LIBS=ON 
 cmake --build build --config Release
 ```
 
@@ -42,9 +49,10 @@ cmake --build build --config Release
 
 Using llama.cpp tools to convert a LLM to a [gguf](https://github.com/ggml-org/ggml/blob/master/docs/gguf.md) [quantized](https://huggingface.co/docs/optimum/en/concept_guides/quantization) to f16-bit. Below will walk through downloading `gpt-oss-20b` model and converting it to gguf.
 
-NOTE: run the `pip install` before attempting to convert to gguf.
+NOTE: run the `pip install -r requirements.txt` within the `$HOME/llama.cpp` before attempting to convert to gguf.
 
 ```
+conda activate llm-work
 git lfs install
 git clone https://huggingface.co/openai/gpt-oss-20b
 cd gpt-oss-20b
@@ -99,88 +107,14 @@ llama-bench -m ggufs/gpt-oss-20b-F16.gguf -o json
 ...
 [
   {
-    "build_commit": "5c0d18881",
-    "build_number": 7446,
-    "cpu_info": "Accelerate, Apple M3 Ultra",
-    "gpu_info": "Apple M3 Ultra",
-    "backends": "Metal,BLAS",
-    "model_filename": "ggufs/gpt-oss-20b-F16.gguf",
-    "model_type": "gpt-oss 20B F16",
-    "model_size": 13779630336,
-    "model_n_params": 20914757184,
-    "n_batch": 2048,
-    "n_ubatch": 512,
-    "n_threads": 24,
-    "cpu_mask": "0x0",
-    "cpu_strict": false,
-    "poll": 50,
-    "type_k": "f16",
-    "type_v": "f16",
-    "n_gpu_layers": 99,
-    "n_cpu_moe": 0,
-    "split_mode": "layer",
-    "main_gpu": 0,
-    "no_kv_offload": false,
-    "flash_attn": false,
-    "devices": "auto",
-    "tensor_split": "0.00",
-    "tensor_buft_overrides": "none",
-    "use_mmap": true,
-    "embeddings": false,
-    "no_op_offload": 0,
-    "no_host": false,
-    "n_prompt": 512,
-    "n_gen": 0,
-    "n_depth": 0,
-    "test_time": "2025-12-21T18:52:55Z",
+...
     "avg_ns": 206333800,
-    "stddev_ns": 761670,
-    "avg_ts": 2481.443177,
-    "stddev_ts": 9.190571,
-    "samples_ns": [ 205061209, 206598292, 206377916, 206528958, 207102625 ],
-    "samples_ts": [ 2496.82, 2478.24, 2480.89, 2479.07, 2472.2 ]
+...
   },
   {
-    "build_commit": "5c0d18881",
-    "build_number": 7446,
-    "cpu_info": "Accelerate, Apple M3 Ultra",
-    "gpu_info": "Apple M3 Ultra",
-    "backends": "Metal,BLAS",
-    "model_filename": "ggufs/gpt-oss-20b-F16.gguf",
-    "model_type": "gpt-oss 20B F16",
-    "model_size": 13779630336,
-    "model_n_params": 20914757184,
-    "n_batch": 2048,
-    "n_ubatch": 512,
-    "n_threads": 24,
-    "cpu_mask": "0x0",
-    "cpu_strict": false,
-    "poll": 50,
-    "type_k": "f16",
-    "type_v": "f16",
-    "n_gpu_layers": 99,
-    "n_cpu_moe": 0,
-    "split_mode": "layer",
-    "main_gpu": 0,
-    "no_kv_offload": false,
-    "flash_attn": false,
-    "devices": "auto",
-    "tensor_split": "0.00",
-    "tensor_buft_overrides": "none",
-    "use_mmap": true,
-    "embeddings": false,
-    "no_op_offload": 0,
-    "no_host": false,
-    "n_prompt": 0,
-    "n_gen": 128,
-    "n_depth": 0,
-    "test_time": "2025-12-21T18:52:56Z",
+...
     "avg_ns": 1276850291,
-    "stddev_ns": 2593710,
-    "avg_ts": 100.247008,
-    "stddev_ts": 0.203154,
-    "samples_ns": [ 1281300375, 1276212125, 1275491125, 1276581334, 1274666500 ],
-    "samples_ts": [ 99.8985, 100.297, 100.354, 100.268, 100.418 ]
+...
   }
 ]
 ...
@@ -235,6 +169,8 @@ llama-server \
   --cache-type-v f16 \
   --verbose
 ```
+
+* [Code generation](code-generation.md)
 
 ### Using mcp with the openai compatiable api
 
@@ -325,13 +261,19 @@ mcphost --config mcp.json -m openai:gpt-oss:20b --provider-url http://<ipaddr>:<
 ## Using llama-embedding
 
 ```
-llama-embedding -m Qwen3-Embedding-8B-f16.gguf -p "Introduce yourself. Say your exact model name, including the number, and your knowledge cutoff date." --pooling last --verbose-prompt
+llama-embedding -m Qwen3-Embedding-8B-f16.gguf \
+    -p "Introduce yourself. Say your exact model name, including the number, and your knowledge cutoff date." \
+    --pooling last \
+    --verbose-prompt
 ```
 
 ```
 # very simple inference server config with embedding enabled.
 
-llama-server -m Qwen3-Embedding-8B-f16.gguf --embedding --pooling last -ub 8192
+llama-server -m Qwen3-Embedding-8B-f16.gguf \
+    --embedding \
+    --pooling last \
+    -ub 8192
 ```
 
 ## Using Multi-Model LLM audio, image, and text LLM(s)
@@ -349,13 +291,45 @@ curl -s -Lo ggufs/mmproj-Qwen2.5-Omni-7B-f16.gguf "https://huggingface.co/ggml-o
 Perform OCR on an image.
 
 ```
-llama-mtmd-cli -m ggufs/Qwen2.5-Omni-7B-f16.gguf --mmproj ggufs/mmproj-Qwen2.5-Omni-7B-f16.gguf --image /Users/<username>/llmops.png -p "Describe the purpose of this image. Perform an OCR before describing it."
+llama-mtmd-cli -m ggufs/Qwen2.5-Omni-7B-f16.gguf \
+    --mmproj ggufs/mmproj-Qwen2.5-Omni-7B-f16.gguf \
+    --image /Users/<username>/llmops.png \
+    -p "Describe the purpose of this image. Perform an OCR before describing it."
 ```
+
+```
+ llama-mtmd-cli -m ggufs/Qwen3-VL-235B-A22B-Instruct-UD-Q4_K_XL-00001-of-00003.gguf \
+    --mmproj ggufs/mmproj-Qwen3-VL-30B-A3B-Instruct-f16.gguf \
+    --image /Users/<username>/llmops.png \
+    -p "Describe the purpose of this image. Perform an OCR before describing it."
+```
+
+Serve the LLM for inference
+
+```
+llama-server --port 11434 \
+    --model ggufs/Qwen3-VL-30B-A3B-Instruct-Q8_0.gguf \
+    --mmproj ggufs/mmproj-Qwen3-VL-30B-A3B-Instruct-f16.gguf \
+    --n-gpu-layers 99 \
+    --ctx-size 81920 \
+    --top-p 0.8 \
+    --top-k 20 \
+    --temp 0.7 \
+    --min-p 0.0 \
+    --presence-penalty 1.5 \
+    --cache-type-k q8_0 \
+    --cache-type-v q8_0 \
+    --flash-attn on
+```
+
 
 Transcribe an audio file
 
 ```
-llama-mtmd-cli -m ggufs/Qwen2.5-Omni-7B-f16.gguf --mmproj ggufs/mmproj-Qwen2.5-Omni-7B-f16.gguf --audio /Users/<usernamme>/blogpost.wav -p "Transcribe the audio file to plan text"
+llama-mtmd-cli -m ggufs/Qwen2.5-Omni-7B-f16.gguf \
+    --mmproj ggufs/mmproj-Qwen2.5-Omni-7B-f16.gguf \
+    --audio /Users/<usernamme>/blogpost.wav \
+    -p "Transcribe the audio file to plan text"
 ```
 
 ## Using llama-diffusion-cli
@@ -367,11 +341,26 @@ Run text diffusion LLM using the `llama-diffusion-cli`
 There are at least three types of text diffusion LLMs as referenced in the readme above. the following worked in my environment.
 
 ```
- llama-diffusion-cli -m ./Dream-v0-Instruct-7B.i1-Q6_K.gguf  -p "write hello world server using Go and the Gin framework" -ub 512 --diffusion-eps 0.001 --diffusion-algorithm 3 --diffusion-steps 256 --diffusion-visual --ctx-size 32768
+ llama-diffusion-cli -m ./Dream-v0-Instruct-7B.i1-Q6_K.gguf  \
+    -p "write hello world server using Go and the Gin framework" \
+    -ub 512 \
+    --diffusion-eps 0.001 \
+    --diffusion-algorithm 3 \
+    --diffusion-steps 256 \
+    --diffusion-visual \
+    --ctx-size 32768
  ```
 
  ```
- llama-diffusion-cli -m ./LLaDA-8B-Instruct.f16.gguf -p "write hello world server using Go and the Gin framework" -ub 512 --diffusion-eps 0.001 --diffusion-algorithm 3 --diffusion-steps 512 --diffusion-visual --ctx-size 32768 --verbose-prompt
+ llama-diffusion-cli -m ./LLaDA-8B-Instruct.f16.gguf \
+    -p "write hello world server using Go and the Gin framework" \
+    -ub 512 \
+    --diffusion-eps 0.001 \
+    --diffusion-algorithm 3 \
+    --diffusion-steps 512 \
+    --diffusion-visual \
+    --ctx-size 32768 \
+    --verbose-prompt
  ```
 
 ## Using llama-tts
@@ -385,7 +374,11 @@ curl -Lo WavTokenizer-Large-75-F16.gguf  "https://huggingface.co/ggml-org/WavTok
 ```
 
 ```
-llama-tts -m OuteTTS-0.2-500M-FP16.gguf --n-gpu-layers 33 -mv WavTokenizer-Large-75-F16.gguf -p "$(cat test-text.txt)" -o my-example-audio.wav
+llama-tts -m OuteTTS-0.2-500M-FP16.gguf \
+    --n-gpu-layers 33 \
+    -mv WavTokenizer-Large-75-F16.gguf \
+    -p "$(cat test-text.txt)" \
+    -o my-example-audio.wav
 ```
 
 ## Using llama-gguf-split to perform a merge
@@ -461,42 +454,129 @@ Example configuration
 models:
   gpt-oss-20b:
     cmd: |
-      llama-server --port ${PORT} -m /Volumes/development2/ggufs/gpt-oss-120b-F16.gguf
-      --ctx-size 32768
-      --jinja
-      --cache-type-k q8_0
-      --cache-type-v q8_0
-      --n-gpu-layers 99
+    llama-server --port ${PORT} -m /Volumes/development2/ggufs/gpt-oss-20b-F16.gguf
+    --threads -1
+    --seed 3407
+    --prio 3
+    --min_p 0.01
+    --temp 1.0
+    --top-p 0.95
+    --ctx-size 524288
+    -np 4
+    -ctk q8_0
+    -ctv q8_0
+    --n-gpu-layers 99
+    --split-mode layer
+    --no-mmap
+    -b 32768
+    -ub 1024
+    --cache-ram 0
+    --cont-batching
+    --no-context-shift
+    --metrics
+    --log-file /tmp/gpt-oss-20b-F16.gguf.log
+    --log-timestamps
+    --jinja
   gpt-oss-120b:
     cmd: |
-      llama-server --port ${PORT} -m /Volumes/development2/ggufs/gpt-oss-120b-F16.gguf
-      --ctx-size 32768
-      --jinja
-      --cache-type-k q8_0
-      --cache-type-v q8_0
-      --n-gpu-layers 99
+    llama-server --port ${PORT} -m /Volumes/development2/ggufs/gpt-oss-120b-F16.gguf
+    --threads -1
+    --seed 3407
+    --prio 3
+    --min_p 0.01
+    --temp 1.0
+    --top-p 0.95
+    --ctx-size 524288
+    -np 4
+    -ctk q8_0
+    -ctv q8_0
+    --n-gpu-layers 99
+    --split-mode layer
+    --no-mmap
+    -b 32768
+    -ub 1024
+    --cache-ram 0
+    --cont-batching
+    --no-context-shift
+    --metrics
+    --log-file /tmp/gpt-oss-120b-F16.gguf.log
+    --log-timestamps
+    --jinja
   qwen3-coder-30b:
     cmd: |
       llama-server --port ${PORT} -m /Volumes/development2/ggufs/Qwen3-Coder-30B-A3B-Instruct-BF16.gguf
-      --ctx-size 32768
-      --jinja
-      --cache-type-k q8_0
-      --cache-type-v q8_0
-      --n-gpu-layers 99
+    --threads -1
+    --seed 3407
+    --prio 3
+    --min_p 0.01
+    --temp 1.0
+    --top-p 0.95
+    --ctx-size 524288
+    -np 4
+    -ctk q8_0
+    -ctv q8_0
+    --n-gpu-layers 99
+    --split-mode layer
+    --no-mmap
+    -b 32768
+    -ub 1024
+    --cache-ram 0
+    --cont-batching
+    --no-context-shift
+    --metrics
+    --log-file /tmp/Qwen3-Coder-30B-A3B-Instruct-BF16.log
+    --log-timestamps
+    --jinja
   minimax-m2-q4:
     cmd: |
       llama-server --port ${PORT} -m /Volumes/development2/ggufs/MiniMax-M2-Q4_K_M.gguf
-      --ctx-size 32768
-      --jinja
-      --cache-type-k q8_0
-      --cache-type-v q8_0
-      --n-gpu-layers 99
+    --threads -1
+    --seed 3407
+    --prio 3
+    --min_p 0.01
+    --temp 1.0
+    --top-p 0.95
+    --ctx-size 131072
+    -np 4
+    -ctk q8_0
+    -ctv q8_0
+    --n-gpu-layers 99
+    --split-mode layer
+    --no-mmap
+    -b 32768
+    -ub 1024
+    --cache-ram 0
+    --cont-batching
+    --no-context-shift
+    --metrics
+    --log-file /tmp/MiniMax-M2-Q4_K_M.log
+    --log-timestamps
+    --jinja
   glm-2-5:
     cmd: |
       llama-server --port ${PORT} -m /Volumes/development2/ggufs/GLM-4.5-Air-Q4_K_M.gguf
-      --ctx-size 16384
-      --jinja
-      --cache-type-k q8_0
-      --cache-type-v q8_0
-      --n-gpu-layers 99
+    --threads -1
+    --seed 3407
+    --prio 3
+    --min_p 0.01
+    --temp 1.0
+    --top-p 0.95
+    --ctx-size 131072
+    -np 4
+    -ctk q8_0
+    -ctv q8_0
+    --n-gpu-layers 99
+    --split-mode layer
+    --no-mmap
+    -b 32768
+    -ub 1024
+    --cache-ram 0
+    --cont-batching
+    --no-context-shift
+    --metrics
+    --log-file /tmp/GLM-4.5-Air-Q4_K_M.log
+    --log-timestamps
+    --jinja
 ```
+
+

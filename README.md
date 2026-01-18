@@ -3,12 +3,13 @@ Notes on using Large Language Models
 
 My goal is to learn to fine-tune an LLM using a custom dataset, develop RAGs, chat, and code within my local environment, without having to use GPT, Claude, and Grok.
 
-- Ollama to run LLMs locally
-- ollama llama.cpp to create .gguf versions of a specific Model on huggingface
+- Ollama and LLama.cpp/build/bin/llama-cli|server to run LLMs locally (mostly llama.cpp lately)
+- llama.cpp to create .gguf versions of a specific Model on huggingface
 - [llama.cpp](https://github.com/ggerganov/llama.cpp) to create .gguf versions of a specific Model on huggingface
 - MLX for **fine-tuning** (was able to get the [example](https://github.com/ml-explore/mlx-examples/tree/main/lora) to work on my Mac)
 - [huggingface](https://huggingface.co/) used to download [models](https://huggingface.co/models) and .gguf (i.e. https://huggingface.co/TheBloke/Mixtral-8x7B-Instruct-v0.1-GGUF), and .safetensors (i.e. https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)
 - stable-diffusion image generation from text prompt(s).
+- [comfyui](comfyui.md) using Qwen-image-edit and Qwen2.5-VL
 - Retrieval-Augmented Generation (RAG) "[delivers](https://www.youtube.com/watch?v=T-D1OfcDW1M) two big advantages, namely: the model gets the most up-to-date and trustworthy facts, and you can see where the model got its info, lending more credibility to what it generates."
 - [Mergekit](https://github.com/arcee-ai/mergekit/tree/main) - a toolkit for merging pre-trained language models
 - [crewai](https://docs.crewai.com/) - framework for creating AI agents
@@ -16,10 +17,13 @@ My goal is to learn to fine-tune an LLM using a custom dataset, develop RAGs, ch
 - Learning to use [k8sgpt-operator](https://github.com/k8sgpt-ai/k8sgpt-operator) and [k8sgpt](https://github.com/k8sgpt-ai/k8sgpt) cli
 - Looking at [gptscript](https://github.com/gptscript-ai/gptscript) for AI automation.
 - Working on an operator that provisions [AIChat Workspaces](https://github.com/chaunceyt/aichat-workspace-operator) powered by Open WebUI and Ollama. An attempt to simulate a LLM as a Service.
+- Getting `16.64 tokens/s` running `ollama run deepseek-r1:671b --verbose` `Q4_K_M` `404GB`
+- Getting `16.37 tokens/s` running `ollama run deepseek-v3.1:671b --verbose` `Q4_K_M` `404GB`
 
 ## Compute
 
-Apple M3 Max chip with 16‑core CPU, 40‑core GPU, 16‑core Neural Engine with 128GB unified memory
+* Apple M3 Max chip with 16‑core CPU, 40‑core GPU, 16‑core Neural Engine with 128GB unified memory
+* Apple M3 Ultra chip with 32-core CPU, 80‑core GPU, 32-core Neural Engine with 512GB unified memory
 
 ## Using Opensource LLMs
 
