@@ -4,8 +4,7 @@ Notes on using Large Language Models
 My goal is to learn to fine-tune an LLM using a custom dataset, develop RAGs, chat, and code within my local environment, without having to use GPT, Claude, and Grok.
 
 - Ollama and LLama.cpp/build/bin/llama-cli|server to run LLMs locally (mostly llama.cpp lately)
-- llama.cpp to create .gguf versions of a specific Model on huggingface
-- [llama.cpp](https://github.com/ggerganov/llama.cpp) to create .gguf versions of a specific Model on huggingface
+- [llama.cpp](llama-cpp.md) to create .gguf versions of a specific Model on huggingface and inference.
 - MLX for **fine-tuning** (was able to get the [example](https://github.com/ml-explore/mlx-examples/tree/main/lora) to work on my Mac)
 - [huggingface](https://huggingface.co/) used to download [models](https://huggingface.co/models) and .gguf (i.e. https://huggingface.co/TheBloke/Mixtral-8x7B-Instruct-v0.1-GGUF), and .safetensors (i.e. https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)
 - stable-diffusion image generation from text prompt(s).

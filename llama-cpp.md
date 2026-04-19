@@ -1,6 +1,6 @@
 # Using llama.cpp for LLM inference
 
-LLM inference in C/C++ (llama.cpp) is a library that allows one to efficiently run large language models (LLMs) on their standard consumer hardware, including local CPUs and GPUs. It introduced and uses the GGUF (GGML Universal Format) file format, which stores the model's weights, vocabulary, and metadata in a single self-contained file.
+LLM inference in C/C++ (llama.cpp) is a library that allows one to efficiently run large language models (LLMs) on their standard consumer hardware, including local CPUs and GPUs. It introduced and uses the [GGUF](https://huggingface.co/docs/hub/gguf) (GGML Universal Format) file format, which stores the model's weights, vocabulary, and metadata in a single self-contained file.
 
 This `README.md` will show example usage. 
 
@@ -13,7 +13,7 @@ Below are the compile parameters I use.
 git clone https://github.com/ggml-org/llama.cpp.git
 cd llama.cpp
 
-conda create -m llm-work python=3.11 -y
+conda create -n llm-work python=3.11 -y
 conda activate llm-work
 
 pip install -r requirements.txt
@@ -579,4 +579,37 @@ models:
     --jinja
 ```
 
+# --model-dir
 
+llama-server \
+    --model /Volumes/development2/ggufs/Qwen3-Coder-Next/Qwen3-Coder-Next-BF16-00001-of-00004.gguf \
+    --alias "local-llm" \
+    --threads -1 \
+    --seed 3407 \
+    --prio 3 \
+    --min_p 0.01 \
+    --temp 0.2 \
+    --top-p 0.95 \
+    --top-k 50 \
+    --ctx-size 131072 \
+    -np 1 \
+    --host  $(ipconfig getifaddr en1) \
+    --port 11345 \
+    --n-gpu-layers 999 \
+    --split-mode layer \
+    --no-mmap \
+    -b 32768 \
+    -ub 1024 \
+    --kv-unified \
+    --cache-type-k q8_0 --cache-type-v q8_0 \
+    --cache-ram 15000 \
+    --cont-batching \
+    --metrics \
+    --log-file /tmp/local-llm.gguf.log \
+    --log-timestamps \
+    --spec-type ngram-mod \
+    --spec-ngram-size-n 24 \
+    --draft-min 48 \
+    --draft-max 64 \
+    --verbose \
+    --jinja
