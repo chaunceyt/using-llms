@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: code-reviewer-agent-test-1
+spec:
+  template:
+    spec:
+      containers:
+      - name: agent
+        image: code-reviewer-agent:v1
+        imagePullPolicy: Never
+        command: ["npx", "tsx", "code-reviewer.ts"]
+        # Define environment variables here
+        env:
+        - name: ANTHROPIC_AUTH_TOKEN
+          value: "llama "
+        - name: ANTHROPIC_BASE_URL
+          value: "http://192.168.4.24:8888"
+      restartPolicy: Never
+  backoffLimit: 4
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: code-reviewer-agent-test-2
+spec:
+  template:
+    spec:
+      containers:
+      - name: agent
+        image: code-reviewer-agent:v1
+        imagePullPolicy: Never
+        command: ["npx", "tsx", "code-generate-reviewers.ts"]
+        # Define environment variables here
+        env:
+        - name: ANTHROPIC_AUTH_TOKEN
+          value: "llama "
+        - name: ANTHROPIC_BASE_URL
+          value: "http://192.168.4.24:8888"
+      restartPolicy: Never
+  backoffLimit: 4
