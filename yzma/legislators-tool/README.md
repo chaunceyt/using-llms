@@ -12,7 +12,12 @@ Code derived from [yzma-intro](https://github.com/vladimirvivien/llm-go/tree/mai
 sqlite3 legislators.db
 .mode csv
 .import legislators-current.csv legislators
+.import legislators-district-offices.csv legislators_district_offices
+.import committee-membership-current.csv legislators_committee_membership
+
 .quit
+
+sqlite3 legislators ".schema --indent"
 ```
 
 ## Learn
