@@ -162,6 +162,7 @@ const permissionRequestHook: HookCallback = async (input, toolUsedID, { signal }
   if (input.hook_event_name === "PermissionRequest") {
     // custom permission handling
     const perm = input as PermissionRequestHookInput;
+
     console.log(`  [LOG_HOOKS] Hook: ${perm.hook_event_name} | input: ${JSON.stringify(perm.permission_suggestions)}`);  
   }
   return {};
@@ -169,6 +170,7 @@ const permissionRequestHook: HookCallback = async (input, toolUsedID, { signal }
 
 const permissionDeniedHook: HookCallback = async (input, toolUsedID, { signal }) => {
   if (input.hook_event_name === "PermissionDenied") {
+    // handle and log event
     const res = input as PermissionDeniedHookInput;
     console.log(`  [LOG_HOOKS] Hook: ${res.hook_event_name} | input: ${JSON.stringify(res.tool_name)}`);  
   }
@@ -188,6 +190,10 @@ const subagentStopHook: HookCallback = async (input, toolUsedID, { signal }) => 
   if (input.hook_event_name === "SubagentStop") {
     // aggregate results from parallel tasks
     const res = input as SubagentStopHookInput;
+    console.log(`[SUBAGENT] Completed: ${input.agent_id}`);
+    console.log(`  Transcript: ${input.agent_transcript_path}`);
+    console.log(`  Tool use ID: ${toolUsedID}`);
+    console.log(`  Stop hook active: ${input.stop_hook_active}`);
     console.log(`  [LOG_HOOKS] Hook: ${res.hook_event_name} | input: ${JSON.stringify(res, null, 2)}`);  
   }
   return {};
@@ -306,7 +312,7 @@ async function runAgent() {
      </podnames>
      `,
     options: {
-      model: "gemma-4",
+      model: "Qwen3.6-27B-Q8_0",
       settingSources: ['project'],
       
       mcpServers: {

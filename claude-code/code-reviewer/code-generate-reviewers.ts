@@ -1,6 +1,8 @@
 // Learning to use the Claude Agent SDK as a requirement for the "Claude Certified Architect - Foundations (CCA-F)"
+
+// Notes:
 // An agent is the query loop: prompt -> pick tools -> execute -> observe -> repeat
-// Provide the prompt. The SDK handles the loop, allows one to build multi-agents
+// Provide the prompt. The SDK handles the loop, allows one to build multi-agents solutions
 // Provides access to "open standards" that enhance agent functionality, MCP servers, skills,
 // permissions.
 
@@ -9,6 +11,8 @@ import {
   type HookCallback,
   type PreToolUseHookInput,
   type PostToolUseHookInput,
+  SessionStartHookInput,
+  UserPromptSubmitHookInput,
 
 } from "@anthropic-ai/claude-agent-sdk";
 
@@ -64,6 +68,19 @@ const auditLog: HookCallback = async (input, toolUseID, { signal }) => {
   return {};
 };
 
+const logHooks: HookCallback = async (input, toolUsedID, { signal }) => {
+  if (input.hook_event_name === "SessionStart") {
+    const ss = input as SessionStartHookInput;
+    console.log(`  [LOG_HOOKS] Hook: ${ss.hook_event_name} | input: ${JSON.stringify(ss.source).slice(0, 80)}`);  
+  }
+
+  if (input.hook_event_name === "UserPromptSubmit") {
+    const up = input as UserPromptSubmitHookInput;
+    console.log(`  [LOG_HOOKS] Hook: ${up.hook_event_name} | input: ${JSON.stringify(up.prompt).slice(0, 80)}`);  
+  }
+  return {};
+}
+
 async function codeReview(prompt: string) {
  let turnCount = 0;
 
@@ -75,7 +92,7 @@ for await (const message of query({
     settingSources: ['project'],
     hooks: {
       PreToolUse: [
-        { hooks: [auditLog] },
+        { hooks: [auditLog, logHooks] },
        ],
       PostToolUse: [{ hooks: [auditLog] }],
     },

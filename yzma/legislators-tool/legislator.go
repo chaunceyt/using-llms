@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -53,7 +52,7 @@ type Committee struct {
 func GetLegislator(fullname string) (*Legislator, error) {
 	db, err := sql.Open("sqlite3", "static/legislators.db")
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("open db: %w", err)
 	}
 	defer db.Close()
 
@@ -80,9 +79,11 @@ func GetLegislator(fullname string) (*Legislator, error) {
 	if len(fullname_string) == 3 {
 		first_name = fullname_string[0]
 		last_name = fullname_string[2]
-	} else {
+	} else if len(fullname_string) >= 2 {
 		first_name = fullname_string[0]
 		last_name = fullname_string[1]
+	} else {
+		return nil, fmt.Errorf("invalid name format: %s", fullname)
 	}
 
 	sql_query := `
@@ -106,20 +107,18 @@ func GetLegislator(fullname string) (*Legislator, error) {
 
 	err = db.QueryRow(sql_query, first_name, last_name).Scan(&first_name, &last_name, &full_name, &address, &state, &district, &party, &legtype, &phone, &contact_form, &url, &bioguide_id, &govtrack_profile, &opensecrets)
 	if err == sql.ErrNoRows {
-		log.Println("No legislator found")
+		return nil, fmt.Errorf("no legislator found for %s", fullname)
 	} else if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("query row scan: %w", err)
 	}
 
 	offices, err := GetLegislatorOffices(bioguide_id)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
 	committees, err := GetLegislatorCommittees(bioguide_id)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
@@ -146,7 +145,7 @@ func GetLegislator(fullname string) (*Legislator, error) {
 func GetLegislatorOffices(bioguide_id string) ([]Office, error) {
 	db, err := sql.Open("sqlite3", "static/legislators.db")
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("open db: %w", err)
 	}
 	defer db.Close()
 
@@ -177,7 +176,7 @@ func GetLegislatorOffices(bioguide_id string) ([]Office, error) {
 		var office Office
 
 		if err := rows.Scan(
-			&office.Building, &office.City, &office.Fax, &office.Hours, &office.Phone, &office.State, &office.Suite, &office.Hours, &office.Zip,
+			&office.Address, &office.Building, &office.City, &office.Fax, &office.Hours, &office.Phone, &office.State, &office.Suite, &office.Zip,
 		); err != nil {
 			return nil, err
 		}
@@ -190,7 +189,7 @@ func GetLegislatorOffices(bioguide_id string) ([]Office, error) {
 func GetLegislatorCommittees(bioguide_id string) ([]Committee, error) {
 	db, err := sql.Open("sqlite3", "static/legislators.db")
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("open db: %w", err)
 	}
 	defer db.Close()
 

@@ -25,7 +25,29 @@ Build Go application that use LLM without requiring an API endpoint.
 
 ## dependency
 
-llama.cpp release `b8766`
+### llama.cpp
+
+```
+cmake -B build -DGGML_RPC=ON -BUILD_SHARED_LIBS=ON
+cmake --build build --config Release
+```
+
+### yzma binary and libs
+
+```
+go install github.com/hybridgroup/yzma@latest
+
+# https://github.com/hybridgroup/yzma
+yzma install --lib $HOME/yzma-libs
+export YZMA_LIB=$HOME/yzma-libs
+```
+
+### update go packages
+
+```
+go get -u ./...
+make build
+```
 
 ## Usage
 
