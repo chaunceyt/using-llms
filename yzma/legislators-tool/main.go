@@ -190,6 +190,7 @@ func runConversation(
 	if err != nil {
 		result = fmt.Sprintf("Error: %v", err)
 	}
+
 	if verbose {
 		fmt.Printf("Tool call: %s(%v) => %s\n", call.Function.Name, call.Function.Arguments, result[:min(len(result), 200)])
 	}
