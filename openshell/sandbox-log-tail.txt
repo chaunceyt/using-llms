@@ -1,0 +1,681 @@
+(base) cthorn@Chaunceys-MacBook-Pro google/protobuf  > openshell logs demo --tail
+[1783126647.597] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126647.598] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126647.617] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/gotest.tools@v1.4.0
+[1783126647.617] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/gotest.tools/gotestsum@v1.13.0
+[1783126647.676] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/681
+[1783126647.678] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/683
+[1783126647.695] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/866.p/1
+[1783126647.696] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/2/003.p/98
+[1783126647.701] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126647.701] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126647.702] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126647.702] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126647.716] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126647.716] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126647.721] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/697.p/253
+[1783126647.721] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/662
+[1783126647.721] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x169/571
+[1783126647.723] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/865
+[1783126647.783] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/134
+[1783126647.783] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/2/000
+[1783126647.783] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/000
+[1783126647.803] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126647.843] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/gotest.tools/@v/v2.2.0+incompatible.info
+[1783126647.909] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/gotest.tools/@v/v2.2.0+incompatible.mod
+[1783126647.926] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/gotest.tools@v2.2.0+incompatible
+[1783126647.985] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/685
+[1783126648.005] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/001
+[1783126648.066] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/gotest.tools/@v/v2.2.0+incompatible.zip
+[1783126648.133] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/gotest.tools/@v/list
+[1783126648.150] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/gotest.tools/gotestsum/@v/list
+[1783126648.155] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.170] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fatih/color/@v/v1.18.0.zip
+[1783126648.172] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/google/shlex@v0.0.0-20191202100458-e7afc7fbc510
+[1783126648.173] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/tools/@v/v0.36.0.zip
+[1783126648.175] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/dnephin/pflag@v1.0.7
+[1783126648.190] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/bitfield/gotestdox@v0.2.2
+[1783126648.190] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fsnotify/fsnotify/@v/v1.9.0.zip
+[1783126648.192] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/696
+[1783126648.201] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.201] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.202] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.202] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.203] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.214] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.214] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.215] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.222] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/fatih/color@v1.18.0
+[1783126648.222] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/term/@v/v0.35.0.zip
+[1783126648.222] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sys/@v/v0.36.0.zip
+[1783126648.223] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sync/@v/v0.17.0.zip
+[1783126648.234] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/690
+[1783126648.253] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/866.p/19
+[1783126648.253] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/697
+[1783126648.271] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/715.p/46
+[1783126648.277] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.278] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.278] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.282] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/sync@v0.17.0
+[1783126648.283] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.287] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.291] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.296] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x011/559
+[1783126648.298] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/007
+[1783126648.298] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x001/988
+[1783126648.298] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/term@v0.35.0
+[1783126648.302] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/fsnotify/fsnotify@v1.9.0
+[1783126648.303] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.307] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/688
+[1783126648.311] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/045
+[1783126648.326] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x121/456
+[1783126648.326] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/2/001
+[1783126648.331] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/474
+[1783126648.340] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x074/304
+[1783126648.345] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/290
+[1783126648.351] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.358] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/678
+[1783126648.360] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/684
+[1783126648.361] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.361] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.362] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.372] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/677
+[1783126648.379] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/659
+[1783126648.380] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x168/897
+[1783126648.392] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x168/829
+[1783126648.402] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fatih/color/@v/v1.18.0.mod
+[1783126648.411] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/text/@v/v0.17.0.zip
+[1783126648.412] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/mattn/go-isatty@v0.0.20
+[1783126648.421] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/mattn/go-colorable/@v/v0.1.13.zip
+[1783126648.423] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/551
+[1783126648.423] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x141/268
+[1783126648.440] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/sys@v0.36.0
+[1783126648.444] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/tools@v0.36.0
+[1783126648.445] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.446] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.462] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.468] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x078/530
+[1783126648.468] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/306
+[1783126648.475] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.481] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/term/@v/v0.35.0.mod
+[1783126648.486] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/mattn/go-colorable@v0.1.13
+[1783126648.491] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fsnotify/fsnotify/@v/v1.9.0.mod
+[1783126648.492] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sync/@v/v0.17.0.mod
+[1783126648.498] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/704
+[1783126648.501] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/715.p/214
+[1783126648.506] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.522] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/636
+[1783126648.525] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x163/060
+[1783126648.549] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/181
+[1783126648.549] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x046/483
+[1783126648.614] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sys/@v/v0.36.0.mod
+[1783126648.615] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/mattn/go-colorable/@v/v0.1.13.mod
+[1783126648.702] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/tools/@v/v0.36.0.mod
+[1783126648.720] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/mod/@v/v0.27.0.zip
+[1783126648.779] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/text@v0.17.0
+[1783126648.796] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/440
+[1783126648.796] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x112/739
+[1783126648.839] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/mod@v0.27.0
+[1783126648.896] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/866.p/21
+[1783126648.896] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/715
+[1783126648.913] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/717.p/112
+[1783126648.917] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.956] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x163/004
+[1783126649.010] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/text/@v/v0.17.0.mod
+[1783126649.022] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/mod/@v/v0.27.0.mod
+[1783126649.041] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fatih/color/@v/v1.18.0.info
+[1783126649.041] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/google/shlex/@v/v0.0.0-20191202100458-e7afc7fbc510.info
+[1783126649.057] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/dnephin/pflag/@v/v1.0.7.info
+[1783126649.059] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/bitfield/gotestdox/@v/v0.2.2.info
+[1783126649.060] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.067] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.068] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.073] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.074] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.074] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.074] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sys/@v/v0.36.0.info
+[1783126649.075] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.076] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/mattn/go-colorable/@v/v0.1.13.info
+[1783126649.077] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/tools/@v/v0.36.0.info
+[1783126649.078] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.085] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/term/@v/v0.35.0.info
+[1783126649.086] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fsnotify/fsnotify/@v/v1.9.0.info
+[1783126649.091] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sync/@v/v0.17.0.info
+[1783126649.093] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/text/@v/v0.17.0.info
+[1783126649.096] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/mod/@v/v0.27.0.info
+[1783126649.817] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(51638) -> raw.githubusercontent.com:443 [policy:- engine:opa] [reason:endpoint raw.githubusercontent.com:443 is not allowed by any policy]
+[1783126652.919] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783126652.899] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783126652.904] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=47 sandbox_name=demo
+[1783126663.241] [sandbox] [OCSF ] [ocsf] HTTP:POST [MED] DENIED /tmp/go-build1776663636/b2722/eventemitter.test(75245) -> POST http://fo.mo/ [policy:- engine:opa] [reason:FORWARD denied POST fo.mo:80/]
+[1783126664.452] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build1776663636/b2779/aws.test(75346) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783126672.930] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783126672.906] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=2 sandbox_name=demo summaries=2
+[1783126672.906] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783126674.877] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build1776663636/b2776/scalers.test(75345) -> 0.0.0.0:37975 [policy:- engine:opa] [reason:endpoint 0.0.0.0:37975 is not allowed by any policy]
+[1783126674.879] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build1776663636/b2776/scalers.test(75345) -> 0.0.0.0:37975 [policy:- engine:opa] [reason:endpoint 0.0.0.0:37975 is not allowed by any policy]
+[1783126682.898] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783126682.895] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783126682.895] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=37975
+[1783126682.895] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+[1783127058.942] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(76330) -> raw.githubusercontent.com:443 [policy:- engine:opa] [reason:endpoint raw.githubusercontent.com:443 is not allowed by any policy]
+[1783127062.902] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127062.891] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=1 sandbox_name=demo
+[1783127062.891] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783127062.959] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build233532436/b2779/aws.test(76550) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783127072.915] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127072.901] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783127072.901] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=1 sandbox_name=demo
+[1783127073.314] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build233532436/b2776/scalers.test(76549) -> 0.0.0.0:37213 [policy:- engine:opa] [reason:endpoint 0.0.0.0:37213 is not allowed by any policy]
+[1783127073.316] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build233532436/b2776/scalers.test(76549) -> 0.0.0.0:37213 [policy:- engine:opa] [reason:endpoint 0.0.0.0:37213 is not allowed by any policy]
+[1783127082.906] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127082.902] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=37213
+[1783127082.902] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+[1783127082.903] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127092.781] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged 1 incremental policy operation(s) [version:v4 hash:7912df04fda21067bc99c170a867222dfe4539aacb2c85f1f10ef904ea00ca32]
+[1783127092.781] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged incremental policy op: add-endpoint allow_raw_githubusercontent_com_443 endpoints=[raw.githubusercontent.com:443 ports=1] binaries=[/sandbox/opt/go/bin/go] [version:v4 hash:7912df04fda21067bc99c170a867222dfe4539aacb2c85f1f10ef904ea00ca32]
+[1783127092.781] [gateway] [INFO ] [openshell_server::grpc::policy] UpdateConfig: merged incremental policy operations
+[1783127094.618] [gateway] [INFO ] [openshell_server::grpc::policy] ReportPolicyStatus: sandbox reported policy load result
+[1783127094.606] [sandbox] [OCSF ] [ocsf] CONFIG:DETECTED [INFO] Settings poll: config change detected [old_revision:15213218953681779216 new_revision:15956693034185524408 policy_changed:true provider_env_changed:false]
+[1783127094.606] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/sandbox/go/bin/go container_path=/proc/38/root/sandbox/go/bin/go pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127094.606] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/usr/local/bin/node container_path=/proc/38/root/usr/local/bin/node pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127094.612] [sandbox] [OCSF ] [ocsf] CONFIG:LOADED [INFO] Policy reloaded successfully [policy_hash:7912df04fda21067bc99c170a867222dfe4539aacb2c85f1f10ef904ea00ca32] [hash:7912df04fda21067bc99c170a867222dfe4539aacb2c85f1f10ef904ea00ca32]
+[1783127104.528] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(77336) -> raw.githubusercontent.com:443 [policy:- engine:opa] [reason:binary '/sandbox/keda/bin/setup-envtest' not allowed in policy 'allow_raw_githubusercontent_com_443' (ancestors: [/usr/bin/make -> /usr/bin/bash -> /opt/openshell/bin/openshell-sandbox], cmdline: [/bin/bash]). SYMLINK HINT: the binary path is the kernel-re...]
+[1783127108.296] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2263329821/b2779/aws.test(77549) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783127112.926] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127112.899] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127112.899] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=2 sandbox_name=demo summaries=2
+[1783127118.645] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2263329821/b2776/scalers.test(77548) -> 0.0.0.0:34863 [policy:- engine:opa] [reason:endpoint 0.0.0.0:34863 is not allowed by any policy]
+[1783127118.648] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2263329821/b2776/scalers.test(77548) -> 0.0.0.0:34863 [policy:- engine:opa] [reason:endpoint 0.0.0.0:34863 is not allowed by any policy]
+[1783127122.908] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127122.904] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127122.905] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=34863
+[1783127122.905] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+[1783127183.420] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged 1 incremental policy operation(s) [version:v5 hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961]
+[1783127183.420] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged incremental policy op: add-endpoint allow_raw_githubusercontent_com_443 endpoints=[raw.githubusercontent.com:443 ports=1] binaries=[/sandbox/opt/go/bin/go, /sandbox/keda/bin/setup-envtest] [version:v5 hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961]
+[1783127183.420] [gateway] [INFO ] [openshell_server::grpc::policy] UpdateConfig: merged incremental policy operations
+[1783127184.657] [gateway] [INFO ] [openshell_server::grpc::policy] ReportPolicyStatus: sandbox reported policy load result
+[1783127184.651] [sandbox] [OCSF ] [ocsf] CONFIG:DETECTED [INFO] Settings poll: config change detected [old_revision:15956693034185524408 new_revision:2252150870987308223 policy_changed:true provider_env_changed:false]
+[1783127184.651] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/usr/local/bin/node container_path=/proc/38/root/usr/local/bin/node pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127184.651] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/sandbox/go/bin/go container_path=/proc/38/root/sandbox/go/bin/go pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127184.652] [sandbox] [OCSF ] [ocsf] CONFIG:LOADED [INFO] Policy reloaded successfully [policy_hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961] [hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961]
+[1783127198.160] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/keda/bin/setup-envtest(78331) -> raw.githubusercontent.com:443 [policy:allow_raw_githubusercontent_com_443 engine:opa]
+[1783127198.176] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://raw.githubusercontent.com:443/kubernetes-sigs/controller-tools/HEAD/envtest-releases.yaml
+[1783127198.242] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://raw.githubusercontent.com:443/kubernetes-sigs/controller-tools/HEAD/envtest-releases.yaml
+[1783127198.258] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(78331) -> github.com:443 [policy:- engine:opa] [reason:binary '/sandbox/keda/bin/setup-envtest' not allowed in policy 'anthropic' (ancestors: [/usr/bin/make -> /usr/bin/bash -> /opt/openshell/bin/openshell-sandbox], cmdline: [/bin/bash]). SYMLINK HINT: the binary path is the kernel-resolved target from /proc/<...]
+[1783127202.128] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2725075591/b2779/aws.test(78547) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783127202.914] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127202.891] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=2 sandbox_name=demo summaries=2
+[1783127202.891] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=3 sandbox_name=demo
+[1783127212.492] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2725075591/b2776/scalers.test(78546) -> 0.0.0.0:36407 [policy:- engine:opa] [reason:endpoint 0.0.0.0:36407 is not allowed by any policy]
+[1783127212.494] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2725075591/b2776/scalers.test(78546) -> 0.0.0.0:36407 [policy:- engine:opa] [reason:endpoint 0.0.0.0:36407 is not allowed by any policy]
+[1783127212.914] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127212.906] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127212.907] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=36407
+[1783127212.907] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+^C
+(base) cthorn@Chaunceys-MacBook-Pro google/protobuf  > openshell policy update \
+  --add-endpoint raw.githubusercontent.com:443 \
+  --binary /sandbox/keda/bin/setup-envtest \
+  --wait
+→ Using sandbox 'demo' (last used)
+· Policy unchanged (version 5, hash: c61fa8a6dd07)
+(base) cthorn@Chaunceys-MacBook-Pro google/protobuf  > openshell logs demo --tail
+[1783126647.723] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/865
+[1783126647.783] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/134
+[1783126647.783] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/2/000
+[1783126647.783] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/000
+[1783126647.803] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126647.843] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/gotest.tools/@v/v2.2.0+incompatible.info
+[1783126647.909] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/gotest.tools/@v/v2.2.0+incompatible.mod
+[1783126647.926] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/gotest.tools@v2.2.0+incompatible
+[1783126647.985] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/685
+[1783126648.005] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/001
+[1783126648.066] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/gotest.tools/@v/v2.2.0+incompatible.zip
+[1783126648.133] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/gotest.tools/@v/list
+[1783126648.150] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/gotest.tools/gotestsum/@v/list
+[1783126648.155] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.170] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fatih/color/@v/v1.18.0.zip
+[1783126648.172] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/google/shlex@v0.0.0-20191202100458-e7afc7fbc510
+[1783126648.173] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/tools/@v/v0.36.0.zip
+[1783126648.175] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/dnephin/pflag@v1.0.7
+[1783126648.190] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/bitfield/gotestdox@v0.2.2
+[1783126648.190] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fsnotify/fsnotify/@v/v1.9.0.zip
+[1783126648.192] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/696
+[1783126648.201] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.201] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.202] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.202] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.203] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.214] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.214] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.215] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.222] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/fatih/color@v1.18.0
+[1783126648.222] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/term/@v/v0.35.0.zip
+[1783126648.222] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sys/@v/v0.36.0.zip
+[1783126648.223] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sync/@v/v0.17.0.zip
+[1783126648.234] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/690
+[1783126648.253] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/866.p/19
+[1783126648.253] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/697
+[1783126648.271] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/715.p/46
+[1783126648.277] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.278] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.278] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.282] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/sync@v0.17.0
+[1783126648.283] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.287] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.291] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.296] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x011/559
+[1783126648.298] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/007
+[1783126648.298] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x001/988
+[1783126648.298] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/term@v0.35.0
+[1783126648.302] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/fsnotify/fsnotify@v1.9.0
+[1783126648.303] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.307] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/688
+[1783126648.311] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/045
+[1783126648.326] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x121/456
+[1783126648.326] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/2/001
+[1783126648.331] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/474
+[1783126648.340] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x074/304
+[1783126648.345] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/290
+[1783126648.351] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.358] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/678
+[1783126648.360] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/684
+[1783126648.361] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.361] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.362] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.372] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/677
+[1783126648.379] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/659
+[1783126648.380] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x168/897
+[1783126648.392] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x168/829
+[1783126648.402] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fatih/color/@v/v1.18.0.mod
+[1783126648.411] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/text/@v/v0.17.0.zip
+[1783126648.412] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/mattn/go-isatty@v0.0.20
+[1783126648.421] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/mattn/go-colorable/@v/v0.1.13.zip
+[1783126648.423] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/551
+[1783126648.423] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x141/268
+[1783126648.440] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/sys@v0.36.0
+[1783126648.444] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/tools@v0.36.0
+[1783126648.445] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.446] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.462] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.468] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x078/530
+[1783126648.468] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/306
+[1783126648.475] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.481] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/term/@v/v0.35.0.mod
+[1783126648.486] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/mattn/go-colorable@v0.1.13
+[1783126648.491] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fsnotify/fsnotify/@v/v1.9.0.mod
+[1783126648.492] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sync/@v/v0.17.0.mod
+[1783126648.498] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/704
+[1783126648.501] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/715.p/214
+[1783126648.506] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.522] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/636
+[1783126648.525] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x163/060
+[1783126648.549] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/181
+[1783126648.549] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x046/483
+[1783126648.614] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sys/@v/v0.36.0.mod
+[1783126648.615] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/mattn/go-colorable/@v/v0.1.13.mod
+[1783126648.702] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/tools/@v/v0.36.0.mod
+[1783126648.720] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/mod/@v/v0.27.0.zip
+[1783126648.779] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/text@v0.17.0
+[1783126648.796] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/440
+[1783126648.796] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x112/739
+[1783126648.839] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/mod@v0.27.0
+[1783126648.896] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/866.p/21
+[1783126648.896] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/715
+[1783126648.913] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/717.p/112
+[1783126648.917] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.956] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x163/004
+[1783126649.010] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/text/@v/v0.17.0.mod
+[1783126649.022] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/mod/@v/v0.27.0.mod
+[1783126649.041] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fatih/color/@v/v1.18.0.info
+[1783126649.041] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/google/shlex/@v/v0.0.0-20191202100458-e7afc7fbc510.info
+[1783126649.057] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/dnephin/pflag/@v/v1.0.7.info
+[1783126649.059] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/bitfield/gotestdox/@v/v0.2.2.info
+[1783126649.060] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.067] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.068] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.073] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.074] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.074] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.074] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sys/@v/v0.36.0.info
+[1783126649.075] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.076] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/mattn/go-colorable/@v/v0.1.13.info
+[1783126649.077] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/tools/@v/v0.36.0.info
+[1783126649.078] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.085] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/term/@v/v0.35.0.info
+[1783126649.086] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fsnotify/fsnotify/@v/v1.9.0.info
+[1783126649.091] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sync/@v/v0.17.0.info
+[1783126649.093] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/text/@v/v0.17.0.info
+[1783126649.096] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/mod/@v/v0.27.0.info
+[1783126649.817] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(51638) -> raw.githubusercontent.com:443 [policy:- engine:opa] [reason:endpoint raw.githubusercontent.com:443 is not allowed by any policy]
+[1783126652.919] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783126652.899] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783126652.904] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=47 sandbox_name=demo
+[1783126663.241] [sandbox] [OCSF ] [ocsf] HTTP:POST [MED] DENIED /tmp/go-build1776663636/b2722/eventemitter.test(75245) -> POST http://fo.mo/ [policy:- engine:opa] [reason:FORWARD denied POST fo.mo:80/]
+[1783126664.452] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build1776663636/b2779/aws.test(75346) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783126672.930] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783126672.906] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=2 sandbox_name=demo summaries=2
+[1783126672.906] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783126674.877] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build1776663636/b2776/scalers.test(75345) -> 0.0.0.0:37975 [policy:- engine:opa] [reason:endpoint 0.0.0.0:37975 is not allowed by any policy]
+[1783126674.879] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build1776663636/b2776/scalers.test(75345) -> 0.0.0.0:37975 [policy:- engine:opa] [reason:endpoint 0.0.0.0:37975 is not allowed by any policy]
+[1783126682.898] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783126682.895] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783126682.895] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=37975
+[1783126682.895] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+[1783127058.942] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(76330) -> raw.githubusercontent.com:443 [policy:- engine:opa] [reason:endpoint raw.githubusercontent.com:443 is not allowed by any policy]
+[1783127062.902] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127062.891] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=1 sandbox_name=demo
+[1783127062.891] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783127062.959] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build233532436/b2779/aws.test(76550) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783127072.915] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127072.901] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783127072.901] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=1 sandbox_name=demo
+[1783127073.314] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build233532436/b2776/scalers.test(76549) -> 0.0.0.0:37213 [policy:- engine:opa] [reason:endpoint 0.0.0.0:37213 is not allowed by any policy]
+[1783127073.316] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build233532436/b2776/scalers.test(76549) -> 0.0.0.0:37213 [policy:- engine:opa] [reason:endpoint 0.0.0.0:37213 is not allowed by any policy]
+[1783127082.906] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127082.902] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=37213
+[1783127082.902] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+[1783127082.903] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127092.781] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged 1 incremental policy operation(s) [version:v4 hash:7912df04fda21067bc99c170a867222dfe4539aacb2c85f1f10ef904ea00ca32]
+[1783127092.781] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged incremental policy op: add-endpoint allow_raw_githubusercontent_com_443 endpoints=[raw.githubusercontent.com:443 ports=1] binaries=[/sandbox/opt/go/bin/go] [version:v4 hash:7912df04fda21067bc99c170a867222dfe4539aacb2c85f1f10ef904ea00ca32]
+[1783127092.781] [gateway] [INFO ] [openshell_server::grpc::policy] UpdateConfig: merged incremental policy operations
+[1783127094.618] [gateway] [INFO ] [openshell_server::grpc::policy] ReportPolicyStatus: sandbox reported policy load result
+[1783127094.606] [sandbox] [OCSF ] [ocsf] CONFIG:DETECTED [INFO] Settings poll: config change detected [old_revision:15213218953681779216 new_revision:15956693034185524408 policy_changed:true provider_env_changed:false]
+[1783127094.606] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/sandbox/go/bin/go container_path=/proc/38/root/sandbox/go/bin/go pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127094.606] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/usr/local/bin/node container_path=/proc/38/root/usr/local/bin/node pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127094.612] [sandbox] [OCSF ] [ocsf] CONFIG:LOADED [INFO] Policy reloaded successfully [policy_hash:7912df04fda21067bc99c170a867222dfe4539aacb2c85f1f10ef904ea00ca32] [hash:7912df04fda21067bc99c170a867222dfe4539aacb2c85f1f10ef904ea00ca32]
+[1783127104.528] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(77336) -> raw.githubusercontent.com:443 [policy:- engine:opa] [reason:binary '/sandbox/keda/bin/setup-envtest' not allowed in policy 'allow_raw_githubusercontent_com_443' (ancestors: [/usr/bin/make -> /usr/bin/bash -> /opt/openshell/bin/openshell-sandbox], cmdline: [/bin/bash]). SYMLINK HINT: the binary path is the kernel-re...]
+[1783127108.296] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2263329821/b2779/aws.test(77549) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783127112.926] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127112.899] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127112.899] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=2 sandbox_name=demo summaries=2
+[1783127118.645] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2263329821/b2776/scalers.test(77548) -> 0.0.0.0:34863 [policy:- engine:opa] [reason:endpoint 0.0.0.0:34863 is not allowed by any policy]
+[1783127118.648] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2263329821/b2776/scalers.test(77548) -> 0.0.0.0:34863 [policy:- engine:opa] [reason:endpoint 0.0.0.0:34863 is not allowed by any policy]
+[1783127122.908] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127122.904] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127122.905] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=34863
+[1783127122.905] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+[1783127183.420] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged 1 incremental policy operation(s) [version:v5 hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961]
+[1783127183.420] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged incremental policy op: add-endpoint allow_raw_githubusercontent_com_443 endpoints=[raw.githubusercontent.com:443 ports=1] binaries=[/sandbox/opt/go/bin/go, /sandbox/keda/bin/setup-envtest] [version:v5 hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961]
+[1783127183.420] [gateway] [INFO ] [openshell_server::grpc::policy] UpdateConfig: merged incremental policy operations
+[1783127184.657] [gateway] [INFO ] [openshell_server::grpc::policy] ReportPolicyStatus: sandbox reported policy load result
+[1783127184.651] [sandbox] [OCSF ] [ocsf] CONFIG:DETECTED [INFO] Settings poll: config change detected [old_revision:15956693034185524408 new_revision:2252150870987308223 policy_changed:true provider_env_changed:false]
+[1783127184.651] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/usr/local/bin/node container_path=/proc/38/root/usr/local/bin/node pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127184.651] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/sandbox/go/bin/go container_path=/proc/38/root/sandbox/go/bin/go pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127184.652] [sandbox] [OCSF ] [ocsf] CONFIG:LOADED [INFO] Policy reloaded successfully [policy_hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961] [hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961]
+[1783127198.160] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/keda/bin/setup-envtest(78331) -> raw.githubusercontent.com:443 [policy:allow_raw_githubusercontent_com_443 engine:opa]
+[1783127198.176] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://raw.githubusercontent.com:443/kubernetes-sigs/controller-tools/HEAD/envtest-releases.yaml
+[1783127198.242] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://raw.githubusercontent.com:443/kubernetes-sigs/controller-tools/HEAD/envtest-releases.yaml
+[1783127198.258] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(78331) -> github.com:443 [policy:- engine:opa] [reason:binary '/sandbox/keda/bin/setup-envtest' not allowed in policy 'anthropic' (ancestors: [/usr/bin/make -> /usr/bin/bash -> /opt/openshell/bin/openshell-sandbox], cmdline: [/bin/bash]). SYMLINK HINT: the binary path is the kernel-resolved target from /proc/<...]
+[1783127202.128] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2725075591/b2779/aws.test(78547) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783127202.914] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127202.891] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=2 sandbox_name=demo summaries=2
+[1783127202.891] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=3 sandbox_name=demo
+[1783127212.492] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2725075591/b2776/scalers.test(78546) -> 0.0.0.0:36407 [policy:- engine:opa] [reason:endpoint 0.0.0.0:36407 is not allowed by any policy]
+[1783127212.494] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2725075591/b2776/scalers.test(78546) -> 0.0.0.0:36407 [policy:- engine:opa] [reason:endpoint 0.0.0.0:36407 is not allowed by any policy]
+[1783127212.914] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127212.906] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127212.907] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=36407
+[1783127212.907] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+[1783127389.370] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged 1 incremental policy operation(s) [version:v5 hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961]
+[1783127389.370] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged incremental policy op: add-endpoint allow_raw_githubusercontent_com_443 endpoints=[raw.githubusercontent.com:443 ports=1] binaries=[/sandbox/keda/bin/setup-envtest] [version:v5 hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961]
+[1783127389.370] [gateway] [INFO ] [openshell_server::grpc::policy] UpdateConfig: merged incremental policy operations
+
+
+
+[1783127402.656] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/keda/bin/setup-envtest(79348) -> raw.githubusercontent.com:443 [policy:allow_raw_githubusercontent_com_443 engine:opa]
+[1783127402.669] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://raw.githubusercontent.com:443/kubernetes-sigs/controller-tools/HEAD/envtest-releases.yaml
+[1783127402.683] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://raw.githubusercontent.com:443/kubernetes-sigs/controller-tools/HEAD/envtest-releases.yaml
+[1783127402.697] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(79348) -> github.com:443 [policy:- engine:opa] [reason:binary '/sandbox/keda/bin/setup-envtest' not allowed in policy 'anthropic' (ancestors: [/usr/bin/make -> /usr/bin/bash -> /opt/openshell/bin/openshell-sandbox], cmdline: [/bin/bash]). SYMLINK HINT: the binary path is the kernel-resolved target from /proc/<...]
+[1783127402.903] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127402.891] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=2 sandbox_name=demo
+[1783127402.891] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783127406.578] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build3970656613/b2779/aws.test(79570) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783127412.922] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127412.903] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=1 sandbox_name=demo
+[1783127412.903] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783127417.015] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build3970656613/b2776/scalers.test(79569) -> 0.0.0.0:45043 [policy:- engine:opa] [reason:endpoint 0.0.0.0:45043 is not allowed by any policy]
+[1783127417.018] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build3970656613/b2776/scalers.test(79569) -> 0.0.0.0:45043 [policy:- engine:opa] [reason:endpoint 0.0.0.0:45043 is not allowed by any policy]
+[1783127422.911] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127422.906] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127422.907] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=45043
+[1783127422.907] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+^C
+(base) cthorn@Chaunceys-MacBook-Pro google/protobuf  > openshell policy update \
+  --add-endpoint github.com:443 \
+  --binary /sandbox/keda/bin/setup-envtest \
+  --wait
+→ Using sandbox 'demo' (last used)
+✓ Policy version 6 submitted (hash: 8e491a47ac14)
+✓ Policy version 6 loaded (active version: 6)
+(base) cthorn@Chaunceys-MacBook-Pro google/protobuf  > openshell logs demo --tail
+[1783126648.203] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.214] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.214] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.215] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.222] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/fatih/color@v1.18.0
+[1783126648.222] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/term/@v/v0.35.0.zip
+[1783126648.222] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sys/@v/v0.36.0.zip
+[1783126648.223] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sync/@v/v0.17.0.zip
+[1783126648.234] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/690
+[1783126648.253] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/866.p/19
+[1783126648.253] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/697
+[1783126648.271] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/715.p/46
+[1783126648.277] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.278] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.278] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.282] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/sync@v0.17.0
+[1783126648.283] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.287] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.291] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.296] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x011/559
+[1783126648.298] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/007
+[1783126648.298] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x001/988
+[1783126648.298] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/term@v0.35.0
+[1783126648.302] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/fsnotify/fsnotify@v1.9.0
+[1783126648.303] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.307] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/688
+[1783126648.311] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/045
+[1783126648.326] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x121/456
+[1783126648.326] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/2/001
+[1783126648.331] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/474
+[1783126648.340] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x074/304
+[1783126648.345] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/290
+[1783126648.351] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.358] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/678
+[1783126648.360] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/684
+[1783126648.361] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.361] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.362] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.372] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/677
+[1783126648.379] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/659
+[1783126648.380] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x168/897
+[1783126648.392] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x168/829
+[1783126648.402] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fatih/color/@v/v1.18.0.mod
+[1783126648.411] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/text/@v/v0.17.0.zip
+[1783126648.412] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/mattn/go-isatty@v0.0.20
+[1783126648.421] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/mattn/go-colorable/@v/v0.1.13.zip
+[1783126648.423] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/551
+[1783126648.423] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x141/268
+[1783126648.440] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/sys@v0.36.0
+[1783126648.444] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/tools@v0.36.0
+[1783126648.445] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.446] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.462] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.468] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x078/530
+[1783126648.468] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/306
+[1783126648.475] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.481] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/term/@v/v0.35.0.mod
+[1783126648.486] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/github.com/mattn/go-colorable@v0.1.13
+[1783126648.491] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fsnotify/fsnotify/@v/v1.9.0.mod
+[1783126648.492] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sync/@v/v0.17.0.mod
+[1783126648.498] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/704
+[1783126648.501] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/715.p/214
+[1783126648.506] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.522] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/636
+[1783126648.525] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x163/060
+[1783126648.549] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/181
+[1783126648.549] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x046/483
+[1783126648.614] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sys/@v/v0.36.0.mod
+[1783126648.615] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/mattn/go-colorable/@v/v0.1.13.mod
+[1783126648.702] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/tools/@v/v0.36.0.mod
+[1783126648.720] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/mod/@v/v0.27.0.zip
+[1783126648.779] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/text@v0.17.0
+[1783126648.796] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/440
+[1783126648.796] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x112/739
+[1783126648.839] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/lookup/golang.org/x/mod@v0.27.0
+[1783126648.896] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/1/866.p/21
+[1783126648.896] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/715
+[1783126648.913] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x221/717.p/112
+[1783126648.917] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> sum.golang.org:443 [policy:anthropic engine:opa]
+[1783126648.956] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://sum.golang.org:443/tile/8/0/x163/004
+[1783126649.010] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/text/@v/v0.17.0.mod
+[1783126649.022] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/mod/@v/v0.27.0.mod
+[1783126649.041] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fatih/color/@v/v1.18.0.info
+[1783126649.041] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/google/shlex/@v/v0.0.0-20191202100458-e7afc7fbc510.info
+[1783126649.057] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/dnephin/pflag/@v/v1.0.7.info
+[1783126649.059] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/bitfield/gotestdox/@v/v0.2.2.info
+[1783126649.060] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.067] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.068] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.073] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.074] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.074] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.074] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sys/@v/v0.36.0.info
+[1783126649.075] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.076] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/mattn/go-colorable/@v/v0.1.13.info
+[1783126649.077] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/tools/@v/v0.36.0.info
+[1783126649.078] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(51083) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783126649.085] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/term/@v/v0.35.0.info
+[1783126649.086] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/fsnotify/fsnotify/@v/v1.9.0.info
+[1783126649.091] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/sync/@v/v0.17.0.info
+[1783126649.093] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/text/@v/v0.17.0.info
+[1783126649.096] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/golang.org/x/mod/@v/v0.27.0.info
+[1783126649.817] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(51638) -> raw.githubusercontent.com:443 [policy:- engine:opa] [reason:endpoint raw.githubusercontent.com:443 is not allowed by any policy]
+[1783126652.919] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783126652.899] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783126652.904] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=47 sandbox_name=demo
+[1783126663.241] [sandbox] [OCSF ] [ocsf] HTTP:POST [MED] DENIED /tmp/go-build1776663636/b2722/eventemitter.test(75245) -> POST http://fo.mo/ [policy:- engine:opa] [reason:FORWARD denied POST fo.mo:80/]
+[1783126664.452] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build1776663636/b2779/aws.test(75346) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783126672.930] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783126672.906] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=2 sandbox_name=demo summaries=2
+[1783126672.906] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783126674.877] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build1776663636/b2776/scalers.test(75345) -> 0.0.0.0:37975 [policy:- engine:opa] [reason:endpoint 0.0.0.0:37975 is not allowed by any policy]
+[1783126674.879] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build1776663636/b2776/scalers.test(75345) -> 0.0.0.0:37975 [policy:- engine:opa] [reason:endpoint 0.0.0.0:37975 is not allowed by any policy]
+[1783126682.898] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783126682.895] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783126682.895] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=37975
+[1783126682.895] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+[1783127058.942] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(76330) -> raw.githubusercontent.com:443 [policy:- engine:opa] [reason:endpoint raw.githubusercontent.com:443 is not allowed by any policy]
+[1783127062.902] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127062.891] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=1 sandbox_name=demo
+[1783127062.891] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783127062.959] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build233532436/b2779/aws.test(76550) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783127072.915] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127072.901] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783127072.901] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=1 sandbox_name=demo
+[1783127073.314] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build233532436/b2776/scalers.test(76549) -> 0.0.0.0:37213 [policy:- engine:opa] [reason:endpoint 0.0.0.0:37213 is not allowed by any policy]
+[1783127073.316] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build233532436/b2776/scalers.test(76549) -> 0.0.0.0:37213 [policy:- engine:opa] [reason:endpoint 0.0.0.0:37213 is not allowed by any policy]
+[1783127082.906] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127082.902] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=37213
+[1783127082.902] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+[1783127082.903] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127092.781] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged 1 incremental policy operation(s) [version:v4 hash:7912df04fda21067bc99c170a867222dfe4539aacb2c85f1f10ef904ea00ca32]
+[1783127092.781] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged incremental policy op: add-endpoint allow_raw_githubusercontent_com_443 endpoints=[raw.githubusercontent.com:443 ports=1] binaries=[/sandbox/opt/go/bin/go] [version:v4 hash:7912df04fda21067bc99c170a867222dfe4539aacb2c85f1f10ef904ea00ca32]
+[1783127092.781] [gateway] [INFO ] [openshell_server::grpc::policy] UpdateConfig: merged incremental policy operations
+[1783127094.618] [gateway] [INFO ] [openshell_server::grpc::policy] ReportPolicyStatus: sandbox reported policy load result
+[1783127094.606] [sandbox] [OCSF ] [ocsf] CONFIG:DETECTED [INFO] Settings poll: config change detected [old_revision:15213218953681779216 new_revision:15956693034185524408 policy_changed:true provider_env_changed:false]
+[1783127094.606] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/sandbox/go/bin/go container_path=/proc/38/root/sandbox/go/bin/go pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127094.606] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/usr/local/bin/node container_path=/proc/38/root/usr/local/bin/node pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127094.612] [sandbox] [OCSF ] [ocsf] CONFIG:LOADED [INFO] Policy reloaded successfully [policy_hash:7912df04fda21067bc99c170a867222dfe4539aacb2c85f1f10ef904ea00ca32] [hash:7912df04fda21067bc99c170a867222dfe4539aacb2c85f1f10ef904ea00ca32]
+[1783127104.528] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(77336) -> raw.githubusercontent.com:443 [policy:- engine:opa] [reason:binary '/sandbox/keda/bin/setup-envtest' not allowed in policy 'allow_raw_githubusercontent_com_443' (ancestors: [/usr/bin/make -> /usr/bin/bash -> /opt/openshell/bin/openshell-sandbox], cmdline: [/bin/bash]). SYMLINK HINT: the binary path is the kernel-re...]
+[1783127108.296] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2263329821/b2779/aws.test(77549) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783127112.926] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127112.899] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127112.899] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=2 sandbox_name=demo summaries=2
+[1783127118.645] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2263329821/b2776/scalers.test(77548) -> 0.0.0.0:34863 [policy:- engine:opa] [reason:endpoint 0.0.0.0:34863 is not allowed by any policy]
+[1783127118.648] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2263329821/b2776/scalers.test(77548) -> 0.0.0.0:34863 [policy:- engine:opa] [reason:endpoint 0.0.0.0:34863 is not allowed by any policy]
+[1783127122.908] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127122.904] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127122.905] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=34863
+[1783127122.905] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+[1783127183.420] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged 1 incremental policy operation(s) [version:v5 hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961]
+[1783127183.420] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged incremental policy op: add-endpoint allow_raw_githubusercontent_com_443 endpoints=[raw.githubusercontent.com:443 ports=1] binaries=[/sandbox/opt/go/bin/go, /sandbox/keda/bin/setup-envtest] [version:v5 hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961]
+[1783127183.420] [gateway] [INFO ] [openshell_server::grpc::policy] UpdateConfig: merged incremental policy operations
+[1783127184.657] [gateway] [INFO ] [openshell_server::grpc::policy] ReportPolicyStatus: sandbox reported policy load result
+[1783127184.651] [sandbox] [OCSF ] [ocsf] CONFIG:DETECTED [INFO] Settings poll: config change detected [old_revision:15956693034185524408 new_revision:2252150870987308223 policy_changed:true provider_env_changed:false]
+[1783127184.651] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/usr/local/bin/node container_path=/proc/38/root/usr/local/bin/node pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127184.651] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/sandbox/go/bin/go container_path=/proc/38/root/sandbox/go/bin/go pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127184.652] [sandbox] [OCSF ] [ocsf] CONFIG:LOADED [INFO] Policy reloaded successfully [policy_hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961] [hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961]
+[1783127198.160] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/keda/bin/setup-envtest(78331) -> raw.githubusercontent.com:443 [policy:allow_raw_githubusercontent_com_443 engine:opa]
+[1783127198.176] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://raw.githubusercontent.com:443/kubernetes-sigs/controller-tools/HEAD/envtest-releases.yaml
+[1783127198.242] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://raw.githubusercontent.com:443/kubernetes-sigs/controller-tools/HEAD/envtest-releases.yaml
+[1783127198.258] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(78331) -> github.com:443 [policy:- engine:opa] [reason:binary '/sandbox/keda/bin/setup-envtest' not allowed in policy 'anthropic' (ancestors: [/usr/bin/make -> /usr/bin/bash -> /opt/openshell/bin/openshell-sandbox], cmdline: [/bin/bash]). SYMLINK HINT: the binary path is the kernel-resolved target from /proc/<...]
+[1783127202.128] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2725075591/b2779/aws.test(78547) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783127202.914] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127202.891] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=2 sandbox_name=demo summaries=2
+[1783127202.891] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=3 sandbox_name=demo
+[1783127212.492] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2725075591/b2776/scalers.test(78546) -> 0.0.0.0:36407 [policy:- engine:opa] [reason:endpoint 0.0.0.0:36407 is not allowed by any policy]
+[1783127212.494] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build2725075591/b2776/scalers.test(78546) -> 0.0.0.0:36407 [policy:- engine:opa] [reason:endpoint 0.0.0.0:36407 is not allowed by any policy]
+[1783127212.914] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127212.906] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127212.907] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=36407
+[1783127212.907] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+[1783127389.370] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged 1 incremental policy operation(s) [version:v5 hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961]
+[1783127389.370] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged incremental policy op: add-endpoint allow_raw_githubusercontent_com_443 endpoints=[raw.githubusercontent.com:443 ports=1] binaries=[/sandbox/keda/bin/setup-envtest] [version:v5 hash:c61fa8a6dd0710f624c67b36f477ab9486ccb21c6d126ec56786caf93b669961]
+[1783127389.370] [gateway] [INFO ] [openshell_server::grpc::policy] UpdateConfig: merged incremental policy operations
+[1783127402.656] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/keda/bin/setup-envtest(79348) -> raw.githubusercontent.com:443 [policy:allow_raw_githubusercontent_com_443 engine:opa]
+[1783127402.669] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://raw.githubusercontent.com:443/kubernetes-sigs/controller-tools/HEAD/envtest-releases.yaml
+[1783127402.683] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://raw.githubusercontent.com:443/kubernetes-sigs/controller-tools/HEAD/envtest-releases.yaml
+[1783127402.697] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/keda/bin/setup-envtest(79348) -> github.com:443 [policy:- engine:opa] [reason:binary '/sandbox/keda/bin/setup-envtest' not allowed in policy 'anthropic' (ancestors: [/usr/bin/make -> /usr/bin/bash -> /opt/openshell/bin/openshell-sandbox], cmdline: [/bin/bash]). SYMLINK HINT: the binary path is the kernel-resolved target from /proc/<...]
+[1783127402.903] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127402.891] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=2 sandbox_name=demo
+[1783127402.891] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783127406.578] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build3970656613/b2779/aws.test(79570) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783127412.922] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127412.903] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=1 sandbox_name=demo
+[1783127412.903] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783127417.015] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build3970656613/b2776/scalers.test(79569) -> 0.0.0.0:45043 [policy:- engine:opa] [reason:endpoint 0.0.0.0:45043 is not allowed by any policy]
+[1783127417.018] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build3970656613/b2776/scalers.test(79569) -> 0.0.0.0:45043 [policy:- engine:opa] [reason:endpoint 0.0.0.0:45043 is not allowed by any policy]
+[1783127422.911] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127422.906] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127422.907] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=45043
+[1783127422.907] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+[1783127562.263] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged 1 incremental policy operation(s) [version:v6 hash:8e491a47ac144d4bcb0f7d97c91fb4ad721dd4b7a8492502abf839672fec99f2]
+[1783127562.263] [gateway] [OCSF ] [ocsf] CONFIG:MERGED [INFO] gateway merged incremental policy op: add-endpoint allow_github_com_443 endpoints=[github.com:443 ports=1] binaries=[/sandbox/keda/bin/setup-envtest] [version:v6 hash:8e491a47ac144d4bcb0f7d97c91fb4ad721dd4b7a8492502abf839672fec99f2]
+[1783127562.263] [gateway] [INFO ] [openshell_server::grpc::policy] UpdateConfig: merged incremental policy operations
+[1783127564.804] [gateway] [INFO ] [openshell_server::grpc::policy] ReportPolicyStatus: sandbox reported policy load result
+[1783127564.795] [sandbox] [OCSF ] [ocsf] CONFIG:DETECTED [INFO] Settings poll: config change detected [old_revision:2252150870987308223 new_revision:3911345928995642466 policy_changed:true provider_env_changed:false]
+[1783127564.796] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/usr/local/bin/node container_path=/proc/38/root/usr/local/bin/node pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127564.796] [sandbox] [WARN ] [openshell_supervisor_network::opa] Cannot access container filesystem for symlink resolution: path=/sandbox/go/bin/go container_path=/proc/38/root/sandbox/go/bin/go pid=38 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1783127564.797] [sandbox] [OCSF ] [ocsf] CONFIG:LOADED [INFO] Policy reloaded successfully [policy_hash:8e491a47ac144d4bcb0f7d97c91fb4ad721dd4b7a8492502abf839672fec99f2] [hash:8e491a47ac144d4bcb0f7d97c91fb4ad721dd4b7a8492502abf839672fec99f2]
+
+
+
+[1783127576.314] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/keda/bin/setup-envtest(80385) -> raw.githubusercontent.com:443 [policy:allow_raw_githubusercontent_com_443 engine:opa]
+[1783127576.327] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://raw.githubusercontent.com:443/kubernetes-sigs/controller-tools/HEAD/envtest-releases.yaml
+[1783127576.374] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://raw.githubusercontent.com:443/kubernetes-sigs/controller-tools/HEAD/envtest-releases.yaml
+[1783127576.422] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/keda/bin/setup-envtest(80385) -> github.com:443 [policy:anthropic engine:opa]
+[1783127576.436] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://github.com:443/kubernetes-sigs/controller-tools/releases/download/envtest-v1.35.0/envtest-v1.35.0-linux-arm64.tar.gz
+[1783127576.572] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/keda/bin/setup-envtest(80385) -> release-assets.githubusercontent.com:443 [policy:anthropic engine:opa]
+[1783127576.581] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://release-assets.githubusercontent.com:443/github-production-release-asset/137424839/6a9d496f-c46c-4f9d-84f5-508719685614
+[1783127581.702] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build747771903/b2779/aws.test(80749) -> aps-workspaces.us-west-2.amazonaws.com:443 [policy:- engine:opa] [reason:endpoint aps-workspaces.us-west-2.amazonaws.com:443 is not allowed by any policy]
+[1783127582.908] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127582.892] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=1 network_activity_count=4 sandbox_name=demo
+[1783127582.892] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=demo summaries=1
+[1783127592.121] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build747771903/b2776/scalers.test(80748) -> 0.0.0.0:44345 [policy:- engine:opa] [reason:endpoint 0.0.0.0:44345 is not allowed by any policy]
+[1783127592.125] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /tmp/go-build747771903/b2776/scalers.test(80748) -> 0.0.0.0:44345 [policy:- engine:opa] [reason:endpoint 0.0.0.0:44345 is not allowed by any policy]
+[1783127592.906] [gateway] [INFO ] [openshell_server::grpc::policy] SubmitPolicyAnalysis: persisted draft chunks
+[1783127592.901] [sandbox] [INFO ] [openshell_sandbox::mechanistic_mapper] Skipped proposal for always-blocked destination (SSRF hardening — loopback/link-local/unspecified/metadata) host=0.0.0.0 port=44345
+[1783127592.901] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=0 sandbox_name=demo summaries=1
+[1783127592.901] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=2 network_activity_count=2 sandbox_name=demo
+[1783127710.024] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /sandbox/opt/go/bin/go(81383) -> proxy.golang.org:443 [policy:anthropic engine:opa]
+[1783127710.047] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://proxy.golang.org:443/github.com/klauspost/cpuid/v2/@v/v2.3.0.info
+[1783127712.901] [sandbox] [INFO ] [openshell_sandbox] Flushed activity summary to gateway denied_action_count=0 network_activity_count=1 sandbox_name=demo
+[1783146614.832] [gateway] [INFO ] [openshell_server::grpc::auth_rpc] renewed gateway sandbox JWT
+[1783146614.836] [sandbox] [INFO ] [openshell_core::grpc_client] renewed gateway sandbox JWT in-place
+[1783168646.804] [gateway] [INFO ] [openshell_server::grpc::auth_rpc] renewed gateway sandbox JWT
+[1783168646.805] [sandbox] [INFO ] [openshell_core::grpc_client] renewed gateway sandbox JWT in-place
+[1783170873.450] [sandbox] [OCSF ] [ocsf] NET:CLOSE [INFO] [msg:ssh relay closed (channel_id=1adfc45d-5521-4a0c-aa78-4996e2febb8f, target=unix:/run/openshell/ssh.sock)]
+^C
