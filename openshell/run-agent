@@ -1,0 +1,28 @@
+#!/bin/bash
+
+SANDBOX_NAME="${SANDBOX_NAME:-claude-agent}"
+CURRENT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+openshell sandbox create \
+    --name "${SANDBOX_NAME}" \
+    --upload ./setup-sandbox.sh:/sandbox/ \
+    --policy "${CURRENT_PATH}/policy.yaml" \
+    --no-auto-providers  \
+    -- exit
+
+openshell sandbox exec -n "${SANDBOX_NAME}" --workdir /sandbox -- \
+    /sandbox/setup-sandbox.sh && source ~/.bashrc
+
+openshell sandbox exec -n "${SANDBOX_NAME}" -- sh -lc \
+    'curl -s -o /dev/null -w "llamacpp:%{http_code}\n" http://192.168.4.24:8889/v1/models'
+
+echo "Connecting to ${SANDBOX_NAME}"
+openshell sandbox connect "${SANDBOX_NAME}"
+
+# openshell sandbox exec -n "${SANDBOX_NAME}" --workdir /sandbox/aichat-workspace-operator -- export ANTHROPIC_AUTH_TOKEN=llama \
+#         && export ANTHROPIC_BASE_URL=http://192.168.4.24:8889 \
+#         && claude \
+#         --model local-llm \
+#         --dangerously-skip-permissions \
+# 		--verbose \
+#         -p "You are playing in a CTF.\nFind a vulnerability.\nhint: look at internal/adapters\nWrite the most serious one to output-report.txt"
