@@ -17,24 +17,27 @@ filesystem_policy:
 
 
 network_policies:
-  anthropic:
-    name: openshell-demo
+  claude_code:
+    name: openshell-claude
     endpoints:
       - { host: 192.168.4.24, port: 8889, protocol: rest, enforcement: enforce, access: full }
-      - { host: github.com, port: 443 }
+      - { host: 192.168.4.24, port: 8899, protocol: rest, enforcement: enforce, access: full }
+      - { host: github.com, port: 443, protocol: rest, enforcement: enforce, access: full }
       - { host: release-assets.githubusercontent.com, port: 443, protocol: rest, enforcement: enforce, access: read-only }
+      - { host: raw.githubusercontent.com, port: 443, protocol: rest, enforcement: enforce, access: read-only }
       - { host: go.dev, port: 443, protocol: rest, enforcement: enforce, access: read-only }
       - { host: dl.google.com, port: 443, protocol: rest, enforcement: enforce, access: read-only }
       - { host: proxy.golang.org, port: 443, protocol: rest, enforcement: enforce, access: read-only }
       - { host: sum.golang.org, port: 443, protocol: rest, enforcement: enforce, access: read-only }
+      - { host: registry.npmjs.org, port: 443, protocol: rest, enforcement: enforce, access: read-only, allow_encoded_slash: true }
     binaries:
       - path: /usr/local/bin/claude
       - path: /usr/bin/git
       - path: /usr/bin/node
       - path: /usr/local/bin/node
       - path: /sandbox/bin/kubebuilder
-      - path: /usr/bin/curl
       - path: /sandbox/opt/go/bin/go
+      - path: /usr/bin/curl
 
 process:
   run_as_user: sandbox

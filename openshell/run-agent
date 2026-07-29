@@ -11,10 +11,12 @@ openshell sandbox create \
     -- exit
 
 openshell sandbox exec -n "${SANDBOX_NAME}" --workdir /sandbox -- \
-    /sandbox/setup-sandbox.sh && source ~/.bashrc
+    /sandbox/setup-sandbox.sh
 
 openshell sandbox exec -n "${SANDBOX_NAME}" -- sh -lc \
     'curl -s -o /dev/null -w "llamacpp:%{http_code}\n" http://192.168.4.24:8889/v1/models'
+
+openshell sandbox upload  "${SANDBOX_NAME}" ../claude-code/learn-hooks/hooks.ts /sandbox/
 
 echo "Connecting to ${SANDBOX_NAME}"
 openshell sandbox connect "${SANDBOX_NAME}"

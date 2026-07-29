@@ -13,11 +13,12 @@ ARG BASE_IMAGE=ghcr.io/nvidia/openshell-community/sandboxes/base:latest
 FROM ${BASE_IMAGE}
 
 USER root
-RUN apt-get update && apt-get install -y golang-go \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y golang-go strace unzip sqlite3 \
+    && apt autoremove && apt autoremove && rm -rf /var/lib/apt/lists/*
 
     # Install pi
 RUN npm install -g @earendil-works/pi-coding-agent
+RUN npm install -g @qwen-code/qwen-code@latest
 
 # Copy sandbox policy
 COPY policy.yaml /etc/openshell/policy.yaml

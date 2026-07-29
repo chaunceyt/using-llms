@@ -2,22 +2,6 @@
 
 ## llama-server
 
-### llms used
-
-```
-/Volumes/development2/ggufs/gpt-oss-120b-F16.gguf
-/Volumes/development2/ggufs/Qwen3-Coder-30B-A3B-Instruct-BF16.gguf
-/Volumes/development2/ggufs/Devstral-Small-2507-BF16.gguf
-/Volumes/development2/ggufs/MiniMax-M2-Q4_K_M.gguf
-/Volumes/development2/ggufs/GLM-4.7-Q4_K_M/GLM-4.7-Q4_K_M-00001-of-00005.gguf
-/Volumes/development2/ggufs/mistralai_Devstral-Small-2-24B-Instruct-2512-bf16.gguf
-/Volumes/development2/ggufs/GLM-4.5-Air-Q4_K_M.gguf
-/Volumes/development3/ggufs/MiniMax-M2.1.q6_k.gguf
-/Volumes/development3/ggufs/Devstral-2-123B-Instruct-2512-UD-Q8_K_XL/Devstral-2-123B-Instruct-2512-UD-Q8_K_XL-00001-of-00003.gguf
-/Volumes/development3/ggufs/Nemotron-3-Nano-30B-A3B-BF16.gguf
-/Volumes/development3/ggufs/Qwen3-Coder-480B-A35B-Instruct-1M-Q4_K_M.gguf
-```
-
 This configuration creates a hard limit of 4 server slots each with ~128k context `--ctx-size 524288 -np 4`
 
 ```
@@ -149,4 +133,48 @@ claude --version # 2.1.12 (Claude Code)
 
 claude --model local-llm
 # run /init to generate CLAUDE.md file if does not exist.
+```
+
+# Using CoPilot 
+
+```
+npm install -g @github/copilot
+```
+
+```
+export COPILOT_PROVIDER_TYPE="openai"
+export COPILOT_PROVIDER_BASE_URL="http://192.168.4.24:8899/v1"
+export COPILOT_PROVIDER_API_KEY="llama"
+export COPILOT_MODEL="local-llm"
+export COPILOT_OFFLINE="true"
+```
+
+```
+copilot
+```
+
+Note: use [openshell](openshell) as the agent runtime. 
+
+# Using opencode
+
+`$HOME/.config/opencode/opencode.json`
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "llama-local": {
+      "name": "Llama.cpp (RTX4090)",
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "http://192.168.4.24:8899/v1"
+      },
+      "models": {
+        "local-llm": {
+          "name": "local-llm"
+        }
+      }
+    }
+  }
+}
 ```
