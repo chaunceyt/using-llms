@@ -1,0 +1,102 @@
+# Deploys the namespace-watcher to a cluster.
+#
+# The watcher watches all namespaces cluster-wide and provisions a set of
+# default resources into newly created ones, so it runs as a single replica
+# backed by a cluster-scoped ClusterRole.
+#
+# Replace the image reference in the Deployment with the image you build and
+# push (see Dockerfile / README).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: namespace-watcher-system
+  labels:
+    app.kubernetes.io/name: namespace-watcher
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: namespace-watcher
+  namespace: namespace-watcher-system
+  labels:
+    app.kubernetes.io/name: namespace-watcher
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: namespace-watcher
+  labels:
+    app.kubernetes.io/name: namespace-watcher
+rules:
+  # Watch namespaces cluster-wide.
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]
+  # Create (and read, for idempotency) the default resources in any namespace.
+  - apiGroups: [""]
+    resources: ["limitranges", "resourcequotas", "serviceaccounts"]
+    verbs: ["create", "get", "list"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "rolebindings"]
+    verbs: ["create", "get", "list"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["networkpolicies"]
+    verbs: ["create", "get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: namespace-watcher
+  labels:
+    app.kubernetes.io/name: namespace-watcher
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: namespace-watcher
+subjects:
+  - kind: ServiceAccount
+    name: namespace-watcher
+    namespace: namespace-watcher-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: namespace-watcher
+  namespace: namespace-watcher-system
+  labels:
+    app.kubernetes.io/name: namespace-watcher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: namespace-watcher
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: namespace-watcher
+    spec:
+      serviceAccountName: namespace-watcher
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: namespace-watcher
+          image: ghcr.io/example/namespace-watcher:latest
+          imagePullPolicy: IfNotPresent
+          args:
+            - --log-level=info
+            # Add --backfill to also provision namespaces that already exist
+            # when the watcher first starts.
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi

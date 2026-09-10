@@ -1,0 +1,145 @@
+# Benchmark for Qwen3.8-Flash-Next-UD-Q4_K_XL
+
+benchmark-gguf /Volumes/development3/ggufs/Qwen3.8-Flash-Next/Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf
+Text generation...
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.012 sec
+ggml_metal_library_compile_all: loaded 20 libraries from embedded data in 0.013 sec (max single = 0.012 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple M3 Ultra)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  = 498216.21 MB
+| model                          |       size |     params | backend    | threads |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --------------: | -------------------: |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |      24 |           tg128 |         32.93 ± 0.06 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |      24 |           tg256 |         33.26 ± 0.02 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |      24 |           tg512 |         32.92 ± 0.03 |
+
+build: 458681e1d (10729)
+Prompt processing with different batch sizes
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.009 sec
+ggml_metal_library_compile_all: loaded 20 libraries from embedded data in 0.011 sec (max single = 0.011 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple M3 Ultra)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  = 498216.21 MB
+| model                          |       size |     params | backend    | threads | n_batch |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | ------: | --------------: | -------------------: |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |      24 |     128 |          pp1024 |        448.97 ± 2.75 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |      24 |     256 |          pp1024 |        637.75 ± 3.60 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |      24 |     512 |          pp1024 |        822.43 ± 4.52 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |      24 |    1024 |          pp1024 |        824.07 ± 2.78 |
+
+build: 458681e1d (10729)
+Different numbers of threads...
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.009 sec
+ggml_metal_library_compile_all: loaded 20 libraries from embedded data in 0.011 sec (max single = 0.010 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple M3 Ultra)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  = 498216.21 MB
+| model                          |       size |     params | backend    | threads |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --------------: | -------------------: |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |       1 |            pp64 |        263.83 ± 4.87 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |       1 |            tg16 |         32.81 ± 0.19 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |       2 |            pp64 |        270.10 ± 6.29 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |       2 |            tg16 |         32.85 ± 0.25 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |       4 |            pp64 |        274.50 ± 5.98 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |       4 |            tg16 |         32.79 ± 0.23 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |       8 |            pp64 |        274.19 ± 5.52 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |       8 |            tg16 |         32.75 ± 0.24 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |      16 |            pp64 |        269.94 ± 4.87 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |      16 |            tg16 |         32.66 ± 0.25 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |      32 |            pp64 |        271.76 ± 4.44 |
+| qwen4exp A3B Q4_K - Medium     | 103.68 GiB |   176.94 B | MTL,BLAS   |      32 |            tg16 |         29.17 ± 1.30 |
+
+build: 458681e1d (10729)

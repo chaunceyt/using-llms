@@ -1,0 +1,143 @@
+benchmark-gguf North-Mini-Code-1.0-UD-Q8_K_XL.gguf
+Text generation...
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.009 sec
+ggml_metal_library_compile_all: loaded 20 libraries from embedded data in 0.012 sec (max single = 0.012 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple M3 Ultra)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  = 498216.21 MB
+| model                          |       size |     params | backend    | threads |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --------------: | -------------------: |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |      24 |           tg128 |        108.12 ± 0.35 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |      24 |           tg256 |        107.39 ± 0.48 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |      24 |           tg512 |        106.69 ± 0.50 |
+
+build: 458681e1d (10729)
+Prompt processing with different batch sizes
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.008 sec
+ggml_metal_library_compile_all: loaded 20 libraries from embedded data in 0.010 sec (max single = 0.010 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple M3 Ultra)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  = 498216.21 MB
+| model                          |       size |     params | backend    | threads | n_batch |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | ------: | --------------: | -------------------: |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |      24 |     128 |          pp1024 |       1136.00 ± 1.48 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |      24 |     256 |          pp1024 |       1690.69 ± 5.39 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |      24 |     512 |          pp1024 |       2255.82 ± 7.64 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |      24 |    1024 |          pp1024 |       2255.07 ± 4.98 |
+
+build: 458681e1d (10729)
+Different numbers of threads...
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.007 sec
+ggml_metal_library_compile_all: loaded 20 libraries from embedded data in 0.010 sec (max single = 0.010 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple M3 Ultra)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  = 498216.21 MB
+| model                          |       size |     params | backend    | threads |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --------------: | -------------------: |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |       1 |            pp64 |       689.08 ± 11.97 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |       1 |            tg16 |        106.53 ± 0.99 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |       2 |            pp64 |        685.53 ± 6.14 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |       2 |            tg16 |        107.29 ± 1.11 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |       4 |            pp64 |       691.00 ± 11.52 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |       4 |            tg16 |        107.16 ± 1.32 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |       8 |            pp64 |        688.20 ± 6.78 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |       8 |            tg16 |        107.00 ± 1.18 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |      16 |            pp64 |        688.20 ± 9.67 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |      16 |            tg16 |        106.00 ± 1.68 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |      32 |            pp64 |        686.31 ± 7.51 |
+| cohere2moe 30B.A3B Q8_0        |  30.92 GiB |    30.48 B | MTL,BLAS   |      32 |            tg16 |        108.41 ± 1.07 |
+
+build: 458681e1d (10729)
