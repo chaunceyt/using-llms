@@ -1,0 +1,14 @@
+# Binaries and build output
+bin/
+*.exe
+*.test
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store

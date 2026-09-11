@@ -1,0 +1,7 @@
+# Build artifacts
+/bin/
+*.exe
+
+# Test coverage output
+coverage.out
+*.coverprofile
