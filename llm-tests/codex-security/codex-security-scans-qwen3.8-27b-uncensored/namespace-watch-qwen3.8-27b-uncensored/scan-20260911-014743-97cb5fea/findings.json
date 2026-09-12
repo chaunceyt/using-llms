@@ -1,0 +1,1071 @@
+{
+  "documentType": "codex-security.findings",
+  "findings": [
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "onadd-isdone-skip",
+            "prov-done-mark"
+          ],
+          "outcome": "namespace persists without the cluster's per-tenant containment defaults",
+          "sink": "provisioner `done` map lookup short-circuiting `onAdd`",
+          "source": "tenant Kubernetes API namespace create/delete calls",
+          "summary": "tenant creates namespace -> AddFunc -> onAdd -> IsDone true -> skip (no provisioning) -> namespace exists without defaults",
+          "transformations": "informer Add event for the recreated namespace object"
+        },
+        "impact": {
+          "level": "high",
+          "why": "Defeats the cluster's per-tenant resource containment and default network isolation for the target namespace, enabling cross-tenant resource exhaustion."
+        },
+        "likelihood": {
+          "level": "high",
+          "why": "The state machine makes the outcome deterministic; the only prerequisite is a common tenant permission combination."
+        },
+        "reachability": {
+          "attacker": "cluster tenant with namespaces:create and namespaces:delete",
+          "entrypoint": "Kubernetes API namespace lifecycle (create, delete, recreate)",
+          "evidenceRefs": [
+            "onadd-isdone-skip",
+            "deploy-no-backfill"
+          ],
+          "outcome": "permanently un-quota'd, un-isolated namespace usable for cross-tenant resource exhaustion",
+          "preconditions": "tenant can delete the namespace (or an admin deletes it); watcher running with default new-only mode",
+          "summary": "The attacker needs only namespace create and delete permissions and timing control over their own namespace; no watcher compromise or API-server access is required."
+        },
+        "summary": "A tenant with create and delete permissions on namespaces creates namespace `app-prod` (watcher provisions defaults), deletes it, and recreates `app-prod`. The recreation is skipped by the stale `done` entry, so the tenant now operates in a namespace with no ResourceQuota, no LimitRange, and no NetworkPolicy, and can exhaust cluster resources against other tenants."
+      },
+      "codeEvidence": [
+        {
+          "code": "func (p *Provisioner) Provision(ctx context.Context, namespace string) error {\n\tp.mu.Lock()\n\tif _, ok := p.done[namespace]; ok {\n\t\tp.mu.Unlock()\n\t\tp.log.Debug(\"skipping already-provisioned namespace\", \"namespace\", namespace)\n\t\treturn nil\n\t}\n\tp.done[namespace] = struct{}{}\n\tp.mu.Unlock()",
+          "endLine": 61,
+          "explanation": "The namespace name is inserted into `done` before the six resource creates run. Nothing ever removes the entry: no namespace delete handler exists and no code path calls `delete` on the map, so the state outlives the namespace itself.",
+          "id": "prov-done-mark",
+          "label": "Provision marks the namespace done before creating any resource",
+          "language": "go",
+          "path": "internal/provisioner/provisioner.go",
+          "role": "root_control",
+          "startLine": 53
+        },
+        {
+          "code": "\tw.queueMu.Lock()\n\tif w.provisioner.IsDone(name) {\n\t\tw.queueMu.Unlock()\n\t\treturn\n\t}\n\tif _, inflight := w.inflight[name]; inflight {\n\t\tw.queueMu.Unlock()\n\t\treturn\n\t}\n\tw.inflight[name] = struct{}{}\n\tw.queueMu.Unlock()",
+          "endLine": 186,
+          "explanation": "When the recreated namespace's Add event fires, `IsDone(name)` returns true from the first lifecycle, so the watcher returns without provisioning. The recreation is never enqueued.",
+          "id": "onadd-isdone-skip",
+          "label": "onAdd skips any namespace the provisioner considers done",
+          "language": "go",
+          "path": "internal/watcher/watcher.go",
+          "role": "propagation",
+          "startLine": 176
+        },
+        {
+          "code": "\tif _, err := w.nsInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{\n\t\tAddFunc: w.onAdd,\n\t}); err != nil {\n\t\treturn fmt.Errorf(\"add namespace event handler: %w\", err)\n\t}",
+          "endLine": 104,
+          "explanation": "No `DeleteFunc` (or `UpdateFunc`) is registered, so namespace deletion produces no state reset and no re-provisioning trigger. A delete handler that clears the `done` entry is the missing control.",
+          "id": "addfunc-only",
+          "label": "Only an Add event handler is registered",
+          "language": "go",
+          "path": "internal/watcher/watcher.go",
+          "role": "expected_control",
+          "startLine": 100
+        },
+        {
+          "code": "          args:\n            - --log-level=info\n            # Add --backfill to also provision namespaces that already exist\n            # when the watcher first starts.",
+          "endLine": 90,
+          "explanation": "The shipped manifest runs in new-only mode. After a watcher restart, the recreated namespace is captured into the `known` set (watcher.go:139-152) and skipped, so the escape persists across restarts unless an operator switches to `--backfill`.",
+          "id": "deploy-no-backfill",
+          "label": "Deployment does not enable backfill",
+          "language": "yaml",
+          "path": "deploy/namespace-watcher.yaml",
+          "role": "evidence",
+          "startLine": 87
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "All code paths were read in full: the `done` map is written before the object loop (provisioner.go:60), is only ever read (no `delete(p.done, ...)` anywhere), `onAdd` checks `IsDone` and returns (watcher.go:177-180), and only an `AddFunc` handler is registered (watcher.go:100-104). Grep across the repository confirms no delete/update informer handler and no map reset. The only runtime assumption is the tenant RBAC profile (create+delete on namespaces), which is recorded as a precondition."
+      },
+      "findingId": "csf_2d93adc68011c5ce8a7bcaff",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:4a2f133dca21939a2c1da4a5b8a8a21880941756e51a59d85a15b28d8b0354ba"
+      },
+      "identity": {
+        "anchor": "internal/provisioner/provisioner.go/provision-done-map"
+      },
+      "locations": [
+        {
+          "endLine": 80,
+          "path": "internal/provisioner/provisioner.go",
+          "role": "root_control",
+          "startLine": 53
+        },
+        {
+          "endLine": 194,
+          "path": "internal/watcher/watcher.go",
+          "role": "entrypoint",
+          "startLine": 156
+        },
+        {
+          "endLine": 104,
+          "path": "internal/watcher/watcher.go",
+          "role": "propagation",
+          "startLine": 100
+        },
+        {
+          "endLine": 90,
+          "path": "deploy/namespace-watcher.yaml",
+          "role": "evidence",
+          "startLine": 87
+        }
+      ],
+      "occurrenceId": "occ_cf97be19fa778e7c20c149cd",
+      "preventiveControls": [
+        "Key one-time provisioning state by namespace UID rather than name, or persist it with the namespace (annotation/label) so it is deleted with the namespace."
+      ],
+      "provenance": {
+        "source": "code-review"
+      },
+      "remediation": "Reconcile provisioning state with the namespace lifecycle: register a namespace delete handler that removes the name from the provisioner's done set (or key state by namespace UID and re-provision on Add), and requeue namespaces whose provisioning failed so a transient error cannot permanently skip them.",
+      "remediationTests": [
+        "Test: provision namespace X, delete it, recreate it, and assert the six default resources exist again.",
+        "Test: restart the watcher in new-only mode after a delete/recreate cycle and assert the namespace is provisioned."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "prov-done-mark",
+          "onadd-isdone-skip",
+          "addfunc-only",
+          "deploy-no-backfill"
+        ],
+        "summary": "The security invariant is that every namespace that exists carries the provisioner's default ResourceQuota, LimitRange, and NetworkPolicy. The state that enforces one-time provisioning is an in-memory map keyed by namespace name (`done`), which is written before the creates and is never reconciled against the actual namespace lifecycle: there is no delete handler, no periodic re-list, and no retry. Deleting and recreating a namespace destroys the six objects (Kubernetes garbage collection) while the `done` entry survives, so the next Add event is discarded and the invariant is silently broken for the remainder of the process lifetime."
+      },
+      "ruleId": "insecure-design.namespace-recreate-escape",
+      "severity": {
+        "changeConditions": "Raise to critical if the cluster relies solely on this watcher for tenant resource containment with no compensating admission controller or cluster-level quotas. Lower to medium if tenants cannot delete namespaces or if compensating cluster-level quotas bound per-namespace consumption.",
+        "level": "high",
+        "rationale": "Impact is high: the tool's stated purpose is to give every new namespace resource containment (ResourceQuota/LimitRange) and network-isolation defaults; a tenant who defeats it for their namespace can consume unbounded cluster resources (cross-tenant DoS) and operates without the default NetworkPolicy. Likelihood is high: the attack is deterministic and requires only create and delete permissions on namespaces, a common tenant permission set in multi-tenant clusters. The deployed manifest omits `--backfill`, so the escape persists across watcher restarts."
+      },
+      "summary": "The watcher keys its provisioning state in an in-memory `done` map by namespace name and never clears it; no namespace delete handler is registered and no reconciliation exists. `onAdd` short-circuits when `provisioner.IsDone(name)` is true, so a namespace that was provisioned once, then deleted and recreated with the same name, is skipped for the watcher's entire lifetime. Its ResourceQuota, LimitRange, and NetworkPolicy were garbage-collected with the deleted namespace, leaving the recreation without any of the cluster's per-tenant containment defaults. With the deployed default (no `--backfill` in deploy/namespace-watcher.yaml), the escape also survives a process restart because the recreated namespace is captured into the `known` set at startup and treated as pre-existing.",
+      "taxonomy": {
+        "category": "insecure_design",
+        "cwe": [
+          "CWE-1188"
+        ]
+      },
+      "title": "Security defaults are never reapplied to a namespace that is deleted and recreated with the same name",
+      "validation": {
+        "assertions": [
+          "The `done` map entry for a provisioned namespace is never removed for the process lifetime.",
+          "No informer delete or update handler is registered, so namespace deletion cannot trigger re-provisioning.",
+          "In new-only mode (the deployed default), a restarted watcher treats the recreated namespace as pre-existing and skips it."
+        ],
+        "conclusion": "valid",
+        "counterevidence": "If a cluster runs the watcher with `--backfill` and restarts it after the recreation, the namespace would be provisioned again; if a separate admission controller enforces quotas, the impact is bounded. Neither compensating control exists in this repository, and the shipped manifest uses new-only mode.",
+        "evidenceRefs": [
+          "prov-done-mark",
+          "onadd-isdone-skip",
+          "addfunc-only"
+        ],
+        "limitations": [
+          "Exploitability in a specific cluster depends on the tenant RBAC profile (create + delete on namespaces), which is outside this repository."
+        ],
+        "method": "static source trace of the full watcher/provisioner state machine",
+        "summary": "Traced the namespace lifecycle through the source: (1) first lifecycle creates the six objects and leaves `done[name]` set; (2) namespace deletion removes the objects via cluster garbage collection and fires no handler, because only `AddFunc` is registered (watcher.go:100-104) and grep confirms no `DeleteFunc`/`UpdateFunc` and no `delete(p.done, ...)` anywhere; (3) recreation fires Add for the new object, `onAdd` calls `provisioner.IsDone(name)` (watcher.go:177) which returns true, and the function returns before enqueueing; (4) on process restart without `--backfill`, `captureExisting` records the namespace in `known` (watcher.go:143-149) and `onAdd` skips known namespaces (watcher.go:169-171). No code path re-provisions the namespace."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "prov-done-before-create",
+            "watcher-run-logs-only"
+          ],
+          "outcome": "namespace permanently missing one or more default security resources",
+          "sink": "stale `done` map entry blocking re-provisioning",
+          "source": "transient Kubernetes API failure during create",
+          "summary": "namespace Add event -> Provision marks done -> one of six creates fails -> error logged only -> IsDone true blocks all future attempts",
+          "transformations": "joined error returned to the worker, which logs it"
+        },
+        "impact": {
+          "level": "medium",
+          "why": "Permanent loss of specific security defaults (isolation or containment) for affected namespaces, with no automatic recovery."
+        },
+        "likelihood": {
+          "level": "medium",
+          "why": "Transient API errors are common in Kubernetes; the six sequential creates widen the window, and backfill startups concentrate risk."
+        },
+        "reachability": {
+          "attacker": "any actor able to induce a transient API failure, or an operator whose config makes one create invalid",
+          "entrypoint": "namespace creation while an API error affects the create path",
+          "evidenceRefs": [
+            "prov-done-before-create"
+          ],
+          "outcome": "silently degraded security defaults for the namespace",
+          "preconditions": "at least one of the six creates fails; new-only mode or no restart with --backfill",
+          "summary": "No special attacker capability is needed to trigger the state (any API error suffices); deliberate triggering requires timing or a misconfigured default."
+        },
+        "summary": "Any actor able to cause a transient API failure (or an operator misconfiguration that makes one of the six creates invalid, e.g. an unsupported default value) can leave a namespace with missing security defaults; a tenant who can time a namespace creation to coincide with an API blip achieves the same. The namespace then lacks whichever resources failed to create, permanently."
+      },
+      "codeEvidence": [
+        {
+          "code": "\tp.done[namespace] = struct{}{}\n\tp.mu.Unlock()\n\n\tp.log.Info(\"provisioning namespace\", \"namespace\", namespace)\n\n\tvar errs []error\n\tfor _, obj := range Objects(namespace, p.cfg) {\n\t\tif err := p.createObject(ctx, obj); err != nil {\n\t\t\terrs = append(errs, fmt.Errorf(\"%s/%s: %w\", obj.GetKind(), obj.GetName(), err))\n\t\t}\n\t}\n\tif len(errs) > 0 {\n\t\treturn errors.Join(errs...)\n\t}",
+          "endLine": 73,
+          "explanation": "The `done` entry is set before any object is created. When a create fails, the joined error is returned but the entry is never removed, so every later `IsDone` check reports the namespace as handled.",
+          "id": "prov-done-before-create",
+          "label": "done is marked before the create loop",
+          "language": "go",
+          "path": "internal/provisioner/provisioner.go",
+          "role": "root_control",
+          "startLine": 58
+        },
+        {
+          "code": "func (w *Watcher) run(ctx context.Context, name string) {\n\tdefer func() {\n\t\tw.queueMu.Lock()\n\t\tdelete(w.inflight, name)\n\t\tw.queueMu.Unlock()\n\t}()\n\tif err := w.provisioner.Provision(ctx, name); err != nil {\n\t\tw.log.Error(\"failed to provision namespace\", \"namespace\", name, \"err\", err)\n\t}",
+          "endLine": 230,
+          "explanation": "The only consumer of the error is the log line. The `inflight` marker is cleared but the `done` marker is not, and there is no requeue, backoff, or retry, so the failure is terminal for the process lifetime.",
+          "id": "watcher-run-logs-only",
+          "label": "The worker logs the error and drops it",
+          "language": "go",
+          "path": "internal/watcher/watcher.go",
+          "role": "outcome",
+          "startLine": 221
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Directly proven by the source: `p.done[namespace] = struct{}{}` at provisioner.go:60 precedes the create loop (lines 66-70); errors are joined and returned (lines 71-73) without touching `done`; `watcher.run` (watcher.go:221-230) only logs the error and clears `inflight`; `onAdd` will never re-enqueue the name because `IsDone` is true."
+      },
+      "findingId": "csf_a79f16b0c1e7bc22f1e24f17",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:666fcb62cb77bec2fd8607bf105ce59365bbac18e82f6484895ea1c9a222e5c8"
+      },
+      "identity": {
+        "anchor": "internal/provisioner/provisioner.go/provision-error-handling"
+      },
+      "locations": [
+        {
+          "endLine": 79,
+          "path": "internal/provisioner/provisioner.go",
+          "role": "root_control",
+          "startLine": 53
+        },
+        {
+          "endLine": 230,
+          "path": "internal/watcher/watcher.go",
+          "role": "entrypoint",
+          "startLine": 221
+        }
+      ],
+      "occurrenceId": "occ_b2addff69be52556f1eed65c",
+      "preventiveControls": [
+        "Use a work queue with retry/backoff semantics (e.g. client-go workqueue) instead of a plain channel plus in-memory done map.",
+        "Alert on the 'failed to provision namespace' log line so partial states are observable."
+      ],
+      "provenance": {
+        "source": "code-review"
+      },
+      "remediation": "Mark the namespace done only after all six creates succeed; on failure, leave the name un-done (or move it to a failure set) and requeue it with backoff so the next event or a periodic reconcile retries provisioning.",
+      "remediationTests": [
+        "Test: inject a create failure on the third object and assert the namespace is eventually fully provisioned after the API recovers.",
+        "Test: assert a namespace whose NetworkPolicy create fails is re-attempted and ends with all six resources."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "prov-done-before-create",
+          "watcher-run-logs-only"
+        ],
+        "summary": "The violated invariant is that every namespace ends with all six default resources. `Provision` treats the `done` map as a claim token acquired before the work is attempted instead of a completion record, and the caller has no retry mechanism. A mid-loop API failure therefore leaves a permanent partial state that no later event can repair."
+      },
+      "ruleId": "insecure-design.provision-failure-no-retry",
+      "severity": {
+        "changeConditions": "Raise to high if the cluster treats the NetworkPolicy as the primary tenant-isolation control and no other policy exists; lower to low if operators routinely run `--backfill` after failures or monitor the error log for re-provisioning.",
+        "level": "medium",
+        "rationale": "Impact is medium: one or more security defaults are missing from the affected namespace (network isolation or resource containment, depending on which create failed), and the gap is invisible except in logs. Likelihood is medium: a single transient API failure during the six sequential creates is enough, and the create loop widens the failure window; a cluster API blip during backfill can hit many namespaces at once."
+      },
+      "summary": "`Provision` inserts the namespace into the `done` map before the six create calls and never rolls it back when any create fails. The watcher's `run` only logs the returned error and clears the in-flight marker, so a namespace hit by a transient API error (5xx, timeout, 422 from a malformed default, RBAC denial) is left partially provisioned and is never retried for the process lifetime. For example, if the LimitRange and ResourceQuota creates succeed and the NetworkPolicy create fails, the namespace keeps its quota but silently loses its default network isolation permanently.",
+      "taxonomy": {
+        "category": "insecure_design",
+        "cwe": [
+          "CWE-1188",
+          "CWE-754"
+        ]
+      },
+      "title": "A failed resource creation permanently marks the namespace provisioned with no retry",
+      "validation": {
+        "assertions": [
+          "A single failed create among the six leaves the namespace permanently partially provisioned.",
+          "AlreadyExists errors are treated as success, so only genuine API failures trigger the gap."
+        ],
+        "conclusion": "valid",
+        "counterevidence": "A watcher restart with `--backfill` would re-attempt the namespace (the in-memory `done` map resets), so the gap is bounded by the process lifetime in backfill deployments. The shipped manifest uses new-only mode.",
+        "evidenceRefs": [
+          "prov-done-before-create",
+          "watcher-run-logs-only"
+        ],
+        "limitations": [
+          "No live cluster reproduction was performed; the failure modes are the standard Kubernetes API error set."
+        ],
+        "method": "static source trace of the error path",
+        "summary": "Verified the full failure path: `createObject` returns any non-AlreadyExists error (provisioner.go:103-124); `Provision` joins and returns it after the loop (provisioner.go:71-73) while `done` remains set (provisioner.go:60); `watcher.run` logs and clears only `inflight` (watcher.go:221-230); `onAdd` then skips the namespace via `IsDone` (watcher.go:177-180). No requeue, timer, or periodic reconciliation exists anywhere in the repository."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "already-exists-skip",
+            "fixed-names",
+            "queue-bounded"
+          ],
+          "outcome": "cluster's enforced default for the namespace is attacker-authored",
+          "sink": "AlreadyExists-as-success path in createObject",
+          "source": "tenant Kubernetes API create calls (namespace, then same-named resource)",
+          "summary": "tenant creates namespace -> tenant creates same-named resource -> watcher create gets 409 -> treated as success -> done marked -> attacker's object is the effective default",
+          "transformations": "watcher enqueue delay via bounded queue"
+        },
+        "impact": {
+          "level": "medium",
+          "why": "Defeats the enforced default for the chosen resource type in the attacker's namespace while the operator's records show provisioning succeeded."
+        },
+        "likelihood": {
+          "level": "medium",
+          "why": "Common tenant permission profile plus a winnable, attacker-favorable race; the attacker can enlarge the window at will."
+        },
+        "reachability": {
+          "attacker": "cluster tenant with create permission on the target resource type inside their namespace",
+          "entrypoint": "Kubernetes API creates in the freshly created namespace",
+          "evidenceRefs": [
+            "already-exists-skip",
+            "fixed-names"
+          ],
+          "outcome": "permissive attacker-authored default stands in for the enforced default",
+          "preconditions": "tenant can create resourcequotas/networkpolicies (etc.) in their namespace; watcher's create arrives after the tenant's",
+          "summary": "Requires only intra-namespace create permission plus timing; no privilege escalation or watcher compromise."
+        },
+        "summary": "A tenant with create permission on resourcequotas (or networkpolicies) in their own namespace creates namespace `x`, immediately creates a `production-quota` with permissive values (e.g. 10000 CPU, 1000 pods), and optionally floods other namespace creates to delay the watcher. The watcher's quota create returns 409, is treated as success, and `x` is recorded provisioned with the attacker's quota as the enforced default."
+      },
+      "codeEvidence": [
+        {
+          "code": "\t_, err = p.client.Resource(mapping.Resource).Namespace(obj.GetNamespace()).\n\t\tCreate(ctx, obj, metav1.CreateOptions{})\n\tif err != nil {\n\t\tif apierrors.IsAlreadyExists(err) {\n\t\t\tp.log.Debug(\"resource already exists, skipping\",\n\t\t\t\t\"kind\", obj.GetKind(), \"name\", obj.GetName())\n\t\t\treturn nil\n\t\t}\n\t\treturn err\n\t}",
+          "endLine": 119,
+          "explanation": "When the create returns AlreadyExists, the provisioner logs and returns success without reading the existing object back or comparing its labels/spec to the intended template. Whatever object holds the name is now accepted as the default.",
+          "id": "already-exists-skip",
+          "label": "AlreadyExists is treated as success with no ownership check",
+          "language": "go",
+          "path": "internal/provisioner/provisioner.go",
+          "role": "root_control",
+          "startLine": 110
+        },
+        {
+          "code": "\t\tLimitRange: LimitRangeDefaults{\n\t\t\tName:                 \"default-limits\",\n\t\t\tDefaultMemory:        \"256Mi\",\n\t\t\tDefaultCPU:           \"500m\",\n\t\t\tDefaultRequestMemory: \"128Mi\",\n\t\t\tDefaultRequestCPU:    \"100m\",\n\t\t\tMaxMemory:            \"2Gi\",\n\t\t\tMaxCPU:               \"2\",\n\t\t},",
+          "endLine": 114,
+          "explanation": "All six names (default-limits, production-quota, myapp-sa, myapp-role, myapp-rolebinding, myapp-network-policy) are constants known to any tenant, so a same-name collision is trivially predictable.",
+          "id": "fixed-names",
+          "label": "Resource names are fixed and predictable",
+          "language": "go",
+          "path": "internal/config/config.go",
+          "role": "evidence",
+          "startLine": 106
+        },
+        {
+          "code": "const defaultQueueSize = 1024",
+          "endLine": 26,
+          "explanation": "The namespace sits in a 1024-deep queue behind other creations; a tenant flooding namespace creates pushes their target namespace deep in the queue, giving the tenant seconds to minutes to win the name race.",
+          "id": "queue-bounded",
+          "label": "Bounded enqueue channel widens the race window",
+          "language": "go",
+          "path": "internal/watcher/watcher.go",
+          "role": "evidence",
+          "startLine": 26
+        }
+      ],
+      "confidence": {
+        "level": "medium",
+        "rationale": "The source proves the mechanism: fixed names (config.go:106-154), AlreadyExists treated as success with no read-back or label check (provisioner.go:110-119), and the `managed-by` label is never compared against existing objects (it appears only in config.go and templates.go, never in a GET or verification). Confidence is medium rather than high because exploitability depends on the tenant RBAC profile and relative API timing, both outside the repository."
+      },
+      "findingId": "csf_70b5e1de4726af419a3bc512",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:d19e14df95333915b0b8ffd410d9e973460b7279674b18304577c2771ab123e4"
+      },
+      "identity": {
+        "anchor": "internal/provisioner/provisioner.go/create-object-already-exists"
+      },
+      "locations": [
+        {
+          "endLine": 124,
+          "path": "internal/provisioner/provisioner.go",
+          "role": "root_control",
+          "startLine": 103
+        },
+        {
+          "endLine": 137,
+          "path": "internal/config/config.go",
+          "role": "evidence",
+          "startLine": 106
+        },
+        {
+          "endLine": 26,
+          "path": "internal/watcher/watcher.go",
+          "role": "evidence",
+          "startLine": 26
+        }
+      ],
+      "occurrenceId": "occ_d1ba70419ad3661340103751",
+      "preventiveControls": [
+        "Select owned objects by label rather than by fixed name, so a tenant cannot squat the exact name the watcher would use."
+      ],
+      "provenance": {
+        "source": "code-review"
+      },
+      "remediation": "On AlreadyExists, read the existing object back and verify it carries the `app.kubernetes.io/managed-by: namespace-watcher` label and the expected spec; if not, record a conflict (or adopt/overwrite per policy) instead of treating it as success.",
+      "remediationTests": [
+        "Test: pre-create a same-named ResourceQuota without the managed-by label and assert the watcher does not mark the namespace provisioned (or reports the conflict).",
+        "Test: pre-create a same-named object with the correct label and spec and assert it is accepted as the default."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "already-exists-skip",
+          "fixed-names",
+          "queue-bounded"
+        ],
+        "summary": "The violated invariant is that the objects holding the fixed default names are the ones the watcher intends. Idempotency is implemented by trusting the error code: AlreadyExists is assumed to mean 'our object is already here', but the name is the only claim to the object and anyone with create permission in the namespace can hold it first. The `managed-by` label that would distinguish watcher-owned objects is stamped but never verified."
+      },
+      "ruleId": "insecure-design.default-name-spoofing",
+      "severity": {
+        "changeConditions": "Raise to high for tenants who can create resourcequotas and networkpolicies but not update or delete them (the race is then their only escape and they cannot simply delete the watcher's objects); lower to low if tenants have no intra-namespace create permissions.",
+        "level": "medium",
+        "rationale": "Impact is medium: the tenant replaces the enforced default for the chosen resource type with a self-authored permissive object, defeating the containment/isolation intent for their namespace while the operator believes defaults are applied. Likelihood is medium: it requires a tenant who can create the resource type inside their namespace (a common multi-tenant pattern) and winning a timing race, which the attacker can favor by loading the queue."
+      },
+      "summary": "The watcher creates six resources with fixed names (production-quota, default-limits, myapp-sa, myapp-role, myapp-rolebinding, myapp-network-policy) and treats an AlreadyExists create error as success without verifying the pre-existing object is the one it would have created. The `app.kubernetes.io/managed-by` label is stamped onto the templates but never checked against existing objects. A namespace creator who also has create permission on the target resource type inside their namespace can race the watcher: create the namespace, then immediately create a permissive `production-quota` (or a lenient `myapp-network-policy`). The watcher's create returns 409, is treated as success, and the namespace is recorded done with the attacker's object as the effective default. The attacker can widen the race window arbitrarily by congesting the 1024-entry enqueue channel with other namespace creations.",
+      "taxonomy": {
+        "category": "insecure_design",
+        "cwe": [
+          "CWE-345"
+        ]
+      },
+      "title": "Pre-created same-named resources masquerade as the watcher defaults (no ownership verification)",
+      "validation": {
+        "assertions": [
+          "A same-named object created before the watcher's create is accepted as the default and the namespace is marked done.",
+          "The attacker can control the delay between namespace creation and the watcher's creates by loading the queue."
+        ],
+        "conclusion": "valid",
+        "counterevidence": "If the watcher's create lands first, the attacker's create fails with 409 and the watcher's default stands (the attacker would then need update/delete permission to weaken it). The finding therefore applies to resource types the attacker can create but not necessarily modify.",
+        "evidenceRefs": [
+          "already-exists-skip",
+          "fixed-names"
+        ],
+        "limitations": [
+          "Exploitability depends on the tenant RBAC profile (intra-namespace create permission on the target resource type), which is outside this repository."
+        ],
+        "method": "static source trace plus race-window analysis",
+        "summary": "Verified: (1) names are fixed constants (config.go); (2) the create path treats AlreadyExists as success with no GET/label verification (provisioner.go:110-119); (3) the watcher's path from namespace Add event to create includes informer delivery plus queue latency (watcher.go:156-194), while the attacker's create is a direct single API call immediately after their namespace create returns, so the attacker's object typically lands first; (4) queue congestion (1024 entries) lets the attacker extend the delay arbitrarily. Grep confirms the managed-by label is never read back from existing objects anywhere."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "blocking-enqueue",
+            "queue-size"
+          ],
+          "outcome": "cluster-wide delay of security-default provisioning",
+          "sink": "blocking channel send in onAdd",
+          "source": "scripted Kubernetes API namespace creates",
+          "summary": "high-rate namespace creates -> informer Add events -> onAdd blocks on full queue -> dispatch loop stalls -> later namespaces' defaults delayed",
+          "transformations": "informer event delivery into the bounded channel"
+        },
+        "impact": {
+          "level": "low",
+          "why": "Availability delay of the default-applicator under sustained load; provisioning is eventually applied once the burst ends."
+        },
+        "likelihood": {
+          "level": "medium",
+          "why": "Achievable with a scripted client and common permissions, but requires maintaining a high creation rate."
+        },
+        "reachability": {
+          "attacker": "cluster tenant with namespaces:create",
+          "entrypoint": "Kubernetes API namespace creates",
+          "evidenceRefs": [
+            "blocking-enqueue"
+          ],
+          "outcome": "delayed (not lost) application of security defaults for all namespaces during the burst",
+          "preconditions": "sustained creation rate above the worker drain rate",
+          "summary": "Requires only namespace-create permission and a sustained creation rate; no other capability."
+        },
+        "summary": "An attacker with namespace-create permission runs a scripted loop creating namespaces faster than ~4 workers x (1/6-create latency) can drain. The 1024-entry queue fills, `onAdd` blocks, and all subsequent namespace Add events (including other tenants') are held until the attacker slows down, delaying cluster-wide application of security defaults."
+      },
+      "codeEvidence": [
+        {
+          "code": "\t// Enqueue for a worker; blocks only if the queue is full, and drops only\n\t// on shutdown.\n\tselect {\n\tcase w.queue <- name:\n\tcase <-w.ctxDone():\n\t}",
+          "endLine": 194,
+          "explanation": "With a full queue the select has no other ready case (the context is not done), so the handler goroutine blocks until a worker consumes an item. Because the informer dispatches handlers synchronously, this halts processing of all subsequent namespace events.",
+          "id": "blocking-enqueue",
+          "label": "onAdd blocks when the queue is full",
+          "language": "go",
+          "path": "internal/watcher/watcher.go",
+          "role": "root_control",
+          "startLine": 188
+        },
+        {
+          "code": "const defaultQueueSize = 1024",
+          "endLine": 26,
+          "explanation": "The attacker needs only to keep more than 1024 namespaces in flight ahead of the drain rate to hold the informer stalled.",
+          "id": "queue-size",
+          "label": "Queue capacity is 1024",
+          "language": "go",
+          "path": "internal/watcher/watcher.go",
+          "role": "evidence",
+          "startLine": 26
+        },
+        {
+          "code": "- **client-go informer** on `v1/namespaces` for watching. Events are fanned out\n  to a **bounded work queue** processed by a small pool of workers, so a burst\n  of namespace creations never blocks the informer and work is deduplicated per\n  namespace.",
+          "endLine": 67,
+          "explanation": "The documented invariant is false under a sustained rate that fills the bounded channel: the handler blocks, which by construction stalls the informer's event delivery for namespaces.",
+          "id": "readme-claim",
+          "label": "Documented claim that bursts never block the informer",
+          "language": "markdown",
+          "path": "README.md",
+          "role": "evidence",
+          "startLine": 64
+        }
+      ],
+      "confidence": {
+        "level": "medium",
+        "rationale": "The blocking semantics are proven in source: the handler is registered synchronously (watcher.go:100-104) and blocks on a full channel (watcher.go:190-193). The claim that this stalls informer-wide event dispatch relies on standard client-go SharedInformer behavior (single dispatch goroutine per listener), which was not verified against a local copy of the client-go source in this offline scan; the drain-rate estimate likewise depends on cluster API latency."
+      },
+      "findingId": "csf_12716f797271f3cf0bbd1d7e",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:e4a45ffbca416995f032b2a55dee19773efd7668893fd21bcb80bba20475f253"
+      },
+      "identity": {
+        "anchor": "internal/watcher/watcher.go/on-add-enqueue"
+      },
+      "locations": [
+        {
+          "endLine": 193,
+          "path": "internal/watcher/watcher.go",
+          "role": "root_control",
+          "startLine": 190
+        },
+        {
+          "endLine": 26,
+          "path": "internal/watcher/watcher.go",
+          "role": "evidence",
+          "startLine": 26
+        },
+        {
+          "endLine": 67,
+          "path": "README.md",
+          "role": "evidence",
+          "startLine": 64
+        }
+      ],
+      "occurrenceId": "occ_99715c4e41a1a79e3a08c749",
+      "preventiveControls": [
+        "Expose queue depth and event-age metrics with alerts so sustained saturation is observable.",
+        "Correct the README invariant to describe the actual backpressure behavior."
+      ],
+      "provenance": {
+        "source": "code-review"
+      },
+      "remediation": "Make enqueue non-blocking: on a full queue, drop the event into a retry set and requeue via a periodic namespace re-list (or use a client-go workqueue with rate-limited retries), so the informer dispatch loop never blocks on worker drain rate.",
+      "remediationTests": [
+        "Test: enqueue 2048 namespaces faster than the workers drain and assert informer event delivery (e.g. a control Add callback) continues without stalling.",
+        "Test: assert every namespace created during a saturating burst is eventually provisioned."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "blocking-enqueue",
+          "queue-size",
+          "readme-claim"
+        ],
+        "summary": "The violated invariant is that namespace event processing stays responsive under load. The 'bounded queue' is bounded only in memory; its consumer is slow (six sequential API calls per namespace across 4 workers) and its producer is synchronous with the informer dispatch loop, so backpressure propagates into the watch-event pipeline instead of being absorbed by a requeue mechanism."
+      },
+      "ruleId": "resource-exhaustion.informer-event-stall",
+      "severity": {
+        "changeConditions": "Raise to medium if default-application latency is a security requirement (e.g. namespaces must be isolated before workloads run) and the cluster has no admission-time isolation.",
+        "level": "low",
+        "rationale": "Impact is low-to-medium: the stall delays (does not lose) provisioning; once the burst ends the queue drains and defaults are applied. The attacker can also keep the watcher's CPU and the API-server watch channel busy. Likelihood is medium: it requires a sustained creation rate above the drain rate (roughly the 4 workers x six sequential API creates), which is achievable with a scripted client but not trivial."
+      },
+      "summary": "`onAdd` blocks on the bounded 1024-entry channel when it is full (`select { case w.queue <- name: case <-w.ctxDone(): }`), and client-go SharedInformer invokes event handlers synchronously in its dispatch loop. A sustained namespace-creation rate that outruns the 4 workers' drain rate therefore stalls all namespace event processing, contrary to the code and README claim that a burst 'never blocks the informer'. Consequence: security defaults for every subsequent namespace (including other tenants') are delayed for as long as the burst lasts, and the API-server watch buffer absorbs the backpressure.",
+      "taxonomy": {
+        "category": "resource_exhaustion",
+        "cwe": [
+          "CWE-400"
+        ]
+      },
+      "title": "Sustained namespace-creation bursts block the informer event loop and delay all default provisioning",
+      "validation": {
+        "assertions": [
+          "A full queue blocks the Add handler, which blocks informer event delivery for namespaces.",
+          "Items are not dropped (except on shutdown), so provisioning is delayed rather than lost."
+        ],
+        "conclusion": "valid",
+        "counterevidence": "If the API server's watch buffer overflows under the stalled read, the watch is re-established and the informer relists, which bounds unbounded memory growth; this does not remove the delay, it only recovers the pipeline.",
+        "evidenceRefs": [
+          "blocking-enqueue",
+          "queue-size"
+        ],
+        "limitations": [
+          "The exact stall duration depends on cluster API latency and attacker rate, which are runtime properties; the client-go dispatch behavior is established framework semantics, not re-derived from vendored source in this offline scan."
+        ],
+        "method": "static source trace of the enqueue path plus client-go dispatch semantics",
+        "summary": "Verified the handler is registered as a plain `AddFunc` with no goroutine boundary (watcher.go:100-104), the enqueue select blocks on a full channel (watcher.go:190-193), and the queue holds at most 1024 names (watcher.go:26, 85). No metrics, drop policy, or requeue exists for items that cannot be enqueued. client-go SharedInformer delivers to handlers synchronously in the process loop, so a blocked handler stalls all pending events for that informer."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "clusterrole-verbs"
+          ],
+          "outcome": "cluster-wide RBAC and quota reconnaissance under the watcher identity",
+          "sink": "API server get/list on roles, rolebindings, serviceaccounts, quotas, networkpolicies in all namespaces",
+          "source": "stolen or leaked watcher ServiceAccount token",
+          "summary": "compromised watcher SA token -> cluster-wide get/list on RBAC/quota objects -> reconnaissance of tenant privileges",
+          "transformations": "unrestricted by code, only by the granted ClusterRole"
+        },
+        "impact": {
+          "level": "low",
+          "why": "Reconnaissance and information disclosure at cluster scope under a compromised identity; no direct privilege gain beyond the granted create."
+        },
+        "likelihood": {
+          "level": "low",
+          "why": "Requires a prerequisite compromise of the watcher workload."
+        },
+        "reachability": {
+          "attacker": "in-cluster actor with access to the watcher's ServiceAccount token or process",
+          "entrypoint": "watcher ServiceAccount credentials",
+          "evidenceRefs": [
+            "clusterrole-verbs",
+            "only-create-called"
+          ],
+          "outcome": "excessive reconnaissance scope beyond what the watcher's code needs",
+          "preconditions": "token theft or container compromise of the watcher",
+          "summary": "Requires compromising the watcher workload or its token; the deployment's hardening (runAsNonRoot, dropped capabilities, read-only rootfs) narrows but does not remove that path."
+        },
+        "summary": "An attacker who obtains the watcher's ServiceAccount token (container escape, node-level access, or a future bug) uses it to list and read every Role, RoleBinding, ServiceAccount, ResourceQuota, and NetworkPolicy in the cluster, mapping the tenant RBAC landscape for a follow-on privilege-escalation or lateral-movement attack."
+      },
+      "codeEvidence": [
+        {
+          "code": "  # Create (and read, for idempotency) the default resources in any namespace.\n  - apiGroups: [\"\"]\n    resources: [\"limitranges\", \"resourcequotas\", \"serviceaccounts\"]\n    verbs: [\"create\", \"get\", \"list\"]\n  - apiGroups: [\"rbac.authorization.k8s.io\"]\n    resources: [\"roles\", \"rolebindings\"]\n    verbs: [\"create\", \"get\", \"list\"]\n  - apiGroups: [\"networking.k8s.io\"]\n    resources: [\"networkpolicies\"]\n    verbs: [\"create\", \"get\", \"list\"]",
+          "endLine": 44,
+          "explanation": "The `get` and `list` verbs on all six resource types are granted cluster-wide. The code never issues a Get or List for any of these types, so the verbs are pure excess scope; the comment misattributes idempotency to reads when it actually comes from the AlreadyExists create-error path.",
+          "id": "clusterrole-verbs",
+          "label": "ClusterRole grants create, get, list cluster-wide",
+          "language": "yaml",
+          "path": "deploy/namespace-watcher.yaml",
+          "role": "root_control",
+          "startLine": 35
+        },
+        {
+          "code": "\t_, err = p.client.Resource(mapping.Resource).Namespace(obj.GetNamespace()).\n\t\tCreate(ctx, obj, metav1.CreateOptions{})",
+          "endLine": 111,
+          "explanation": "This is the sole call the provisioner makes against the six resource types (confirmed by grep over all non-test Go code). The minimal grant needed is `create` plus (optionally) `get` if an ownership-verification fix is adopted.",
+          "id": "only-create-called",
+          "label": "The provisioner only ever calls Create",
+          "language": "go",
+          "path": "internal/provisioner/provisioner.go",
+          "role": "expected_control",
+          "startLine": 110
+        },
+        {
+          "code": "- **Least-privilege RBAC:** the watcher only needs to watch namespaces and\n  create/read the six resource types it provisions.",
+          "endLine": 79,
+          "explanation": "The documentation asserts a least-privilege design and even says 'create/read', yet the code performs no reads at all, so the deployed grant exceeds both the code's needs and the documented intent.",
+          "id": "readme-least-priv",
+          "label": "README claims least-privilege RBAC",
+          "language": "markdown",
+          "path": "README.md",
+          "role": "evidence",
+          "startLine": 78
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Proven by exhaustive grep of non-test code: the only client calls in the provisioner are `Create` (provisioner.go:111) and in the watcher `Namespaces().List` (watcher.go:143). No `Get`, `List`, `Update`, or `Delete` on the six resource types exists anywhere outside tests. The ClusterRole text (deploy/namespace-watcher.yaml:35-44) explicitly grants the unused verbs."
+      },
+      "findingId": "csf_a2f111d4b1db8c5b31905d64",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:5adda53b98ad8e348be808dec85ecb852fb50657aea495372a60736232193bad"
+      },
+      "identity": {
+        "anchor": "deploy/namespace-watcher.yaml/clusterrole"
+      },
+      "locations": [
+        {
+          "endLine": 44,
+          "path": "deploy/namespace-watcher.yaml",
+          "role": "root_control",
+          "startLine": 35
+        },
+        {
+          "endLine": 124,
+          "path": "internal/provisioner/provisioner.go",
+          "role": "evidence",
+          "startLine": 103
+        },
+        {
+          "endLine": 79,
+          "path": "README.md",
+          "role": "evidence",
+          "startLine": 78
+        }
+      ],
+      "occurrenceId": "occ_190794e20ffa2167e4934db5",
+      "preventiveControls": [
+        "Derive the ClusterRole from a static inventory of client calls (e.g. a lint or test that fails when a new verb appears in code without a matching RBAC entry)."
+      ],
+      "provenance": {
+        "source": "code-review"
+      },
+      "remediation": "Remove the unused `get` and `list` verbs from the six resource types in the ClusterRole (keep `create`; add `get` only if an ownership-verification read is adopted) and correct the manifest comment and README to match the actual operations.",
+      "remediationTests": [
+        "Test: run the full provisioning flow against a cluster where the ClusterRole grants only `create` on the six types plus get/list/watch on namespaces, and assert all six resources are created and idempotency holds.",
+        "Test: assert the watcher fails closed (clear error) rather than silently succeeding if the RBAC grant is reduced further."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "clusterrole-verbs",
+          "only-create-called",
+          "readme-least-priv"
+        ],
+        "summary": "The violated invariant is that the ServiceAccount's privileges match the operations the code actually performs. The ClusterRole was authored from an assumption that idempotency requires reads, but the implementation achieves idempotency by tolerating AlreadyExists on Create, leaving `get`/`list` as unexercised, unneeded scope on sensitive RBAC and quota objects cluster-wide."
+      },
+      "ruleId": "improper-privilege-management.clusterrole-unused-verbs",
+      "severity": {
+        "changeConditions": "Raise to medium if the deployment environment makes SA-token compromise likely (shared nodes with weak isolation, permissive PodSecurity) or if the watcher gains untrusted-input handling over time.",
+        "level": "low",
+        "rationale": "Impact is low-to-medium: the extra verbs enable cluster-wide RBAC and quota reconnaissance (useful for targeting privilege escalation) but no direct mutation beyond what `create` already allows. Likelihood is low: exploitation requires compromise of the watcher's SA token (container escape, token theft, or a bug in the watcher) or an operator deploying the manifest unchanged. The container hardening in the same manifest reduces (but does not eliminate) token-theft paths."
+      },
+      "summary": "The shipped ClusterRole grants `create, get, list` on limitranges, resourcequotas, serviceaccounts, roles, rolebindings, and networkpolicies in all namespaces, but the production code only ever calls `Create` on those types (provisioner.go:110-111) plus `Namespaces().List` at startup in new-only mode (watcher.go:143). The manifest comment 'read, for idempotency' is incorrect: idempotency comes from handling the AlreadyExists create error, not from reads. A compromised watcher ServiceAccount token therefore carries reconnaissance scope it does not need: enumerate and read every Role, RoleBinding, ServiceAccount, quota, and NetworkPolicy cluster-wide. This also contradicts the README's 'Least-privilege RBAC' claim.",
+      "taxonomy": {
+        "category": "improper_privilege_management",
+        "cwe": [
+          "CWE-250"
+        ]
+      },
+      "title": "ClusterRole grants cluster-wide get/list on six resource types the code never uses",
+      "validation": {
+        "assertions": [
+          "The get and list verbs on the six resource types are never exercised by the code.",
+          "The namespaces get/list/watch grant is used (captureExisting) and is appropriately scoped."
+        ],
+        "conclusion": "valid",
+        "counterevidence": "A future ownership-verification fix (see the default-name-spoofing finding) would legitimately need `get`; until then the verbs are unused.",
+        "evidenceRefs": [
+          "clusterrole-verbs",
+          "only-create-called"
+        ],
+        "method": "exhaustive grep of client calls in non-test code against the granted RBAC",
+        "summary": "Grepped all non-test Go files for Kubernetes client operations: the complete set is `Create` (provisioner.go:111) and `Namespaces().List` (watcher.go:143, used only in new-only mode and covered by the namespaces get/list/watch rule). No Get/List/Update/Delete on limitranges, resourcequotas, serviceaccounts, roles, rolebindings, or networkpolicies exists. The ClusterRole text grants exactly the unused get/list verbs on those types."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "np-podselector",
+            "np-defaults"
+          ],
+          "outcome": "default network isolation absent for typical (unlabeled) workloads",
+          "sink": "network rules (or lack thereof) applied to the pod",
+          "source": "workload deployment in a newly created namespace",
+          "summary": "new namespace provisioned -> pods without app=myapp label fall outside the policy -> unrestricted networking",
+          "transformations": "policy podSelector evaluation at the network layer"
+        },
+        "impact": {
+          "level": "low",
+          "why": "Weakens the default-isolation property for unlabeled workloads and provides a DNS exfiltration channel for labeled ones."
+        },
+        "likelihood": {
+          "level": "high",
+          "why": "Holds by default for any workload not carrying the specific label."
+        },
+        "reachability": {
+          "attacker": "tenant or workload author in any provisioned namespace",
+          "entrypoint": "workload deployment (pod labels)",
+          "evidenceRefs": [
+            "np-podselector",
+            "readme-np-claim"
+          ],
+          "outcome": "unrestricted ingress/egress despite the provisioned 'default' NetworkPolicy",
+          "preconditions": "workload pods do not carry label app=myapp",
+          "summary": "No special capability is needed: any workload in a provisioned namespace that lacks the label is outside the policy."
+        },
+        "summary": "A tenant (or an operator relying on this default for isolation) deploys a workload in a new namespace without the app=myapp label and obtains a pod with unrestricted ingress and egress, defeating the default network isolation the watcher claims to apply. A labeled workload can additionally exfiltrate data via DNS to any in-cluster resolver."
+      },
+      "codeEvidence": [
+        {
+          "code": "\t\t\"spec\": map[string]interface{}{\n\t\t\t\"podSelector\": map[string]interface{}{\n\t\t\t\t\"matchLabels\": stringMap(np.PodSelector),\n\t\t\t},",
+          "endLine": 189,
+          "explanation": "`np.PodSelector` is `{\"app\": \"myapp\"}` (config.go:138-140), so the NetworkPolicy selects only pods carrying that exact label. Pods without it are outside the policy entirely and retain default-allow networking.",
+          "id": "np-podselector",
+          "label": "Policy applies only to pods labeled app=myapp",
+          "language": "go",
+          "path": "internal/provisioner/templates.go",
+          "role": "root_control",
+          "startLine": 185
+        },
+        {
+          "code": "\tif np.AllowDNS {\n\t\tegress = append(egress, map[string]interface{}{\n\t\t\t\"to\": []interface{}{\n\t\t\t\tmap[string]interface{}{\n\t\t\t\t\t\"namespaceSelector\": map[string]interface{}{},\n\t\t\t\t},\n\t\t\t},\n\t\t\t\"ports\": []interface{}{\n\t\t\t\tmap[string]interface{}{\n\t\t\t\t\t\"protocol\": \"UDP\",\n\t\t\t\t\t\"port\":     int64(np.DNSPort),\n\t\t\t\t},\n\t\t\t},\n\t\t})\n\t}",
+          "endLine": 179,
+          "explanation": "The empty namespaceSelector matches all namespaces, so labeled pods may send UDP/53 to any pod in any namespace. Combined with in-cluster DNS resolvers that forward upstream, this is a data-exfiltration and tunneling channel for selected pods.",
+          "id": "np-dns-egress",
+          "label": "DNS egress is allowed to every namespace",
+          "language": "go",
+          "path": "internal/provisioner/templates.go",
+          "role": "evidence",
+          "startLine": 165
+        },
+        {
+          "code": "\t\tNetworkPolicy: NetworkPolicyDefaults{\n\t\t\tName: \"myapp-network-policy\",\n\t\t\tPodSelector: map[string]string{\n\t\t\t\t\"app\": \"myapp\",\n\t\t\t},\n\t\t\tPolicyTypes: []string{\"Ingress\", \"Egress\"},\n\t\t\tIngress: IngressRule{\n\t\t\t\tFromApp:  \"nginx-ingress\",\n\t\t\t\tPort:     3000,\n\t\t\t\tProtocol: \"TCP\",\n\t\t\t},\n\t\t\tEgress: EgressRule{\n\t\t\t\tToApp:    \"postgres\",\n\t\t\t\tPort:     5432,\n\t\t\t\tProtocol: \"TCP\",\n\t\t\t},\n\t\t\tAllowDNS: true,\n\t\t\tDNSPort:  53,\n\t\t\t},",
+          "endLine": 154,
+          "explanation": "The default configuration is explicitly scoped to the `myapp` label and opens cluster-wide DNS egress; this is the value every provisioned namespace receives.",
+          "id": "np-defaults",
+          "label": "The defaults encode the label gate",
+          "language": "go",
+          "path": "internal/config/config.go",
+          "role": "evidence",
+          "startLine": 136
+        },
+        {
+          "code": "| `NetworkPolicy`| `myapp-network-policy` | Ingress only from the ingress controller; egress only to postgres + DNS |",
+          "endLine": 20,
+          "explanation": "The documentation omits the label precondition, so readers may assume every pod in a new namespace is constrained when in fact only `app=myapp` pods are.",
+          "id": "readme-np-claim",
+          "label": "README describes the policy as a blanket default",
+          "language": "markdown",
+          "path": "README.md",
+          "role": "evidence",
+          "startLine": 20
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Directly proven by the template source: podSelector matchLabels is `app: myapp` (config.go:138-140; templates.go:186-188), policyTypes are Ingress+Egress (config.go:141), and the DNS egress rule uses an empty namespaceSelector matching all namespaces (templates.go:165-179). The K8s semantics (policy applies only to selected pods; unselected pods are unrestricted) are standard and unchanged by the source."
+      },
+      "findingId": "csf_16d06923985f6a1e9868f6b1",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:507518fc4b4cde6e0ef2c4d4d189469c00d8addd6eb67e447d185f43195b46f5"
+      },
+      "identity": {
+        "anchor": "internal/provisioner/templates.go/new-network-policy"
+      },
+      "locations": [
+        {
+          "endLine": 211,
+          "path": "internal/provisioner/templates.go",
+          "role": "root_control",
+          "startLine": 181
+        },
+        {
+          "endLine": 154,
+          "path": "internal/config/config.go",
+          "role": "evidence",
+          "startLine": 136
+        },
+        {
+          "endLine": 179,
+          "path": "internal/provisioner/templates.go",
+          "role": "evidence",
+          "startLine": 165
+        },
+        {
+          "endLine": 20,
+          "path": "README.md",
+          "role": "evidence",
+          "startLine": 20
+        }
+      ],
+      "occurrenceId": "occ_72abd6def7fe64e96145eb9f",
+      "preventiveControls": [
+        "Align the README's per-resource table with the actual selector semantics so operators do not assume blanket isolation."
+      ],
+      "provenance": {
+        "source": "code-review"
+      },
+      "remediation": "If namespace-level default isolation is the intent, select all pods (empty podSelector matchLabels) or make the label configurable and document the opt-in; constrain the DNS egress rule to the specific DNS server pods/namespace instead of an empty namespaceSelector.",
+      "remediationTests": [
+        "Test: deploy an unlabeled pod in a provisioned namespace and assert its egress is restricted if isolation is the intended default (or assert and document that it is not).",
+        "Test: assert a labeled pod cannot send UDP/53 to arbitrary namespaces once the DNS rule is scoped to the resolver."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "np-podselector",
+          "np-defaults",
+          "np-dns-egress",
+          "readme-np-claim"
+        ],
+        "summary": "The violated invariant is that a newly created namespace provides default network isolation for its workloads. The default policy is written for one specific application label (`app=myapp`) and is presented in the README as a general default; because Kubernetes NetworkPolicies only restrict the pods they select, every unlabeled workload in a new namespace is unrestricted by design, and the selected pods retain a cluster-wide DNS egress hole."
+      },
+      "ruleId": "insecure-design.networkpolicy-label-gate",
+      "severity": {
+        "changeConditions": "Raise to medium if operators rely on this policy as the tenant-isolation control for arbitrary workloads rather than only app=myapp deployments.",
+        "level": "low",
+        "rationale": "Impact is low: the tool's network-isolation default is weaker than documented, but it does apply (and is useful) to the labeled 'myapp' workload it targets, and tenants can opt in by labeling pods. The DNS egress rule creates a modest exfiltration channel for labeled pods. Likelihood is high in the sense that the condition holds by default for every unlabeled workload, but the security consequence depends on whether operators treat the policy as their isolation boundary."
+      },
+      "summary": "The provisioned NetworkPolicy's podSelector matches only pods with the label `app: myapp` (config.go:138-140, applied at templates.go:186-188). Per Kubernetes NetworkPolicy semantics, a namespace's default isolation therefore applies only to workloads that opt in by carrying that label; any pod in a freshly created namespace without the label has no ingress or egress restriction at all. The README presents the policy as a blanket default ('Ingress only from the ingress controller; egress only to postgres + DNS'), which overstates its effect. Additionally, the AllowDNS rule (empty namespaceSelector, UDP/53 to all namespaces) gives labeled pods an unrestricted in-cluster DNS channel usable for exfiltration or tunneling through any in-cluster resolver.",
+      "taxonomy": {
+        "category": "insecure_design",
+        "cwe": [
+          "CWE-1188"
+        ]
+      },
+      "title": "Default NetworkPolicy only constrains pods labeled app=myapp; typical workloads in new namespaces remain unrestricted",
+      "validation": {
+        "assertions": [
+          "Pods without label app=myapp in a provisioned namespace have no ingress or egress restriction from this policy.",
+          "Labeled pods can reach UDP/53 in every namespace."
+        ],
+        "conclusion": "valid",
+        "counterevidence": "If the operator's intent is specifically to isolate 'myapp' deployments (and the README's table is app-centric), this is working as configured rather than a defect; the finding is about the gap between the default's effect and its 'sane default for every namespace' framing.",
+        "evidenceRefs": [
+          "np-podselector",
+          "np-defaults",
+          "np-dns-egress"
+        ],
+        "method": "static review of the template against Kubernetes NetworkPolicy semantics",
+        "summary": "Verified the template encodes podSelector matchLabels {app: myapp}, policyTypes [Ingress, Egress], a single ingress rule from app=nginx-ingress TCP/3000, a single egress rule to app=postgres TCP/5432, and (AllowDNS) UDP/53 to an empty namespaceSelector (all namespaces). Under standard K8s semantics, pods not matching the selector are not subject to the policy, so the 'default isolation' applies only to labeled pods."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "latest-tag"
+          ],
+          "outcome": "cluster-wide RBAC authoring under a trusted operator identity",
+          "sink": "process execution under the watcher ServiceAccount's ClusterRole",
+          "source": "malicious image push to the registry tag",
+          "summary": "registry push to :latest -> node pulls new image on scheduling -> malicious binary runs under watcher SA -> creates RBAC for attacker",
+          "transformations": "kubelet image pull with IfNotPresent"
+        },
+        "impact": {
+          "level": "high",
+          "why": "A substituted operator binary can author cluster-wide RBAC, effectively achieving cluster-admin."
+        },
+        "likelihood": {
+          "level": "low",
+          "why": "Requires a registry- or pipeline-level compromise and a reschedule onto an uncached node."
+        },
+        "reachability": {
+          "attacker": "registry or CI/CD pipeline compromiser",
+          "entrypoint": "image registry tag",
+          "evidenceRefs": [
+            "latest-tag"
+          ],
+          "outcome": "arbitrary code execution with the watcher's cluster-wide create-roles privileges",
+          "preconditions": "registry/pipeline compromise; pod rescheduled onto a node without the cached image",
+          "summary": "Requires compromise of the registry or release pipeline; no cluster access needed."
+        },
+        "summary": "An attacker who compromises the image registry or the release pipeline pushes a malicious build to `ghcr.io/example/namespace-watcher:latest`. On the next pod scheduling to a node without the cached image, the malicious binary runs with the watcher's ClusterRole and can create a ClusterRoleBinding granting themselves cluster-admin."
+      },
+      "codeEvidence": [
+        {
+          "code": "          image: ghcr.io/example/namespace-watcher:latest\n          imagePullPolicy: IfNotPresent",
+          "endLine": 86,
+          "explanation": "`:latest` is a moving target in the registry. With IfNotPresent, any node that does not already cache the image will pull whatever `latest` currently points to on next scheduling, so a malicious or buggy push propagates to new pods and nodes without any manifest change.",
+          "id": "latest-tag",
+          "label": "Deployment pulls the mutable :latest tag",
+          "language": "yaml",
+          "path": "deploy/namespace-watcher.yaml",
+          "role": "root_control",
+          "startLine": 85
+        },
+        {
+          "code": "FROM golang:1.22 AS build",
+          "endLine": 4,
+          "explanation": "The build stage base is also a moving tag, so the toolchain itself is not reproducible; the runtime stage (distroless/static:nonroot) is likewise unpinned.",
+          "id": "unpinned-base",
+          "label": "Build stage uses an unpinned base image",
+          "language": "dockerfile",
+          "path": "Dockerfile",
+          "role": "evidence",
+          "startLine": 4
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "The mutable tag and pull policy are directly visible in deploy/namespace-watcher.yaml:85-86; the unpinned build base is visible in Dockerfile:4. The blast radius follows from the ClusterRole already established in this scan (create roles/rolebindings cluster-wide)."
+      },
+      "findingId": "csf_1aae7823167a24e91bb0c2c8",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:c6a937d3de8a8231d63efcd61e67d4f535e7ee570825110ef40e4573507d82f4"
+      },
+      "identity": {
+        "anchor": "deploy/namespace-watcher.yaml/deployment"
+      },
+      "locations": [
+        {
+          "endLine": 86,
+          "path": "deploy/namespace-watcher.yaml",
+          "role": "root_control",
+          "startLine": 85
+        },
+        {
+          "endLine": 4,
+          "path": "Dockerfile",
+          "role": "evidence",
+          "startLine": 4
+        }
+      ],
+      "occurrenceId": "occ_9eeff7db8977804b7257c764",
+      "preventiveControls": [
+        "Gate the privileged ClusterRole behind admission policies that require signed, digest-pinned images for the watcher namespace."
+      ],
+      "provenance": {
+        "source": "code-review"
+      },
+      "remediation": "Pin the deployment image to an immutable digest (e.g. `@sha256:...`) or a unique versioned tag, pin Dockerfile base images by digest, and add image signature verification (e.g. cosign admission) so the privileged operator's binary identity is fixed and authentic.",
+      "remediationTests": [
+        "Test: assert the Deployment's image field references a digest or immutable tag (manifest lint).",
+        "Test: push a changed image under the same tag and assert the cluster does not run it (digest pinning / admission policy)."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "latest-tag",
+          "unpinned-base"
+        ],
+        "summary": "The violated invariant is that the privileged operator binary is immutable and reproducible. The deployment references a mutable tag instead of a content digest or versioned tag, and the build inputs are unpinned, so the artifact actually running under the powerful ClusterRole is not fixed by the manifest or the Dockerfile."
+      },
+      "ruleId": "supply-chain.mutable-image-tag",
+      "severity": {
+        "changeConditions": "Raise to medium if the image is pulled from a registry the organization does not strictly sign and verify, or if imagePullPolicy is changed to Always.",
+        "level": "low",
+        "rationale": "Impact would be high if realized (a malicious operator binary with cluster-wide create-roles rights), but likelihood is low: it requires a registry-level or release-pipeline compromise, and `IfNotPresent` means nodes that already cache the image keep running the old binary until rescheduled. The image reference is also an explicit example placeholder (ghcr.io/example/...), which lowers present-tense exposure but documents a pattern operators are likely to ship."
+      },
+      "summary": "The Deployment pins `image: ghcr.io/example/namespace-watcher:latest` with `imagePullPolicy: IfNotPresent`, and the Dockerfile build stage uses an unpinned `golang:1.22` base. The `:latest` tag is mutable: a registry compromise, a compromised release pipeline, or an accidental push can replace the binary, and the new image is picked up on the next pod scheduled onto a node without the cached image. Because the watcher's ServiceAccount holds a ClusterRole that can create Roles and RoleBindings in any namespace, a swapped image is a direct path to cluster-wide RBAC compromise. The container's own hardening (runAsNonRoot, dropped capabilities, read-only rootfs, seccomp RuntimeDefault, no host namespaces) is otherwise sound.",
+      "taxonomy": {
+        "category": "supply_chain",
+        "cwe": [
+          "CWE-494"
+        ]
+      },
+      "title": "Deployment uses a mutable :latest image tag for a highly privileged operator",
+      "validation": {
+        "assertions": [
+          "The running binary identity is not fixed by the manifest or Dockerfile.",
+          "A registry-level substitution of the image is sufficient to run arbitrary code under the watcher's ClusterRole."
+        ],
+        "conclusion": "valid",
+        "counterevidence": "The image reference is an example placeholder and the cluster may pin the real image at deployment time; container hardening limits post-compromise persistence but not the initial code execution.",
+        "evidenceRefs": [
+          "latest-tag",
+          "unpinned-base"
+        ],
+        "method": "static review of deployment manifest and Dockerfile",
+        "summary": "Verified the image field is a `:latest` tag with IfNotPresent (yaml:85-86) and the Dockerfile uses unpinned `golang:1.22` and `gcr.io/distroless/static:nonroot` bases (Dockerfile:4, 18). Cross-referenced with the ClusterRole established earlier in this scan: the watcher SA can create roles and rolebindings in all namespaces, so a substituted image gains cluster-wide RBAC-authoring ability."
+      }
+    }
+  ],
+  "scanId": "scan-20260911-014743-97cb5fea",
+  "schemaVersion": "1.0"
+}

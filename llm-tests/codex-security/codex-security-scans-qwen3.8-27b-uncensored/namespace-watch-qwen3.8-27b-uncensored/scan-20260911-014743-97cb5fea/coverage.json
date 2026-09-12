@@ -1,0 +1,116 @@
+{
+  "completeness": "complete",
+  "deferred": [],
+  "documentType": "codex-security.coverage",
+  "excludePaths": [],
+  "explicitExclusions": [
+    {
+      "pattern": "bin/namespace-watcher",
+      "reason": "Compiled Go binary; excluded from static source analysis (no decompilation performed). Source-level audit covers the equivalent Go sources."
+    }
+  ],
+  "includePaths": [
+    "."
+  ],
+  "inventoryStrategy": "directory",
+  "mode": "repository",
+  "openQuestions": [
+    {
+      "followUpPrompt": "Provide a representative tenant ServiceAccount + Role/ClusterRole (or Pod Security admission configuration) so the exploit preconditions can be confirmed.",
+      "question": "What is the typical tenant RBAC profile? Exploitability of the namespace-recreate escape and default-name spoofing depends on whether a tenant can delete namespaces and/or create ResourceQuota, LimitRange, NetworkPolicy, Role, and RoleBinding. If tenants are read-only within namespaces and cannot delete namespaces, the practical impact is reduced."
+    },
+    {
+      "followUpPrompt": "List any admission policies or cluster-scoped quotas that act as a backstop for per-namespace defaults.",
+      "question": "Are there compensating cluster-level controls outside this repository (admission webhooks, an admission controller that re-applies per-namespace defaults, cluster ResourceQuota, Pod Security enforcement) that would re-establish or independently enforce the defaults this watcher is responsible for?"
+    },
+    {
+      "followUpPrompt": "Run a connected SCA/OSV scan against go.mod and report any reachable CVEs.",
+      "question": "The pinned dependency set (k8s.io/* v0.31.3, golang.org/x/net v0.26.0, golang.org/x/sys v0.21.0, golang.org/x/oauth2 v0.21.0, Go 1.22.2) predates later security-relevant releases. Offline analysis could not verify current CVE status. Confirm dependency CVE posture from a connected SCA source."
+    },
+    {
+      "followUpPrompt": "Confirm the binary's build provenance or drop it from version control.",
+      "question": "The committed bin/namespace-watcher binary was not verified to correspond to the current source. Confirm it is built from the audited source or remove it from the repository."
+    }
+  ],
+  "scanId": "scan-20260911-014743-97cb5fea",
+  "schemaVersion": "1.0",
+  "surfaces": [
+    {
+      "disposition": "no_issue_found",
+      "id": "main-go",
+      "label": "main.go \u2014 CLI entrypoint, flag parsing, rest.Config construction",
+      "notes": "Flags (--kubeconfig, --backfill) are passed to config.Load; no attacker-controlled data is interpreted unsafely. The missing --backfill default is reported against the deployment manifest rather than here.",
+      "riskArea": "input-handling / configuration"
+    },
+    {
+      "disposition": "reported",
+      "id": "internal-watcher",
+      "label": "internal/watcher \u2014 SharedInformer handler, bounded queue, known/inflight/done state",
+      "notes": "Blocking enqueue under burst load (informer-event-stall) and the AddFunc-only handler (no delete/Update handler) are reported; the AddFunc-only design is the enabler for the namespace-recreate escape.",
+      "riskArea": "resource-exhaustion / state-machine correctness"
+    },
+    {
+      "disposition": "reported",
+      "id": "internal-provisioner",
+      "label": "internal/provisioner \u2014 resource build, create loop, AlreadyExists handling, NetworkPolicy builder",
+      "notes": "Core defect surface: done-map never cleared (namespace-recreate-escape), no retry on partial failure (provision-failure-no-retry), AlreadyExists treated as success without spec verification (default-name-spoofing), and the podSelector label gate (networkpolicy-label-gate).",
+      "riskArea": "insecure-design / privilege"
+    },
+    {
+      "disposition": "reported",
+      "id": "internal-config",
+      "label": "internal/config \u2014 fixed resource names and NetworkPolicy defaults",
+      "notes": "Fixed, predictable resource names are cited by default-name-spoofing; the podSelector app=myapp label and DNS egress rules are cited by networkpolicy-label-gate. The defaults themselves are reasonable; the defects are in how the provisioner consumes them.",
+      "riskArea": "insecure-design"
+    },
+    {
+      "disposition": "reported",
+      "id": "deploy-namespace-watcher-yaml",
+      "label": "deploy/namespace-watcher.yaml \u2014 ServiceAccount, ClusterRole, Deployment",
+      "notes": "ClusterRole grants get/list on six resource types the code never exercises (clusterrole-unused-verbs); the Deployment pins :latest with IfNotPresent (mutable-image-tag); the absent --backfill flag keeps the recreate escape live across restarts.",
+      "riskArea": "privilege-management / supply-chain / availability"
+    },
+    {
+      "disposition": "reported",
+      "id": "dockerfile",
+      "label": "Dockerfile \u2014 multi-stage build and base image",
+      "notes": "Unpinned golang:1.22 base (no digest) is cited by mutable-image-tag as part of the image-supply-chain risk.",
+      "riskArea": "supply-chain"
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "makefile",
+      "label": "Makefile \u2014 build, test, vet, and image targets",
+      "notes": "No secret exfiltration, remote-code execution, or unsafe remote fetch in the targets.",
+      "riskArea": "build-system"
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "go-mod-go-sum",
+      "label": "go.mod / go.sum \u2014 Go module dependency set",
+      "notes": "Standard k8s.io client-go and transitive dependencies; no suspicious or typosquatted module, no GOFLAGS/vendor tampering. Dependency currency against the latest patched releases is recorded as an open question (offline).",
+      "riskArea": "supply-chain"
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "unit-tests",
+      "label": "watcher_test.go / provisioner_test.go / config_test.go",
+      "notes": "Tests do not weaken security controls or embed credentials; they corroborate the reviewed behavior (queue, done-map, create ordering).",
+      "riskArea": "test-integrity"
+    },
+    {
+      "disposition": "reported",
+      "id": "readme-md",
+      "label": "README.md \u2014 documented security behavior and threat model",
+      "notes": "The README asserts idempotent, prompt default provisioning and least-privilege RBAC; the recreate escape and unused-verbs findings show the implemented behavior diverges from these documented guarantees.",
+      "riskArea": "assurance / documentation"
+    },
+    {
+      "disposition": "not_applicable",
+      "id": "bin-binary",
+      "label": "bin/namespace-watcher \u2014 committed compiled binary",
+      "notes": "Compiled artifact excluded from static source analysis. Whether it corresponds to the audited source is an open question.",
+      "riskArea": "supply-chain"
+    }
+  ]
+}

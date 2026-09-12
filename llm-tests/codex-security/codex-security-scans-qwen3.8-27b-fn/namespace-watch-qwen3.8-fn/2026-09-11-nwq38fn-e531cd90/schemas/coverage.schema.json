@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "required": ["scanId", "mode", "completeness", "inventoryStrategy", "surfaces"],
+  "properties": {
+    "documentType": {"type": "string"},
+    "schemaVersion": {"type": "string"},
+    "scanId": {"type": "string"},
+    "mode": {"type": "string"},
+    "completeness": {"type": "string"},
+    "inventoryStrategy": {"type": "string"},
+    "surfaces": {"type": "array", "items": {"type": "object"}},
+    "explicitExclusions": {"type": "array", "items": {"type": "object"}},
+    "deferred": {"type": "array", "items": {"type": "object"}},
+    "openQuestions": {"type": "array"}
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "required": ["scanId", "findings"],
+  "properties": {
+    "documentType": {"type": "string"},
+    "schemaVersion": {"type": "string"},
+    "scanId": {"type": "string"},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "writeup": {"type": "object"},
+          "remediationTests": {"type": "array"},
+          "preventiveControls": {"type": "array"}
+        }
+      }
+    }
+  }
+}

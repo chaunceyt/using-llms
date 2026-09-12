@@ -1,0 +1,662 @@
+{
+  "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/schemas/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "automationDetails": {
+        "id": "scan-20260911-014743-97cb5fea"
+      },
+      "properties": {
+        "codexSecuritySchemaVersion": "1.0",
+        "codexSecurityTargetKind": "directory_snapshot"
+      },
+      "results": [
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "deploy/namespace-watcher.yaml"
+                },
+                "region": {
+                  "endLine": 44,
+                  "startLine": 35
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/provisioner/provisioner.go"
+                },
+                "region": {
+                  "endLine": 124,
+                  "startLine": 103
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "README.md"
+                },
+                "region": {
+                  "endLine": 79,
+                  "startLine": 78
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:only-create-called"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/provisioner/provisioner.go"
+                },
+                "region": {
+                  "endLine": 111,
+                  "startLine": 110
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The shipped ClusterRole grants `create, get, list` on limitranges, resourcequotas, serviceaccounts, roles, rolebindings, and networkpolicies in all namespaces, but the production code only ever calls `Create` on those types (provisioner.go:110-111) plus `Namespaces().List` at startup in new-only mode (watcher.go:143). The manifest comment 'read, for idempotency' is incorrect: idempotency comes from handling the AlreadyExists create error, not from reads. A compromised watcher ServiceAccount token therefore carries reconnaissance scope it does not need: enumerate and read every Role, RoleBinding, ServiceAccount, quota, and NetworkPolicy cluster-wide. This also contradicts the README's 'Least-privilege RBAC' claim."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:5adda53b98ad8e348be808dec85ecb852fb50657aea495372a60736232193bad",
+            "primaryLocationLineHash": "2b368af782c1d6ea:1"
+          },
+          "properties": {
+            "category": "improper_privilege_management",
+            "confidence": "high",
+            "findingId": "csf_a2f111d4b1db8c5b31905d64",
+            "occurrenceId": "occ_190794e20ffa2167e4934db5",
+            "severity": "low"
+          },
+          "ruleId": "improper-privilege-management.clusterrole-unused-verbs",
+          "ruleIndex": 0
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/provisioner/templates.go"
+                },
+                "region": {
+                  "endLine": 211,
+                  "startLine": 181
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/config/config.go"
+                },
+                "region": {
+                  "endLine": 154,
+                  "startLine": 136
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/provisioner/templates.go"
+                },
+                "region": {
+                  "endLine": 179,
+                  "startLine": 165
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "README.md"
+                },
+                "region": {
+                  "endLine": 20,
+                  "startLine": 20
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:np-podselector"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/provisioner/templates.go"
+                },
+                "region": {
+                  "endLine": 189,
+                  "startLine": 185
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The provisioned NetworkPolicy's podSelector matches only pods with the label `app: myapp` (config.go:138-140, applied at templates.go:186-188). Per Kubernetes NetworkPolicy semantics, a namespace's default isolation therefore applies only to workloads that opt in by carrying that label; any pod in a freshly created namespace without the label has no ingress or egress restriction at all. The README presents the policy as a blanket default ('Ingress only from the ingress controller; egress only to postgres + DNS'), which overstates its effect. Additionally, the AllowDNS rule (empty namespaceSelector, UDP/53 to all namespaces) gives labeled pods an unrestricted in-cluster DNS channel usable for exfiltration or tunneling through any in-cluster resolver."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:507518fc4b4cde6e0ef2c4d4d189469c00d8addd6eb67e447d185f43195b46f5",
+            "primaryLocationLineHash": "c029414dc8074475:1"
+          },
+          "properties": {
+            "category": "insecure_design",
+            "confidence": "high",
+            "findingId": "csf_16d06923985f6a1e9868f6b1",
+            "occurrenceId": "occ_72abd6def7fe64e96145eb9f",
+            "severity": "low"
+          },
+          "ruleId": "insecure-design.networkpolicy-label-gate",
+          "ruleIndex": 3
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/watcher/watcher.go"
+                },
+                "region": {
+                  "endLine": 193,
+                  "startLine": 190
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/watcher/watcher.go"
+                },
+                "region": {
+                  "endLine": 26,
+                  "startLine": 26
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "README.md"
+                },
+                "region": {
+                  "endLine": 67,
+                  "startLine": 64
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:blocking-enqueue"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/watcher/watcher.go"
+                },
+                "region": {
+                  "endLine": 194,
+                  "startLine": 188
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "`onAdd` blocks on the bounded 1024-entry channel when it is full (`select { case w.queue <- name: case <-w.ctxDone(): }`), and client-go SharedInformer invokes event handlers synchronously in its dispatch loop. A sustained namespace-creation rate that outruns the 4 workers' drain rate therefore stalls all namespace event processing, contrary to the code and README claim that a burst 'never blocks the informer'. Consequence: security defaults for every subsequent namespace (including other tenants') are delayed for as long as the burst lasts, and the API-server watch buffer absorbs the backpressure."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:e4a45ffbca416995f032b2a55dee19773efd7668893fd21bcb80bba20475f253",
+            "primaryLocationLineHash": "17b32635407a1d6b:1"
+          },
+          "properties": {
+            "category": "resource_exhaustion",
+            "confidence": "medium",
+            "findingId": "csf_12716f797271f3cf0bbd1d7e",
+            "occurrenceId": "occ_99715c4e41a1a79e3a08c749",
+            "severity": "low"
+          },
+          "ruleId": "resource-exhaustion.informer-event-stall",
+          "ruleIndex": 5
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "deploy/namespace-watcher.yaml"
+                },
+                "region": {
+                  "endLine": 86,
+                  "startLine": 85
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Dockerfile"
+                },
+                "region": {
+                  "endLine": 4,
+                  "startLine": 4
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The Deployment pins `image: ghcr.io/example/namespace-watcher:latest` with `imagePullPolicy: IfNotPresent`, and the Dockerfile build stage uses an unpinned `golang:1.22` base. The `:latest` tag is mutable: a registry compromise, a compromised release pipeline, or an accidental push can replace the binary, and the new image is picked up on the next pod scheduled onto a node without the cached image. Because the watcher's ServiceAccount holds a ClusterRole that can create Roles and RoleBindings in any namespace, a swapped image is a direct path to cluster-wide RBAC compromise. The container's own hardening (runAsNonRoot, dropped capabilities, read-only rootfs, seccomp RuntimeDefault, no host namespaces) is otherwise sound."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:c6a937d3de8a8231d63efcd61e67d4f535e7ee570825110ef40e4573507d82f4",
+            "primaryLocationLineHash": "d6c9520ae5b63abd:1"
+          },
+          "properties": {
+            "category": "supply_chain",
+            "confidence": "high",
+            "findingId": "csf_1aae7823167a24e91bb0c2c8",
+            "occurrenceId": "occ_9eeff7db8977804b7257c764",
+            "severity": "low"
+          },
+          "ruleId": "supply-chain.mutable-image-tag",
+          "ruleIndex": 6
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/provisioner/provisioner.go"
+                },
+                "region": {
+                  "endLine": 79,
+                  "startLine": 53
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "entrypoint"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/watcher/watcher.go"
+                },
+                "region": {
+                  "endLine": 230,
+                  "startLine": 221
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:prov-done-before-create"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/provisioner/provisioner.go"
+                },
+                "region": {
+                  "endLine": 73,
+                  "startLine": 58
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "`Provision` inserts the namespace into the `done` map before the six create calls and never rolls it back when any create fails. The watcher's `run` only logs the returned error and clears the in-flight marker, so a namespace hit by a transient API error (5xx, timeout, 422 from a malformed default, RBAC denial) is left partially provisioned and is never retried for the process lifetime. For example, if the LimitRange and ResourceQuota creates succeed and the NetworkPolicy create fails, the namespace keeps its quota but silently loses its default network isolation permanently."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:666fcb62cb77bec2fd8607bf105ce59365bbac18e82f6484895ea1c9a222e5c8",
+            "primaryLocationLineHash": "c41a8161905e718e:1"
+          },
+          "properties": {
+            "category": "insecure_design",
+            "confidence": "high",
+            "findingId": "csf_a79f16b0c1e7bc22f1e24f17",
+            "occurrenceId": "occ_b2addff69be52556f1eed65c",
+            "severity": "medium"
+          },
+          "ruleId": "insecure-design.provision-failure-no-retry",
+          "ruleIndex": 4
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/provisioner/provisioner.go"
+                },
+                "region": {
+                  "endLine": 80,
+                  "startLine": 53
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "entrypoint"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/watcher/watcher.go"
+                },
+                "region": {
+                  "endLine": 194,
+                  "startLine": 156
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "propagation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/watcher/watcher.go"
+                },
+                "region": {
+                  "endLine": 104,
+                  "startLine": 100
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "deploy/namespace-watcher.yaml"
+                },
+                "region": {
+                  "endLine": 90,
+                  "startLine": 87
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:prov-done-mark"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/provisioner/provisioner.go"
+                },
+                "region": {
+                  "endLine": 61,
+                  "startLine": 53
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:onadd-isdone-skip"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/watcher/watcher.go"
+                },
+                "region": {
+                  "endLine": 186,
+                  "startLine": 176
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The watcher keys its provisioning state in an in-memory `done` map by namespace name and never clears it; no namespace delete handler is registered and no reconciliation exists. `onAdd` short-circuits when `provisioner.IsDone(name)` is true, so a namespace that was provisioned once, then deleted and recreated with the same name, is skipped for the watcher's entire lifetime. Its ResourceQuota, LimitRange, and NetworkPolicy were garbage-collected with the deleted namespace, leaving the recreation without any of the cluster's per-tenant containment defaults. With the deployed default (no `--backfill` in deploy/namespace-watcher.yaml), the escape also survives a process restart because the recreated namespace is captured into the `known` set at startup and treated as pre-existing."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:4a2f133dca21939a2c1da4a5b8a8a21880941756e51a59d85a15b28d8b0354ba",
+            "primaryLocationLineHash": "c41a8161905e718e:1"
+          },
+          "properties": {
+            "category": "insecure_design",
+            "confidence": "high",
+            "findingId": "csf_2d93adc68011c5ce8a7bcaff",
+            "occurrenceId": "occ_cf97be19fa778e7c20c149cd",
+            "severity": "high"
+          },
+          "ruleId": "insecure-design.namespace-recreate-escape",
+          "ruleIndex": 2
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/provisioner/provisioner.go"
+                },
+                "region": {
+                  "endLine": 124,
+                  "startLine": 103
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/config/config.go"
+                },
+                "region": {
+                  "endLine": 137,
+                  "startLine": 106
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/watcher/watcher.go"
+                },
+                "region": {
+                  "endLine": 26,
+                  "startLine": 26
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:already-exists-skip"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/provisioner/provisioner.go"
+                },
+                "region": {
+                  "endLine": 119,
+                  "startLine": 110
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:fixed-names"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/config/config.go"
+                },
+                "region": {
+                  "endLine": 114,
+                  "startLine": 106
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The watcher creates six resources with fixed names (production-quota, default-limits, myapp-sa, myapp-role, myapp-rolebinding, myapp-network-policy) and treats an AlreadyExists create error as success without verifying the pre-existing object is the one it would have created. The `app.kubernetes.io/managed-by` label is stamped onto the templates but never checked against existing objects. A namespace creator who also has create permission on the target resource type inside their namespace can race the watcher: create the namespace, then immediately create a permissive `production-quota` (or a lenient `myapp-network-policy`). The watcher's create returns 409, is treated as success, and the namespace is recorded done with the attacker's object as the effective default. The attacker can widen the race window arbitrarily by congesting the 1024-entry enqueue channel with other namespace creations."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:d19e14df95333915b0b8ffd410d9e973460b7279674b18304577c2771ab123e4",
+            "primaryLocationLineHash": "b6b6f9d578573108:1"
+          },
+          "properties": {
+            "category": "insecure_design",
+            "confidence": "medium",
+            "findingId": "csf_70b5e1de4726af419a3bc512",
+            "occurrenceId": "occ_d1ba70419ad3661340103751",
+            "severity": "medium"
+          },
+          "ruleId": "insecure-design.default-name-spoofing",
+          "ruleIndex": 1
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "Codex Security",
+          "rules": [
+            {
+              "id": "improper-privilege-management.clusterrole-unused-verbs",
+              "name": "improper-privilege-management.clusterrole-unused-verbs",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "improper-privilege-management.clusterrole-unused-verbs"
+              }
+            },
+            {
+              "id": "insecure-design.default-name-spoofing",
+              "name": "insecure-design.default-name-spoofing",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "insecure-design.default-name-spoofing"
+              }
+            },
+            {
+              "id": "insecure-design.namespace-recreate-escape",
+              "name": "insecure-design.namespace-recreate-escape",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "insecure-design.namespace-recreate-escape"
+              }
+            },
+            {
+              "id": "insecure-design.networkpolicy-label-gate",
+              "name": "insecure-design.networkpolicy-label-gate",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "insecure-design.networkpolicy-label-gate"
+              }
+            },
+            {
+              "id": "insecure-design.provision-failure-no-retry",
+              "name": "insecure-design.provision-failure-no-retry",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "insecure-design.provision-failure-no-retry"
+              }
+            },
+            {
+              "id": "resource-exhaustion.informer-event-stall",
+              "name": "resource-exhaustion.informer-event-stall",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "resource-exhaustion.informer-event-stall"
+              }
+            },
+            {
+              "id": "supply-chain.mutable-image-tag",
+              "name": "supply-chain.mutable-image-tag",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "supply-chain.mutable-image-tag"
+              }
+            }
+          ],
+          "version": "1.0"
+        }
+      }
+    }
+  ],
+  "version": "2.1.0"
+}

@@ -1,0 +1,89 @@
+{
+  "completeness": "complete",
+  "deferred": [],
+  "documentType": "codex-security.coverage",
+  "excludePaths": [],
+  "explicitExclusions": [],
+  "includePaths": [
+    ".",
+    "main.go",
+    "go.mod",
+    "internal/config/config.go",
+    "internal/controller/controller.go",
+    "internal/resources/provisioner.go",
+    "internal/resources/registry.go",
+    "internal/resources/limitrange.go",
+    "internal/resources/resourcequota.go",
+    "internal/resources/rbac.go",
+    "internal/resources/networkpolicy.go"
+  ],
+  "inventoryStrategy": "directory",
+  "mode": "repository",
+  "openQuestions": [
+    {
+      "followUpPrompt": "Run a dependency vulnerability scan against k8s.io/client-go, k8s.io/api and transitive dependencies listed in go.mod.",
+      "question": "Are the pinned third-party dependency versions (go.mod / go.sum) affected by any known published CVEs?"
+    },
+    {
+      "followUpPrompt": "Locate the deployment manifest (not present in-scope) and verify the operator runs with a restricted ClusterRole covering only limitranges, resourcequotas, serviceaccounts, roles, rolebindings, networkpolicies and namespaces.",
+      "question": "What RBAC ClusterRole/ClusterRoleBinding is actually deployed for the operator's own ServiceAccount, and is it scoped to least privilege?"
+    },
+    {
+      "followUpPrompt": "Confirm the intended trust model to decide whether create-once provisioning (CWE-693) should be rated medium or high.",
+      "question": "Are provisioned namespaces treated as untrusted tenants where default-deny NetworkPolicy and ResourceQuota must be enforced against tampering?"
+    }
+  ],
+  "scanId": "namespace-watch-dv4f_20260911T011209Z",
+  "schemaVersion": "1.0",
+  "surfaces": [
+    {
+      "disposition": "reported",
+      "id": "namespace-watch-reconcile",
+      "label": "Namespace watch loop and work-queue reconciliation (controller.go)",
+      "notes": "handleAdd/handleUpdate/syncNamespace reviewed; handleUpdate is a no-op and no DeleteFunc is registered. Finding: protection-mechanism.create-once-no-reconcile.",
+      "riskArea": "Protection-mechanism enforcement; create-once provisioning is never reconciled after deletion/drift"
+    },
+    {
+      "disposition": "reported",
+      "id": "provisioner-dynamic-writes",
+      "label": "Provisioner dynamic-client create path (provisioner.go, registry.go)",
+      "notes": "applyOne reviewed in full. Finding: protection-mechanism.create-once-no-reconcile.",
+      "riskArea": "Create-only apply with no update/restore branch; aggregated error handling"
+    },
+    {
+      "disposition": "reported",
+      "id": "rbac-default-identity",
+      "label": "Auto-provisioned ServiceAccount/Role/RoleBinding (rbac.go)",
+      "notes": "Fixed myapp-sa bound to a namespace-wide ConfigMap get/list role in every new namespace. Finding: privilege-management.default-configmap-role.",
+      "riskArea": "Least-privilege on automatically created identities"
+    },
+    {
+      "disposition": "reported",
+      "id": "networkpolicy-definition",
+      "label": "Default NetworkPolicy definition (networkpolicy.go)",
+      "notes": "Egress DNS rule uses an empty namespaceSelector. Findings: protection-mechanism.create-once-no-reconcile, access-control.broad-dns-egress.",
+      "riskArea": "Deny-by-default ingress/egress posture; DNS egress scoping"
+    },
+    {
+      "disposition": "reported",
+      "id": "quota-and-limitrange-defaults",
+      "label": "LimitRange and ResourceQuota defaults (limitrange.go, resourcequota.go)",
+      "notes": "Static default values reviewed; quotas are enforced only at creation time. Finding: protection-mechanism.create-once-no-reconcile.",
+      "riskArea": "Resource-limit enforcement lifecycle"
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "config-client-bootstrap",
+      "label": "Client configuration bootstrap (config.go, main.go)",
+      "notes": "Uses in-cluster or kubeconfig credential machinery; no hardcoded credentials or secret storage found.",
+      "riskArea": "Credential handling / client construction"
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "dependency-supply-chain",
+      "label": "Dependency manifest (go.mod, go.sum)",
+      "notes": "No known-vulnerability version matching was performed in-scope; recorded as an open question rather than a confirmed issue.",
+      "riskArea": "Third-party dependency versions"
+    }
+  ]
+}
