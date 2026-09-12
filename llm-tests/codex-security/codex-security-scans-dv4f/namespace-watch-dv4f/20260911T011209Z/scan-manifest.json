@@ -1,0 +1,80 @@
+{
+  "documentType": "codex-security.scan-manifest",
+  "scan": {
+    "artifacts": [
+      {
+        "mediaType": "application/json",
+        "path": "findings.json",
+        "sha256": "23cb4bdc1bb3ecad4adfddca4d57e81d80e64fbda3ca886b9f721cf7155f07a2"
+      },
+      {
+        "mediaType": "application/json",
+        "path": "coverage.json",
+        "sha256": "eec483f57dcbc9e2006b98374640beec74112467c2bd270e4763ef07d8eb4f4a"
+      }
+    ],
+    "completedAt": "2026-09-11T01:13:20Z",
+    "coverageRef": "coverage.json",
+    "findingsRef": "findings.json",
+    "id": "namespace-watch-dv4f_20260911T011209Z",
+    "producer": {
+      "name": "codex-security-cli",
+      "version": "standard-scan-1.0"
+    },
+    "scope": {
+      "excludePaths": [],
+      "includePaths": [
+        ".",
+        "main.go",
+        "go.mod",
+        "internal/config/config.go",
+        "internal/controller/controller.go",
+        "internal/resources/provisioner.go",
+        "internal/resources/registry.go",
+        "internal/resources/limitrange.go",
+        "internal/resources/resourcequota.go",
+        "internal/resources/rbac.go",
+        "internal/resources/networkpolicy.go"
+      ],
+      "summary": "Repository-wide static security scan of the Go Kubernetes namespace-watcher operator at /sandbox/deepseekv4flash/namespace-watch-dv4f. All 11 project files (9 source files, go.mod, go.sum) were reviewed. The controller watches Namespace creation events and provisions default LimitRange, ResourceQuota, ServiceAccount, Role, RoleBinding and NetworkPolicy objects into each new namespace via the dynamic client. Analysis was static source review only; no runtime cluster execution or network access was performed."
+    },
+    "sealedAt": "2026-09-11T01:13:20Z",
+    "startedAt": "2026-09-11T01:12:00Z",
+    "status": "completed",
+    "target": {
+      "displayName": "namespace-watch-dv4f",
+      "kind": "directory_snapshot",
+      "snapshotDigest": "codex-security-snapshot/v1:sha256:080c16024ca95965dee057c17c6a6c6337ad26a96bfb32e344e68687e9d2440d",
+      "targetId": "codex-security-target/v1:sha256:5db866c350dd6faa6c37d46d46aa20960991a6a3a6e446d83cd4bf6a21bc9a50"
+    },
+    "threatModel": {
+      "assets": [
+        "auto-provisioned default-deny NetworkPolicy (myapp-network-policy)",
+        "auto-provisioned ResourceQuota (production-quota) limiting CPU/memory/pods/services/PVCs",
+        "auto-provisioned ServiceAccount myapp-sa and its Role/RoleBinding",
+        "cluster stability under resource limits"
+      ],
+      "assumptions": [
+        "Provisioned namespaces may be populated by tenants who are less trusted than cluster administrators",
+        "The controller's own ServiceAccount is granted cluster-wide create rights for the provisioned resource kinds (no deployment manifest is present in-scope to verify least privilege)"
+      ],
+      "attackerCapabilities": [
+        "A principal able to create namespaces that trigger provisioning",
+        "A tenant or workload holding write (delete/update) access to resources inside its own provisioned namespace",
+        "A workload running the auto-created myapp-sa ServiceAccount token"
+      ],
+      "securityObjectives": [
+        "Deny-by-default network isolation stays enforced for a namespace's lifetime",
+        "Resource usage remains bounded by the default ResourceQuota",
+        "Default identities follow least privilege and do not expose sensitive data unnecessarily"
+      ],
+      "summary": "A cluster-level Kubernetes operator watches Namespace creation events and auto-provisions a fixed set of default resources (LimitRange, ResourceQuota, a deny-by-default NetworkPolicy, and an application ServiceAccount/Role/RoleBinding) into every non-excluded namespace using the dynamic client. The security objectives are baseline isolation and resource-limit enforcement for newly created namespaces.",
+      "trustBoundaries": [
+        "Kubernetes API server (source of Namespace create events) to controller reconcile loop",
+        "controller dynamic-client writes to every non-excluded namespace",
+        "namespace tenants with RBAC edit rights over resources within their own namespace"
+      ]
+    }
+  },
+  "schemaVersion": "1.0"
+}

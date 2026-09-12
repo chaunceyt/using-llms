@@ -1,0 +1,92 @@
+{
+  "documentType": "codex-security.scan-manifest",
+  "scan": {
+    "artifacts": [
+      {
+        "mediaType": "application/json",
+        "path": "findings.json",
+        "sha256": "9e4c7c7bb418e3bd6cac3a91dea985ee321c2776ed172f7f2ea882c51fbf4d17"
+      },
+      {
+        "mediaType": "application/json",
+        "path": "coverage.json",
+        "sha256": "be6e22770e50841b3cc212424533e02d20dca2fdfa4125e09345d2d8e2b8bb61"
+      }
+    ],
+    "completedAt": "2026-09-12T00:09:24Z",
+    "coverageRef": "coverage.json",
+    "findingsRef": "findings.json",
+    "id": "2026-09-11-nwq38fn-e531cd90",
+    "producer": {
+      "name": "codex-security-plugin",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "artifactsReviewed": [
+        "Dockerfile",
+        "cmd/namespace-watch/main.go",
+        "deploy/deploy.yaml",
+        "go.mod",
+        "go.sum",
+        "internal/controller/controller.go",
+        "internal/controller/controller_test.go",
+        "internal/defaults/defaults.go",
+        "internal/defaults/defaults_test.go"
+      ],
+      "excludePaths": [],
+      "includePaths": [
+        "."
+      ],
+      "limitations": [
+        "The scan root is not a git repository; only the current directory state was reviewed, with no revision history available.",
+        "Offline scan: no network access, no public advisory checks for pinned dependency versions, and no execution of application code or interaction with a live cluster.",
+        "Server-side Kubernetes API server admission behavior (ownerReference finalizer validation, Role/RoleBinding escalation prevention) could not be source-verified because k8s.io/apiserver is not part of the module graph; dependency semantics were instead verified from the local Go module cache for the pinned versions."
+      ],
+      "runtimeStatus": "Static source analysis only; the controller was not built or executed.",
+      "summary": "Full-directory scan of the namespace-watch Kubernetes controller written in Go: CLI bootstrap and credential resolution, the namespace watch/reconcile loop, the hardcoded default-resource templates, the deployment manifest with its cluster-wide RBAC, the container build, and the Go dependency manifests.",
+      "validationMode": "Parent validation against local source plus dependency-semantics verification in the Go module cache"
+    },
+    "sealedAt": "2026-09-12T00:09:24Z",
+    "startedAt": "2026-09-11T22:04:21Z",
+    "status": "completed",
+    "target": {
+      "displayName": "namespace-watch-qwen3.8-fn",
+      "kind": "directory_snapshot",
+      "snapshotDigest": "sha256:1ce0b3d68d299cf157b9fabd471631334e71f123987c5d20c497682f55bf185f",
+      "targetId": "dir-namespace-watch-qwen3.8-fn"
+    },
+    "threatModel": {
+      "assets": [
+        "Cluster RBAC integrity and the controller ServiceAccount identity",
+        "Correct placement and content of resources created in every namespace",
+        "Availability of system and shared namespaces (e.g. kube-system, default) with respect to injected quotas and limit ranges",
+        "Per-namespace tenant guardrails (ResourceQuota, LimitRange) the product is meant to install"
+      ],
+      "assumptions": [
+        "The shipped deploy/deploy.yaml is representative of a real deployment of this image",
+        "The API server validates namespace names as RFC 1123 labels, so crafted-name path/URL injection through the dynamic client is out of reach",
+        "Client behavior claims were verified against the pinned dependency sources in the local Go module cache (k8s.io/client-go v0.30.0, k8s.io/apimachinery v0.30.0)"
+      ],
+      "attackerCapabilities": [
+        "Create (and delete/recreate) Namespaces as an ordinary cluster tenant",
+        "Edit the Deployment manifest, flags, and image reference with write access to the controller namespace (operator path)",
+        "Repoint a mutable image tag or compromise the build pipeline",
+        "Achieve code execution inside the controller pod and use the automounted ServiceAccount token"
+      ],
+      "securityObjectives": [
+        "Created resources land only in intended namespaces with exactly the intended content",
+        "System and shared namespaces are excluded from tenant-default injection, and the exclusion control fails closed",
+        "The controller's granted RBAC is no broader than the six fixed resources it creates",
+        "The controller acts only under its own scoped identity, and the executed artifact is integrity-pinned"
+      ],
+      "summary": "namespace-watch is a cluster-wide controller that lists and watches all Namespaces and, for each Active namespace whose name does not match a configured skip-prefix, creates six hardcoded default resources (LimitRange, ResourceQuota, ServiceAccount, Role, RoleBinding, NetworkPolicy) through a dynamic client, each owned by the Namespace object. The security-relevant boundary is namespace API metadata crossing into the controller's enqueue filter, template rendering, ownerReferences, and the dynamic Create path, while the controller holds cluster-wide create-only RBAC. The primary actors are cluster principals able to create namespaces, an operator deploying the controller, and an attacker who compromises the controller pod or its image.",
+      "trustBoundaries": [
+        "Namespace API metadata (name, phase, UID) produced by cluster users into the controller's informer, enqueue filter, and dynamic-client request path",
+        "Operator-controlled CLI flags and kubeconfig resolution into the controller process identity",
+        "Cluster RBAC grants (ClusterRole/ClusterRoleBinding) into API-server authorization for all controller writes",
+        "Container image build pipeline (build context, image reference) into runtime execution under a cluster-scoped ServiceAccount"
+      ]
+    }
+  },
+  "schemaVersion": "1.0"
+}

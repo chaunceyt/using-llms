@@ -1,0 +1,292 @@
+{
+  "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/schemas/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "automationDetails": {
+        "id": "namespace-watch-dv4f_20260911T011209Z"
+      },
+      "properties": {
+        "codexSecuritySchemaVersion": "1.0",
+        "codexSecurityTargetKind": "directory_snapshot"
+      },
+      "results": [
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/resources/networkpolicy.go"
+                },
+                "region": {
+                  "endLine": 78,
+                  "startLine": 66
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "propagation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/resources/networkpolicy.go"
+                },
+                "region": {
+                  "endLine": 50,
+                  "startLine": 32
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:egress-dns-to"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/resources/networkpolicy.go"
+                },
+                "region": {
+                  "endLine": 71,
+                  "startLine": 66
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:egress-dns-port"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/resources/networkpolicy.go"
+                },
+                "region": {
+                  "endLine": 78,
+                  "startLine": 72
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The default NetworkPolicy declares deny-by-default Egress but includes a DNS rule whose `to` is only `namespaceSelector: {}`. An empty namespaceSelector matches every pod in every namespace, so any compromised `app: myapp` pod can send UDP/53 traffic to arbitrary hosts (DNS tunneling) rather than just cluster DNS."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:8fa9241b0139ca60358dd989792334e3b837de7fa6a0aee58e41a9b40fb136f3",
+            "primaryLocationLineHash": "d06e68adb06efe7b:1"
+          },
+          "properties": {
+            "category": "Improper Authorization",
+            "confidence": "medium",
+            "findingId": "csf_464c2ccb6fbf6dcce48ea9ad",
+            "occurrenceId": "occ_0b0f6a1e6039882296a31d35",
+            "severity": "low"
+          },
+          "ruleId": "access-control.broad-dns-egress",
+          "ruleIndex": 0
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/resources/provisioner.go"
+                },
+                "region": {
+                  "endLine": 58,
+                  "startLine": 43
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "propagation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 128,
+                  "startLine": 121
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "entrypoint"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 48,
+                  "startLine": 45
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "outcome"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/resources/networkpolicy.go"
+                },
+                "region": {
+                  "endLine": 82,
+                  "startLine": 20
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:np-control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/resources/networkpolicy.go"
+                },
+                "region": {
+                  "endLine": 32,
+                  "startLine": 20
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The controller provisions a deny-by-default NetworkPolicy and a ResourceQuota into each new namespace only at creation time. `applyOne` creates an object and silently returns on `AlreadyExists`, `handleUpdate` ignores every update event, and no `DeleteFunc` is registered on the namespace informer. Once provisioned, deletion or weakening of these security controls inside a namespace is never detected or restored."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:a3f2455c78105a5cc9dd29187b7a96d603ce748cd2fb28fef1aac50bb6f5249e",
+            "primaryLocationLineHash": "d86a3ae5706fcbc6:1"
+          },
+          "properties": {
+            "category": "Protection Mechanism Failure",
+            "confidence": "high",
+            "findingId": "csf_249580576d54699a5225d115",
+            "occurrenceId": "occ_24faac66bbbd8eec384e4bec",
+            "severity": "medium"
+          },
+          "ruleId": "protection-mechanism.create-once-no-reconcile",
+          "ruleIndex": 2
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/resources/rbac.go"
+                },
+                "region": {
+                  "endLine": 63,
+                  "startLine": 47
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "propagation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/resources/registry.go"
+                },
+                "region": {
+                  "endLine": 36,
+                  "startLine": 30
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:default-binding"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/resources/rbac.go"
+                },
+                "region": {
+                  "endLine": 87,
+                  "startLine": 66
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The registry unconditionally provisions into every new namespace a fixed ServiceAccount `myapp-sa`, a Role granting `get`/`list` on the core `configmaps` resource across the whole namespace, and a RoleBinding binding them. Any workload that runs with this default SA can read all ConfigMaps in the namespace, including ones holding sensitive values."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:6d568c7615bf4eea66ce46d77861d2e2d5473cab6a764545f086d71a2faf6509",
+            "primaryLocationLineHash": "8d9bc1f9e576867a:1"
+          },
+          "properties": {
+            "category": "Improper Privilege Management",
+            "confidence": "medium",
+            "findingId": "csf_08fb48e7f22727eb9c703607",
+            "occurrenceId": "occ_79c0b5ee9282d27ec19b8f90",
+            "severity": "low"
+          },
+          "ruleId": "privilege-management.default-configmap-role",
+          "ruleIndex": 1
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "Codex Security",
+          "rules": [
+            {
+              "id": "access-control.broad-dns-egress",
+              "name": "access-control.broad-dns-egress",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "access-control.broad-dns-egress"
+              }
+            },
+            {
+              "id": "privilege-management.default-configmap-role",
+              "name": "privilege-management.default-configmap-role",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "privilege-management.default-configmap-role"
+              }
+            },
+            {
+              "id": "protection-mechanism.create-once-no-reconcile",
+              "name": "protection-mechanism.create-once-no-reconcile",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "protection-mechanism.create-once-no-reconcile"
+              }
+            }
+          ],
+          "version": "standard-scan-1.0"
+        }
+      }
+    }
+  ],
+  "version": "2.1.0"
+}

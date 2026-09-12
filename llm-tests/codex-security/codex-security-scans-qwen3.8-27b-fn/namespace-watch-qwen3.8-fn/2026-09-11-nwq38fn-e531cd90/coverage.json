@@ -1,0 +1,69 @@
+{
+  "completeness": "complete",
+  "deferred": [],
+  "documentType": "codex-security.coverage",
+  "excludePaths": [],
+  "explicitExclusions": [
+    {
+      "id": "macos-appledouble-metadata",
+      "reason": "Files named ._ prefix are macOS AppleDouble binary resource-fork metadata, not source; excluded from review scope."
+    },
+    {
+      "id": "go-sum-line-review",
+      "reason": "go.sum was parsed for pinned module versions but not line-reviewed; it contains no executable logic."
+    }
+  ],
+  "includePaths": [
+    "."
+  ],
+  "inventoryStrategy": "directory",
+  "mode": "repository",
+  "openQuestions": [
+    {
+      "question": "Server-side enforcement of the ownerReference finalizer permission (blockOwnerDeletion=true) and of Role/RoleBinding escalation prevention depends on the API server version and enabled admission plugins; k8s.io/apiserver is not in the module graph, so the rejection behavior behind the RBAC-mismatch finding was not source-verifiable from this repository."
+    },
+    {
+      "question": "Dependency currency (k8s.io/* v0.30.0, golang.org/x/net v0.23.0) was not checked against public advisories because this scan is offline; an online govulncheck pass is recommended."
+    }
+  ],
+  "scanId": "2026-09-11-nwq38fn-e531cd90",
+  "schemaVersion": "1.0",
+  "surfaces": [
+    {
+      "disposition": "reported",
+      "id": "cli-config-and-credential-bootstrap",
+      "label": "CLI flags, kubeconfig resolution, and client bootstrap (cmd/namespace-watch/main.go)",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "reported",
+      "id": "namespace-reconcile-loop",
+      "label": "Informer, work queue, and namespace reconcile path (internal/controller/controller.go)",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "reported",
+      "id": "default-resource-templates",
+      "label": "Default resource templates and ownerReferences (internal/defaults/defaults.go)",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "reported",
+      "id": "deployment-rbac-and-pod-hardening",
+      "label": "Deployment RBAC, pod hardening, and image reference (deploy/deploy.yaml)",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "reported",
+      "id": "container-build-and-dependencies",
+      "label": "Container build pipeline and dependency manifests (Dockerfile, go.mod, go.sum)",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "test-suite",
+      "label": "Controller and defaults test suites (internal/controller/controller_test.go, internal/defaults/defaults_test.go)",
+      "receiptRefs": []
+    }
+  ]
+}

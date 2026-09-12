@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "required": ["scan"],
+  "properties": {
+    "documentType": {"type": "string"},
+    "schemaVersion": {"type": "string"},
+    "scan": {"type": "object"}
+  }
+}

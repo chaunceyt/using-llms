@@ -1,0 +1,75 @@
+{
+  "documentType": "codex-security.scan-manifest",
+  "scan": {
+    "artifacts": [
+      {
+        "mediaType": "application/json",
+        "path": "findings.json",
+        "sha256": "c8940bb5ba15b70fa1888cb48f275ec272502769bc86a9584e0b3ebb7d36e948"
+      },
+      {
+        "mediaType": "application/json",
+        "path": "coverage.json",
+        "sha256": "11bd0580d520997c4eb15603fa7f7ef575afbb6552952c6a2acdc52fa6b627d6"
+      }
+    ],
+    "completedAt": "2026-09-11T19:45:07Z",
+    "coverageRef": "coverage.json",
+    "findingsRef": "findings.json",
+    "id": "scan-20260911-014743-97cb5fea",
+    "producer": {
+      "name": "codex-security-plugin",
+      "version": "1.0"
+    },
+    "scope": {
+      "excludePaths": [],
+      "includePaths": [
+        "."
+      ],
+      "summary": "Repository-wide standard security scan of the namespace-watch-qwen3.8-27b-uncensored directory (non-Git scan root). All Go source (main.go, internal/config, internal/provisioner, internal/watcher, tests), deployment manifests (deploy/namespace-watcher.yaml), Dockerfile, Makefile, go.mod/go.sum, and README.md were reviewed. The compiled binary bin/namespace-watcher was excluded from static analysis. No SECURITY.md policy exists at the scan root or in any subdirectory.",
+      "userContext": "Use $codex-security:security-scan to scan this project folder /sandbox/qwen3.8-27b-uncensored/namespace-watch-qwen3.8-27b-uncensored for security vulnerabilities. This is a non-interactive CLI scan started by the user from this folder. Treat the current directory as the scan root, even if it is not a Git repository. Keep the scan grounded in code evidence. Validate plausible findings where feasible. Do not modify project source code."
+    },
+    "sealedAt": "2026-09-11T19:45:07Z",
+    "startedAt": "2026-09-11T01:47:43Z",
+    "status": "completed",
+    "target": {
+      "displayName": "namespace-watch-qwen3.8-27b-uncensored",
+      "kind": "directory_snapshot",
+      "snapshotDigest": "codex-security-snapshot/v1:sha256:95c767aa86ea26eda425733a9536af80166b467e1a43aa7e3a2774c09d09a845",
+      "targetId": "local:sha256:2b53081f1430b2ba17ed27f5eb505bf9e31e3c482ff56e7a2e7aafbc06f901db"
+    },
+    "threatModel": {
+      "assets": [
+        "per-namespace ResourceQuota/LimitRange (cross-tenant resource containment)",
+        "per-namespace NetworkPolicy (default network isolation)",
+        "per-namespace read-only RBAC defaults",
+        "watcher availability (the control applicator)",
+        "cluster RBAC surface reachable via the watcher ServiceAccount"
+      ],
+      "assumptions": [
+        "the cluster relies on this watcher (not a separate admission controller) to apply tenant defaults, per the README's stated purpose",
+        "namespace names are validated by the API server to RFC 1123 form, so no injection surface exists in the name field",
+        "compensating cluster-level quotas/admission controls, if any, are outside this repository"
+      ],
+      "attackerCapabilities": [
+        "tenant: create namespaces; commonly also create/delete resources inside own namespace",
+        "tenant: sustain namespace-creation bursts to load the watcher queue",
+        "cluster-admin-level: replace the :latest image or mutate the deployment (supply chain)",
+        "in-cluster: observe namespace lifecycle timing"
+      ],
+      "securityObjectives": [
+        "every namespace that exists is provisioned with the default security resources",
+        "provisioning is prompt, idempotent, and resilient to transient API failures",
+        "the watcher ServiceAccount holds only the privileges the code exercises",
+        "the watcher remains available under adversarial namespace-creation load"
+      ],
+      "summary": "namespace-watcher is a cluster-wide Kubernetes operator: it watches namespace creation and provisions security-default resources (ResourceQuota, LimitRange, read-only RBAC triple, NetworkPolicy) into each new namespace. The cluster's per-tenant resource containment and default network isolation rely on it. The primary external attacker is a cluster tenant who can create namespaces (and typically manage resources within them). The watcher itself runs with a powerful ClusterRole (create roles/rolebindings in any namespace), so its state machine, event pipeline, and deployment are security-relevant. Trust boundaries: (1) Kubernetes API namespace objects to the unstructured resources the watcher builds; (2) the watcher's ServiceAccount credentials to the API server; (3) the image/manifest supply chain. Security objectives: every existing namespace carries the default quota/isolation controls; defaults are applied promptly and idempotently; the watcher runs least-privilege and stays available.",
+      "trustBoundaries": [
+        "Kubernetes API (namespace objects, names) -> watcher unstructured resource templates and dynamic-client create path",
+        "watcher ServiceAccount (ClusterRole: watch namespaces cluster-wide; create/get/list six resource types in any namespace) -> API server",
+        "container image and deployment manifest -> watcher process"
+      ]
+    }
+  },
+  "schemaVersion": "1.0"
+}

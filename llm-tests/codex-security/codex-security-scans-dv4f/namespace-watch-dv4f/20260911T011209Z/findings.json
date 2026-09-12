@@ -1,0 +1,447 @@
+{
+  "documentType": "codex-security.findings",
+  "findings": [
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "event-handlers",
+            "update-noop",
+            "create-only"
+          ],
+          "outcome": "default-deny isolation and resource limits are silently lost for the namespace lifetime",
+          "sink": "absence of any reconcile/restore branch in the controller",
+          "source": "a tenant's delete/update action on a provisioned resource inside its own namespace",
+          "summary": "namespace create event -> handleAdd -> work queue -> syncNamespace -> provisioner.Apply -> applyOne Create; later control deletion has no path back into the queue"
+        },
+        "evidenceRefs": [
+          "update-noop",
+          "create-only"
+        ],
+        "impact": {
+          "level": "high",
+          "why": "Removing the default-deny NetworkPolicy exposes all myapp workloads to arbitrary network traffic, and removing the ResourceQuota lets a tenant consume unbounded cluster CPU/memory/pods/PVCs."
+        },
+        "likelihood": {
+          "level": "medium",
+          "why": "Requires write rights inside a namespace and a design intent that treats namespaces as at least partially trusted for resource changes."
+        },
+        "limitations": [
+          "Does not require a runtime reproduction; reachability follows from the RBAC model of typical multi-tenant clusters."
+        ],
+        "reachability": {
+          "attacker": "namespace tenant or workload with local edit rights",
+          "entrypoint": "delete/weaken myapp-network-policy or production-quota",
+          "outcome": "security controls permanently disabled",
+          "summary": "The attacker must hold write (delete/update) RBAC on at least the NetworkPolicy and ResourceQuota resources inside a provisioned namespace, which is common for tenant developers in their own namespace."
+        },
+        "summary": "A tenant or workload with RBAC write rights inside its own provisioned namespace deletes `myapp-network-policy` (restoring open traffic) or `production-quota` (lifting resource limits); because the controller never reconciles, the control stays disabled."
+      },
+      "codeEvidence": [
+        {
+          "code": "func BuildNetworkPolicy(namespace string) *unstructured.Unstructured {\n\treturn &unstructured.Unstructured{Object: map[string]interface{}{\n\t\t...\n\t\t\"spec\": map[string]interface{}{\n\t\t\t\"podSelector\": ...{\"app\": \"myapp\"},\n\t\t\t\"policyTypes\": []interface{}{\"Ingress\", \"Egress\"},",
+          "endLine": 32,
+          "explanation": "The NetworkPolicy is the operator's core deny-by-default isolation control; losing it defeats the operator's security purpose.",
+          "id": "np-control",
+          "label": "Deny-by-default NetworkPolicy is the protected control",
+          "language": "go",
+          "path": "internal/resources/networkpolicy.go",
+          "role": "outcome",
+          "startLine": 20
+        },
+        {
+          "code": "namespaceInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{\n\tAddFunc:    c.handleAdd,\n\tUpdateFunc: c.handleUpdate,\n})",
+          "endLine": 48,
+          "explanation": "Only Add and Update handlers are registered; there is no DeleteFunc, so deletion of a provisioned control never re-queues its namespace.",
+          "id": "event-handlers",
+          "label": "Informers register no DeleteFunc",
+          "language": "go",
+          "path": "internal/controller/controller.go",
+          "role": "entrypoint",
+          "startLine": 45
+        },
+        {
+          "code": "func (c *Controller) handleUpdate(oldObj, newObj interface{}) {\n\t// We provision only on creation; updates to existing namespaces are ignored\n\t_ = oldObj ...\n}",
+          "endLine": 128,
+          "explanation": "Modifications to a namespace's provisioned controls never re-enter the work queue, so weakened or deleted controls are never reconciled.",
+          "id": "update-noop",
+          "label": "Update events are ignored",
+          "language": "go",
+          "path": "internal/controller/controller.go",
+          "role": "propagation",
+          "startLine": 121
+        },
+        {
+          "code": "if _, err := p.dynamicClient.Resource(res.GVR).Namespace(namespace).\n\tCreate(ctx, obj, metav1.CreateOptions{}); err != nil {\n\tif apierrors.IsAlreadyExists(err) {\n\t\tklog.V(2).Infof(\"skipping %s %q/%q: already exists\", ...)\n\t\treturn nil\n\t}\n\treturn err\n}",
+          "endLine": 58,
+          "explanation": "After the initial Create, any AlreadyExists (or deleted-then-ignored) state is tolerated; there is no Get/Update or restore path for the protected controls.",
+          "id": "create-only",
+          "label": "applyOne creates and never updates/deletes",
+          "language": "go",
+          "path": "internal/resources/provisioner.go",
+          "role": "root_control",
+          "startLine": 43
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Confirmed directly in source: applyOne (provisioner.go) has no update/delete path, controller.go registers only AddFunc and UpdateFunc (UpdateFunc is a no-op), the informer watches Namespace objects only, and no ownerReference is set on any provisioned object."
+      },
+      "findingId": "csf_249580576d54699a5225d115",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:a3f2455c78105a5cc9dd29187b7a96d603ce748cd2fb28fef1aac50bb6f5249e"
+      },
+      "identity": {
+        "anchor": "provisioner.apply-one-create-only"
+      },
+      "locations": [
+        {
+          "endLine": 58,
+          "path": "internal/resources/provisioner.go",
+          "role": "root_control",
+          "startLine": 43
+        },
+        {
+          "endLine": 128,
+          "path": "internal/controller/controller.go",
+          "role": "propagation",
+          "startLine": 121
+        },
+        {
+          "endLine": 48,
+          "path": "internal/controller/controller.go",
+          "role": "entrypoint",
+          "startLine": 45
+        },
+        {
+          "endLine": 82,
+          "path": "internal/resources/networkpolicy.go",
+          "role": "outcome",
+          "startLine": 20
+        }
+      ],
+      "occurrenceId": "occ_24faac66bbbd8eec384e4bec",
+      "preventiveControls": [
+        "Set ownerReferences on provisioned objects so deletion/garbage-collection and namespace lifecycle are coupled.",
+        "Scope enforcement resources with an operator-owned label/annotation so only operator-managed objects are reconciled."
+      ],
+      "provenance": {
+        "source": "static-source-review"
+      },
+      "remediation": "Adopt desired-state reconciliation: watch the provisioned resource kinds (or use server-side apply with an owner reference/label), and restore or revert the default-deny NetworkPolicy, ResourceQuota, LimitRange, Role/RoleBinding when they are deleted or drift; alternatively enforce these controls via a tamper-resistant admission policy engine rather than create-once provisioning.",
+      "remediationTests": [
+        "Assert that deleting myapp-network-policy triggers re-creation of the deny-by-default policy.",
+        "Assert that modifying production-quota to remove limits is reverted on next reconcile."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "event-handlers",
+          "update-noop",
+          "create-only"
+        ],
+        "summary": "The violated invariant is that baseline security controls must remain present and enforced for the lifetime of a namespace. The create-once reconcile loop violates this: deletion or weakening of the NetworkPolicy/ResourceQuota produces no Namespace event, `handleUpdate` discards updates, and `applyOne` never restores an absent object."
+      },
+      "ruleId": "protection-mechanism.create-once-no-reconcile",
+      "severity": {
+        "level": "medium",
+        "rationale": "High impact (loss of the operator's baseline isolation and resource-limit enforcement, which can enable unbounded cluster resource consumption) with high likelihood for a tenant who already holds RBAC write rights in their own namespace. Rated medium rather than high because this is an explicit, documented design choice ('we do not fight with operators over resource changes') and the operator is provisioning convenience defaults rather than enforcing policy against a hostile namespace, so the enforcement invariant is only implicit. Would be raised to high if namespaces are explicitly treated as untrusted tenants."
+      },
+      "summary": "The controller provisions a deny-by-default NetworkPolicy and a ResourceQuota into each new namespace only at creation time. `applyOne` creates an object and silently returns on `AlreadyExists`, `handleUpdate` ignores every update event, and no `DeleteFunc` is registered on the namespace informer. Once provisioned, deletion or weakening of these security controls inside a namespace is never detected or restored.",
+      "taxonomy": {
+        "category": "Protection Mechanism Failure",
+        "cwe": [
+          "CWE-693"
+        ]
+      },
+      "title": "Baseline security controls (default-deny NetworkPolicy and ResourceQuota) are created once and never reconciled, so a namespace tenant can permanently disable them",
+      "validation": {
+        "assertions": [
+          "Deleting the provisioned NetworkPolicy or ResourceQuota does not trigger a Namespace watch event.",
+          "handleUpdate ignores every update, so drift is never reconciled.",
+          "applyOne only Creates and tolerates AlreadyExists; there is no restore branch."
+        ],
+        "evidenceRefs": [
+          "event-handlers",
+          "update-noop",
+          "create-only"
+        ],
+        "limitations": [
+          "Validated by static source review only; no live cluster reproduction was performed.",
+          "The create-once behavior is documented as intentional, so impact depends on whether namespaces are treated as untrusted tenants."
+        ],
+        "method": "static source trace",
+        "summary": "Source confirms that no code path recreates or reverts a deleted/weakened NetworkPolicy or ResourceQuota: the informer watches only Namespace objects, `handleUpdate` is a no-op, no DeleteFunc is registered, and `applyOne` returns nil on AlreadyExists without an update branch. No ownerReference is set anywhere."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "outcome": "unnecessary read access to sensitive ConfigMap data in the namespace",
+          "sink": "ConfigMap list/get authorization granted to that identity",
+          "source": "workload or tenant using the auto-provisioned myapp-sa identity",
+          "summary": "namespace create -> registry -> BuildRole/BuildRoleBinding -> role granting get/list configmaps -> any pod running as myapp-sa reads all ConfigMaps"
+        },
+        "evidenceRefs": [
+          "default-role",
+          "default-binding"
+        ],
+        "impact": {
+          "level": "low",
+          "why": "Exposure is confined to ConfigMap data within a single namespace and does not grant write, Secrets, or cross-namespace access."
+        },
+        "likelihood": {
+          "level": "medium",
+          "why": "Requires already being able to run as the default SA in that namespace; whether sensitive data exists in ConfigMaps is deployment-specific."
+        },
+        "reachability": {
+          "attacker": "workload/tenant acting as myapp-sa",
+          "entrypoint": "running a pod with the default SA token in a provisioned namespace",
+          "outcome": "read access to all ConfigMaps in the namespace",
+          "summary": "The attacker must be able to schedule a pod using myapp-sa or otherwise act as it, i.e. already have some authority within the same namespace; the grant expands that authority to all ConfigMaps."
+        },
+        "summary": "A workload scheduled with the auto-created myapp-sa token (or a tenant able to run pods with it) can list/read every ConfigMap in the namespace, enabling information disclosure of values stored there."
+      },
+      "codeEvidence": [
+        {
+          "code": "\"rules\": []interface{}{\n\tmap[string]interface{}{\n\t\t\"apiGroups\": []interface{}{\"\"},\n\t\t\"resources\": []interface{}{\"configmaps\"},\n\t\t\"verbs\":     []interface{}{\"get\", \"list\"},\n\t},\n},",
+          "endLine": 63,
+          "explanation": "The Role grants read access to every ConfigMap in the namespace with no resource-name restriction.",
+          "id": "default-role",
+          "label": "Role grants get/list on all ConfigMaps",
+          "language": "go",
+          "path": "internal/resources/rbac.go",
+          "role": "root_control",
+          "startLine": 47
+        },
+        {
+          "code": "\"subjects\": []interface{}{\n\tmap[string]interface{}{\"kind\": \"ServiceAccount\", \"name\": ServiceAccountName, \"namespace\": namespace},\n},\n\"roleRef\": map[string]interface{}{\"kind\": \"Role\", \"apiGroup\": \"rbac.authorization.k8s.io\", \"name\": RoleName},",
+          "endLine": 87,
+          "explanation": "The fixed SA is bound to the ConfigMap-read Role automatically; every provisioned namespace gets this identity.",
+          "id": "default-binding",
+          "label": "RoleBinding binds myapp-sa to the Role in each namespace",
+          "language": "go",
+          "path": "internal/resources/rbac.go",
+          "role": "propagation",
+          "startLine": 66
+        },
+        {
+          "code": "{GVR: ServiceAccountGVR, Build: BuildServiceAccount},\n{GVR: RoleGVR, Build: BuildRole},\n{GVR: RoleBindingGVR, Build: BuildRoleBinding},",
+          "endLine": 36,
+          "explanation": "The three RBAC builders run for every new namespace with no configuration gate, so the read grant is applied even where unused.",
+          "id": "registry-always",
+          "label": "SA/Role/RoleBinding registered unconditionally",
+          "language": "go",
+          "path": "internal/resources/registry.go",
+          "role": "propagation",
+          "startLine": 30
+        }
+      ],
+      "confidence": {
+        "level": "medium",
+        "rationale": "The Role/RoleBinding/ServiceAccount creation in every namespace is confirmed in source, but whether ConfigMaps actually hold sensitive data and whether the default SA is used by attacker-influenceable workloads depends on cluster deployment, which is not present in-scope."
+      },
+      "findingId": "csf_08fb48e7f22727eb9c703607",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:6d568c7615bf4eea66ce46d77861d2e2d5473cab6a764545f086d71a2faf6509"
+      },
+      "identity": {
+        "anchor": "rbac.default-configmap-read-role"
+      },
+      "locations": [
+        {
+          "endLine": 63,
+          "path": "internal/resources/rbac.go",
+          "role": "root_control",
+          "startLine": 47
+        },
+        {
+          "endLine": 36,
+          "path": "internal/resources/registry.go",
+          "role": "propagation",
+          "startLine": 30
+        }
+      ],
+      "occurrenceId": "occ_79c0b5ee9282d27ec19b8f90",
+      "preventiveControls": [
+        "Provision the RBAC objects only when a namespace opts in via an annotation/label.",
+        "Prefer scoped resourceNames rules over blanket configmap get/list."
+      ],
+      "provenance": {
+        "source": "static-source-review"
+      },
+      "remediation": "Do not auto-provision myapp-sa/Role/RoleBinding for every namespace, or gate it behind configuration so tenants opt in; if kept, restrict the Role to a labeled resource-name subset and document that ConfigMaps may hold sensitive data.",
+      "remediationTests": [
+        "Assert that namespaces provisioned without the feature enabled receive no default RoleBinding.",
+        "Assert that myapp-sa cannot list ConfigMaps outside the allowed resource-name set."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "default-role",
+          "default-binding",
+          "registry-always"
+        ],
+        "summary": "The violated invariant is least privilege on automatically-created identities. A fixed-name SA is auto-bound to a namespace-wide ConfigMap read role in every provisioned namespace regardless of need, granting broad read access to ConfigMaps (which may hold sensitive values) to anything able to run as that SA."
+      },
+      "ruleId": "privilege-management.default-configmap-role",
+      "severity": {
+        "level": "low",
+        "rationale": "The grant is namespace-scoped, read-only, and does not cover Secrets; exploiting it requires already being able to run a workload as `myapp-sa` in the same namespace, so the boundary crossed is limited. Rated low (least-privilege hardening gap) rather than medium because no cross-trust-boundary privilege gain is established from source."
+      },
+      "summary": "The registry unconditionally provisions into every new namespace a fixed ServiceAccount `myapp-sa`, a Role granting `get`/`list` on the core `configmaps` resource across the whole namespace, and a RoleBinding binding them. Any workload that runs with this default SA can read all ConfigMaps in the namespace, including ones holding sensitive values.",
+      "taxonomy": {
+        "category": "Improper Privilege Management",
+        "cwe": [
+          "CWE-269"
+        ]
+      },
+      "title": "Every new namespace auto-receives a ServiceAccount bound to a Role granting get/list over all ConfigMaps, expanding the read surface without tenant opt-in",
+      "validation": {
+        "assertions": [
+          "myapp-sa is created and bound in every provisioned namespace.",
+          "The Role covers all ConfigMaps, not a scoped subset."
+        ],
+        "evidenceRefs": [
+          "default-role",
+          "default-binding",
+          "registry-always"
+        ],
+        "limitations": [
+          "Sensitive content in ConfigMaps and actual use of the default SA are deployment-dependent and unverified in-scope."
+        ],
+        "method": "static source trace",
+        "summary": "Source confirms the Role, ServiceAccount and RoleBinding are built and registered for every namespace (rbac.go, registry.go) with read-only get/list on all configmaps; the grant is namespace-scoped and excludes Secrets."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "outcome": "data exfiltration channel outside the intended egress allowlist",
+          "sink": "arbitrary UDP/53 destination permitted by the policy",
+          "source": "network egress from a compromised app:myapp pod",
+          "summary": "compromised myapp pod -> outbound UDP/53 -> empty namespaceSelector matches all destinations -> arbitrary external host (DNS tunneling)"
+        },
+        "evidenceRefs": [
+          "egress-dns-to",
+          "egress-dns-port"
+        ],
+        "impact": {
+          "level": "low",
+          "why": "Confined to workloads already matched by the policy and requires a prior compromise; weakens egress isolation but does not directly compromise hosts."
+        },
+        "likelihood": {
+          "level": "low",
+          "why": "Needs an existing workload compromise within the policy's podSelector, which is not established by source alone."
+        },
+        "reachability": {
+          "attacker": "compromised app:myapp workload",
+          "entrypoint": "outbound UDP/53 packets from the compromised pod",
+          "outcome": "DNS-tunnel exfiltration to arbitrary hosts",
+          "summary": "Requires prior compromise of (or malicious code running as) a pod matching the policy's `app: myapp` podSelector, plus network reachability to an external DNS service."
+        },
+        "summary": "An attacker who compromises an `app: myapp` pod (or runs malicious code with matching labels) can encode data in DNS queries and exfiltrate it over UDP/53 to an external authoritative server, bypassing the intended deny-by-default egress isolation."
+      },
+      "codeEvidence": [
+        {
+          "code": "\"to\": []interface{}{\n\tmap[string]interface{}{\n\t\t\"namespaceSelector\": map[string]interface{}{},\n\t},\n},",
+          "endLine": 71,
+          "explanation": "An empty namespaceSelector selects every namespace; with no podSelector/IPBlock in this rule, it permits UDP/53 egress to any host, not only cluster DNS.",
+          "id": "egress-dns-to",
+          "label": "DNS egress matches all namespaces via empty namespaceSelector",
+          "language": "go",
+          "path": "internal/resources/networkpolicy.go",
+          "role": "root_control",
+          "startLine": 66
+        },
+        {
+          "code": "\"ports\": []interface{}{\n\tmap[string]interface{}{\"protocol\": \"UDP\", \"port\": int64(53)},\n},",
+          "endLine": 78,
+          "explanation": "The permissive destination is combined with UDP/53, the port classically used for DNS tunneling.",
+          "id": "egress-dns-port",
+          "label": "Egress port UDP 53",
+          "language": "go",
+          "path": "internal/resources/networkpolicy.go",
+          "role": "propagation",
+          "startLine": 72
+        }
+      ],
+      "confidence": {
+        "level": "medium",
+        "rationale": "The empty namespaceSelector semantics are confirmed by Kubernetes NetworkPolicy behavior and source, but actual exfiltration impact depends on workloads and cluster DNS topology (an ipBlock target was not specified)."
+      },
+      "findingId": "csf_464c2ccb6fbf6dcce48ea9ad",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:8fa9241b0139ca60358dd989792334e3b837de7fa6a0aee58e41a9b40fb136f3"
+      },
+      "identity": {
+        "anchor": "networkpolicy.dns-egress-scope"
+      },
+      "locations": [
+        {
+          "endLine": 78,
+          "path": "internal/resources/networkpolicy.go",
+          "role": "root_control",
+          "startLine": 66
+        },
+        {
+          "endLine": 50,
+          "path": "internal/resources/networkpolicy.go",
+          "role": "propagation",
+          "startLine": 32
+        }
+      ],
+      "occurrenceId": "occ_0b0f6a1e6039882296a31d35",
+      "preventiveControls": [
+        "Document and pin the cluster DNS service IP/CIDR in a configurable constant.",
+        "Prefer explicit ipBlock allowlists for DNS/egress over blank namespace selectors."
+      ],
+      "provenance": {
+        "source": "static-source-review"
+      },
+      "remediation": "Scope the DNS egress rule to cluster DNS: add an ipBlock covering the kube-dns/coreDNS service CIDR (and, if supported, a namespaceSelector targeting kube-system plus a label selecting the DNS pods) instead of an empty namespaceSelector that matches every namespace.",
+      "remediationTests": [
+        "Assert the policy's DNS egress rule targets only the cluster resolver IP range.",
+        "Assert no UDP/53 egress is allowed to arbitrary namespaceSelectors."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "egress-dns-to",
+          "egress-dns-port"
+        ],
+        "summary": "The violated invariant is that egress should be deny-by-default, allowing DNS only to cluster-resolver endpoints. The empty `namespaceSelector` broadens the permitted DNS destination to arbitrary hosts/pods cluster-wide, opening a data-exfiltration channel for matched workloads."
+      },
+      "ruleId": "access-control.broad-dns-egress",
+      "severity": {
+        "level": "low",
+        "rationale": "Impact is limited to workloads already matched by the policy's `app: myapp` podSelector and requires a prior compromise of such a workload; it weakens, but does not eliminate, the deny-by-default egress posture. Allowing DNS egress is a conventional pattern."
+      },
+      "summary": "The default NetworkPolicy declares deny-by-default Egress but includes a DNS rule whose `to` is only `namespaceSelector: {}`. An empty namespaceSelector matches every pod in every namespace, so any compromised `app: myapp` pod can send UDP/53 traffic to arbitrary hosts (DNS tunneling) rather than just cluster DNS.",
+      "taxonomy": {
+        "category": "Improper Authorization",
+        "cwe": [
+          "CWE-285"
+        ]
+      },
+      "title": "NetworkPolicy egress rule uses an empty namespaceSelector for DNS, permitting outbound UDP/53 to arbitrary destinations and enabling DNS-tunnel exfiltration from myapp pods",
+      "validation": {
+        "assertions": [
+          "An empty namespaceSelector matches all pods in all namespaces.",
+          "No ipBlock or targeted podSelector restricts DNS egress to the cluster resolver."
+        ],
+        "evidenceRefs": [
+          "egress-dns-to",
+          "egress-dns-port"
+        ],
+        "limitations": [
+          "The cluster's actual DNS service IPs/CIDR were not resolvable in-scope; whether exfiltration is practical depends on deployment."
+        ],
+        "method": "static source trace",
+        "summary": "Source shows the policy sets Egress in policyTypes and then grants UDP/53 egress with a destination of only an empty namespaceSelector, which Kubernetes interprets as all namespaces. Counterevidence: DNS egress to cluster DNS is generally required, and the rule is port-restricted to UDP/53."
+      }
+    }
+  ],
+  "scanId": "namespace-watch-dv4f_20260911T011209Z",
+  "schemaVersion": "1.0"
+}

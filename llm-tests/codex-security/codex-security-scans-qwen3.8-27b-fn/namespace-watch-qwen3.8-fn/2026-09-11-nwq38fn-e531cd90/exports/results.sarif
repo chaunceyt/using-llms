@@ -1,0 +1,746 @@
+{
+  "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/schemas/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "automationDetails": {
+        "id": "2026-09-11-nwq38fn-e531cd90"
+      },
+      "properties": {
+        "codexSecuritySchemaVersion": "1.0",
+        "codexSecurityTargetKind": "directory_snapshot"
+      },
+      "results": [
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Dockerfile"
+                },
+                "region": {
+                  "endLine": 6,
+                  "startLine": 1
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "mitigating_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Dockerfile"
+                },
+                "region": {
+                  "endLine": 10,
+                  "startLine": 8
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f7-e1"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Dockerfile"
+                },
+                "region": {
+                  "endLine": 6,
+                  "startLine": 2
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The build stage runs COPY . . with no .dockerignore present. Any kubeconfig, token file, .env, or VCS material sitting in the build directory at build time is copied into the build-stage layer and remains retrievable from builder cache, pushed cache stages, or intermediate-stage artifacts, even though the final distroless stage copies only the binary. The current context contains no secrets, so this is exposure shaped by construction rather than an active leak."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:a99657785fc1cc80590c6a911af45235e4fb8072066c34f2b980e3359932b1ab",
+            "primaryLocationLineHash": "f9d31b543080d00e:1"
+          },
+          "properties": {
+            "category": "information-exposure",
+            "confidence": "high",
+            "findingId": "csf_296f7332c0a16b07e4eb2da9",
+            "occurrenceId": "occ_260565fe16721503092199c7",
+            "severity": "low"
+          },
+          "ruleId": "build-context-copied-without-dockerignore",
+          "ruleIndex": 0
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "deploy/deploy.yaml"
+                },
+                "region": {
+                  "endLine": 28,
+                  "startLine": 16
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "sink"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/defaults/defaults.go"
+                },
+                "region": {
+                  "endLine": 153,
+                  "startLine": 112
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "contributing_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/defaults/defaults.go"
+                },
+                "region": {
+                  "endLine": 231,
+                  "startLine": 226
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "amplifier"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 119,
+                  "startLine": 100
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f3-e1"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "deploy/deploy.yaml"
+                },
+                "region": {
+                  "endLine": 25,
+                  "startLine": 20
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f3-e2"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/defaults/defaults.go"
+                },
+                "region": {
+                  "endLine": 125,
+                  "startLine": 119
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f3-e3"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 117,
+                  "startLine": 114
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The controller creates a Role granting configmaps get/list, a RoleBinding binding it, and objects carrying blockOwnerDeletion=true controller ownerReferences to Namespaces, while its ClusterRole grants create-only verbs and namespaces get/list/watch. On API servers enforcing the standard escalation-prevention, role-bind, and ownerReference finalizer admission checks, the ServiceAccount cannot legally create these objects, so every sync fails with a non-transient error that processNext classifies as retryable and requeues forever with no max-requeue bound."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:0dbae8dae4d72be6071463585575b747d0c3fe3b3b7d0df4de6e3a755992f821",
+            "primaryLocationLineHash": "a2ad31bbf59ea52c:1"
+          },
+          "properties": {
+            "category": "security-configuration",
+            "confidence": "medium",
+            "findingId": "csf_67eaabfff563f64feffdb365",
+            "occurrenceId": "occ_39d689ab5658ea5b02c0aec0",
+            "severity": "low"
+          },
+          "ruleId": "cluster-role-missing-bind-and-finalizer-permissions",
+          "ruleIndex": 1
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "deploy/deploy.yaml"
+                },
+                "region": {
+                  "endLine": 63,
+                  "startLine": 57
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "impact_context"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "deploy/deploy.yaml"
+                },
+                "region": {
+                  "endLine": 41,
+                  "startLine": 12
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f5-e1"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "deploy/deploy.yaml"
+                },
+                "region": {
+                  "endLine": 61,
+                  "startLine": 58
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f5-e2"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Dockerfile"
+                },
+                "region": {
+                  "endLine": 10,
+                  "startLine": 8
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The Deployment runs with a ServiceAccount bound to a cluster-wide ClusterRole but references image namespace-watch:latest, an implicit-registry mutable tag with no digest and no imagePullPolicy. Whoever can repoint that tag in the registry or node image store substitutes the binary that receives cluster-wide create rights in every namespace, collapsing the separation between artifact integrity and cluster-wide RBAC."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:28685bbe971eaced902694e0a01fb2200b6ef80342d10750936c80087e71dcbd",
+            "primaryLocationLineHash": "b1cfd67584067b59:1"
+          },
+          "properties": {
+            "category": "supply-chain",
+            "confidence": "high",
+            "findingId": "csf_9f724fd8d5a218d9ad58e995",
+            "occurrenceId": "occ_4a8218b149dc7a99923470e3",
+            "severity": "low"
+          },
+          "ruleId": "mutable-latest-image-for-cluster-privileged-sa",
+          "ruleIndex": 3
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cmd/namespace-watch/main.go"
+                },
+                "region": {
+                  "endLine": 76,
+                  "startLine": 65
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f6-e1"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cmd/namespace-watch/main.go"
+                },
+                "region": {
+                  "endLine": 75,
+                  "startLine": 69
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "When the -kubeconfig flag is empty and rest.InClusterConfig fails, the error is swallowed and the controller falls through to the default client loading rules, silently adopting $KUBECONFIG or ~/.kube/config. Any environment where the image runs without in-cluster config (automount disabled, host-network pod, kind/minikube, CI, a developer machine) then executes the controller's privileged writes under an ambient, often much broader, identity with no log of which credential was chosen and no fail-closed."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:bfce390c1ca9d8efddee56f3a4e80ea16a09c1c6508ad9b896cde9b10d5931a5",
+            "primaryLocationLineHash": "3e73ea076818f515:1"
+          },
+          "properties": {
+            "category": "credential-management",
+            "confidence": "medium",
+            "findingId": "csf_4b1369aa857f98a23a509b34",
+            "occurrenceId": "occ_5db82d191d92523324203a60",
+            "severity": "low"
+          },
+          "ruleId": "silent-ambient-kubeconfig-fallback",
+          "ruleIndex": 5
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/defaults/defaults.go"
+                },
+                "region": {
+                  "endLine": 231,
+                  "startLine": 226
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "sink"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 146,
+                  "startLine": 123
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "control_gap"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 61,
+                  "startLine": 53
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "configuration"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cmd/namespace-watch/main.go"
+                },
+                "region": {
+                  "endLine": 28,
+                  "startLine": 27
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f2-e1"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/defaults/defaults.go"
+                },
+                "region": {
+                  "endLine": 230,
+                  "startLine": 227
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f2-e2"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 143,
+                  "startLine": 136
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "OwnedBy attaches a metav1.NewControllerRef ownerReference (controller=true and blockOwnerDeletion=true, verified in apimachinery v0.30.0) pointing at the Namespace UID held in the informer cache. If a namespace is deleted and recreated with the same name before the garbage collector drains the old dependents, the recreated namespace's sync hits AlreadyExists on the stale-UID objects and tolerates it; the GC then deletes those dependents, and because only Add events reconcile and resync is disabled by default, nothing re-creates them, silently removing the quota and limit-range guardrails until the next controller restart."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:54f44e63efd6c5fa4fff45c78da128c50187388706cfc4312db7aa7bf063e59f",
+            "primaryLocationLineHash": "e11d0a867704d18f:1"
+          },
+          "properties": {
+            "category": "concurrency-state-handling",
+            "confidence": "medium",
+            "findingId": "csf_176a506e058f134e85cc1f51",
+            "occurrenceId": "occ_7b0e17712d1596e1c195eee9",
+            "severity": "low"
+          },
+          "ruleId": "controller-ownerref-delete-recreate-race-drops-defaults",
+          "ruleIndex": 2
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cmd/namespace-watch/main.go"
+                },
+                "region": {
+                  "endLine": 54,
+                  "startLine": 53
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "sink"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 93,
+                  "startLine": 82
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "configuration"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cmd/namespace-watch/main.go"
+                },
+                "region": {
+                  "endLine": 31,
+                  "startLine": 30
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f4-e2"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 90,
+                  "startLine": 86
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "strings.Split on the raw flag value produces empty elements for empty values, trailing commas, or doubled commas, and never trims whitespace. An empty prefix matches every namespace name in the enqueue filter, so the controller silently stops provisioning everything (fail-closed no-op with no log or error). A padded element such as the second entry in \"kube-, istio-\" can never match a valid RFC 1123 name, so that namespace family is silently unprotected and receives the production quota and limit range (fail-open)."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:63a0c83d258ec4bc2dc5c402f7374274b54ee759cd3438eec718edf0cd3f016f",
+            "primaryLocationLineHash": "5837279eeaf2d639:1"
+          },
+          "properties": {
+            "category": "input-validation",
+            "confidence": "high",
+            "findingId": "csf_ad7e8fd519e45ebffd5b96d3",
+            "occurrenceId": "occ_8b3e06c4fd29882e56c8ff6f",
+            "severity": "low"
+          },
+          "ruleId": "skip-prefixes-flag-parsing-unvalidated",
+          "ruleIndex": 6
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 93,
+                  "startLine": 82
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "entry_point"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 61,
+                  "startLine": 53
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "sink"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 146,
+                  "startLine": 123
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "impact_source"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/defaults/defaults.go"
+                },
+                "region": {
+                  "endLine": 98,
+                  "startLine": 77
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "configuration"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cmd/namespace-watch/main.go"
+                },
+                "region": {
+                  "endLine": 31,
+                  "startLine": 30
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "deployment_context"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "deploy/deploy.yaml"
+                },
+                "region": {
+                  "endLine": 63,
+                  "startLine": 61
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f1-e1"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 90,
+                  "startLine": 86
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f1-e3"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/controller.go"
+                },
+                "region": {
+                  "endLine": 136,
+                  "startLine": 134
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f1-e4"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/defaults/defaults.go"
+                },
+                "region": {
+                  "endLine": 93,
+                  "startLine": 82
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The only control that keeps tenant defaults out of protected namespaces is an exact name-prefix check at enqueue time (default -skip-prefixes=\"kube-\"). The informer registers its AddFunc before Run, so client-go replays the initial LIST of all Active namespaces as Add events on every controller start, and the namespace \"default\" plus any add-on or system-like namespace whose name does not begin with \"kube-\" (for example istio-system, ingress-nginx, kubernetes-dashboard) is stamped with a fixed production-quota ResourceQuota and a max-capped LimitRange. The injection is sticky because sync tolerates AlreadyExists and never updates or removes existing objects."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:fc95d36b0bb109942a67dc0309e58eb03081ae0434e646d41d2e1fc06f76548a",
+            "primaryLocationLineHash": "77879c21520b058e:1"
+          },
+          "properties": {
+            "category": "broken-access-control",
+            "confidence": "high",
+            "findingId": "csf_df22e2ac1f724a3ac7de4b41",
+            "occurrenceId": "occ_f2eed653b19867586045595a",
+            "severity": "medium"
+          },
+          "ruleId": "namespace-exclusion-prefix-filter-insufficient",
+          "ruleIndex": 4
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "Codex Security",
+          "rules": [
+            {
+              "id": "build-context-copied-without-dockerignore",
+              "name": "build-context-copied-without-dockerignore",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "build-context-copied-without-dockerignore"
+              }
+            },
+            {
+              "id": "cluster-role-missing-bind-and-finalizer-permissions",
+              "name": "cluster-role-missing-bind-and-finalizer-permissions",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "cluster-role-missing-bind-and-finalizer-permissions"
+              }
+            },
+            {
+              "id": "controller-ownerref-delete-recreate-race-drops-defaults",
+              "name": "controller-ownerref-delete-recreate-race-drops-defaults",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "controller-ownerref-delete-recreate-race-drops-defaults"
+              }
+            },
+            {
+              "id": "mutable-latest-image-for-cluster-privileged-sa",
+              "name": "mutable-latest-image-for-cluster-privileged-sa",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "mutable-latest-image-for-cluster-privileged-sa"
+              }
+            },
+            {
+              "id": "namespace-exclusion-prefix-filter-insufficient",
+              "name": "namespace-exclusion-prefix-filter-insufficient",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "namespace-exclusion-prefix-filter-insufficient"
+              }
+            },
+            {
+              "id": "silent-ambient-kubeconfig-fallback",
+              "name": "silent-ambient-kubeconfig-fallback",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "silent-ambient-kubeconfig-fallback"
+              }
+            },
+            {
+              "id": "skip-prefixes-flag-parsing-unvalidated",
+              "name": "skip-prefixes-flag-parsing-unvalidated",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "skip-prefixes-flag-parsing-unvalidated"
+              }
+            }
+          ],
+          "version": "1.0.0"
+        }
+      }
+    }
+  ],
+  "version": "2.1.0"
+}

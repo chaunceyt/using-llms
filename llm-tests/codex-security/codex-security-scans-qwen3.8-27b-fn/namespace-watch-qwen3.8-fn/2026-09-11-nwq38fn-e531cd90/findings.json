@@ -1,0 +1,775 @@
+{
+  "documentType": "codex-security.findings",
+  "findings": [
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "f1-e2",
+            "f1-e3"
+          ],
+          "summary": "Namespace objects from the cluster-wide watch (including the initial LIST replay on every start) flow through AddFunc into the prefix-only filter, then into sync, which issues six Create calls that stamp quotas, limit ranges, and RBAC objects into whatever Active namespace survived the filter."
+        },
+        "reachability": {
+          "evidenceRefs": [
+            "f1-e1"
+          ],
+          "summary": "Automatic at every controller start or redeploy for pre-existing Active namespaces; additionally reachable by any principal able to create a namespace whose name does not match a configured prefix, which the controller then provisions with the same fixed defaults."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "\tfor _, prefix := range c.skipPrefixes {\n\t\tif strings.HasPrefix(ns.Name, prefix) {\n\t\t\treturn\n\t\t}\n\t}",
+          "endLine": 90,
+          "id": "f1-e1",
+          "path": "internal/controller/controller.go",
+          "startLine": 86
+        },
+        {
+          "code": "\t_, err := c.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{\n\t\tAddFunc: func(obj interface{}) {\n\t\t\tns, ok := obj.(*corev1.Namespace)\n\t\t\tif !ok {\n\t\t\t\treturn\n\t\t\t}\n\t\t\tc.enqueue(ns)\n\t\t},\n\t})",
+          "endLine": 61,
+          "id": "f1-e2",
+          "path": "internal/controller/controller.go",
+          "startLine": 53
+        },
+        {
+          "code": "\t\t_, err := c.dynamic.Resource(res.GVR).Namespace(ns.Name).\n\t\t\tCreate(ctx, res.Body, metav1.CreateOptions{})\n\t\tif err != nil && !apierrors.IsAlreadyExists(err) {",
+          "endLine": 136,
+          "id": "f1-e3",
+          "path": "internal/controller/controller.go",
+          "startLine": 134
+        },
+        {
+          "code": "\t\t\t\t\"name\": \"production-quota\",\n\t\t\t},\n\t\t\t\"spec\": map[string]interface{}{\n\t\t\t\t\"hard\": map[string]interface{}{\n\t\t\t\t\t\"requests.cpu\":           \"20\",\n\t\t\t\t\t\"requests.memory\":        \"40Gi\",\n\t\t\t\t\t\"limits.cpu\":             \"40\",\n\t\t\t\t\t\"limits.memory\":          \"80Gi\",\n\t\t\t\t\t\"pods\":                   \"100\",",
+          "endLine": 93,
+          "id": "f1-e4",
+          "path": "internal/defaults/defaults.go",
+          "startLine": 82
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Enqueue filter, Add-only handler registration order, tolerate-AlreadyExists sync, and the shipped default flag value are all directly readable in repository source; the initial-LIST Add replay was additionally verified in the pinned k8s.io/client-go v0.30.0 sources (shared_informer.go dispatches initial-list items through OnAdd)."
+      },
+      "findingId": "csf_df22e2ac1f724a3ac7de4b41",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:fc95d36b0bb109942a67dc0309e58eb03081ae0434e646d41d2e1fc06f76548a"
+      },
+      "identity": {
+        "anchor": "internal/controller/controller.go-enqueue-skip-prefix"
+      },
+      "locations": [
+        {
+          "endLine": 93,
+          "path": "internal/controller/controller.go",
+          "role": "root_control",
+          "startLine": 82
+        },
+        {
+          "endLine": 61,
+          "path": "internal/controller/controller.go",
+          "role": "entry_point",
+          "startLine": 53
+        },
+        {
+          "endLine": 146,
+          "path": "internal/controller/controller.go",
+          "role": "sink",
+          "startLine": 123
+        },
+        {
+          "endLine": 98,
+          "path": "internal/defaults/defaults.go",
+          "role": "impact_source",
+          "startLine": 77
+        },
+        {
+          "endLine": 31,
+          "path": "cmd/namespace-watch/main.go",
+          "role": "configuration",
+          "startLine": 30
+        },
+        {
+          "endLine": 63,
+          "path": "deploy/deploy.yaml",
+          "role": "deployment_context",
+          "startLine": 61
+        }
+      ],
+      "occurrenceId": "occ_f2eed653b19867586045595a",
+      "provenance": {
+        "source": "baseline auditor and PKT-A investigator, merged and re-validated by the parent scan"
+      },
+      "remediation": "Replace name-prefix exclusion with an explicit opt-in/opt-out namespace label or annotation, re-check the filter inside sync against the live object, skip namespaces that pre-date controller startup unless opted in, and enumerate protected namespaces (default included) in deployment args as defense in depth.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f1-e1",
+          "f1-e2"
+        ],
+        "facts": [
+          "Only AddFunc is registered; there is no Update or Delete handler (controller.go:53-61).",
+          "The default skip list is \"kube-\", which never matches \"default\" or third-party system-like namespaces (main.go:30-31).",
+          "sync() applies all six defaults with fixed names and never reconciles existing objects (controller.go:123-146)."
+        ],
+        "summary": "The protected-namespace decision is made once at enqueue time using only exact name prefixes, and pre-existing namespaces re-enter that path as Add events during the informer's initial LIST replay, so the filter's coverage is defined by naming convention rather than by namespace identity or intent."
+      },
+      "ruleId": "namespace-exclusion-prefix-filter-insufficient",
+      "severity": {
+        "level": "medium",
+        "rationale": "Namespace-wide quotas (pods 100, requests.cpu 20) and per-container caps (max cpu 2, memory 2Gi) in shared or platform namespaces cause sustained rejection of pod, service, and PVC creation for workloads outside the product's intended scope. Likelihood is elevated because the default namespace is always affected on first and every start in the shipped configuration. High impact with elevated likelihood calibrates to medium rather than high because some exposure is design intent (any namespace not skipped is provisioned) and hot namespaces with usage above the hard values reject the quota at creation."
+      },
+      "summary": "The only control that keeps tenant defaults out of protected namespaces is an exact name-prefix check at enqueue time (default -skip-prefixes=\"kube-\"). The informer registers its AddFunc before Run, so client-go replays the initial LIST of all Active namespaces as Add events on every controller start, and the namespace \"default\" plus any add-on or system-like namespace whose name does not begin with \"kube-\" (for example istio-system, ingress-nginx, kubernetes-dashboard) is stamped with a fixed production-quota ResourceQuota and a max-capped LimitRange. The injection is sticky because sync tolerates AlreadyExists and never updates or removes existing objects.",
+      "taxonomy": {
+        "category": "broken-access-control",
+        "cwe": [
+          "CWE-863"
+        ]
+      },
+      "title": "Namespace exclusion is prefix-only and replayed over all pre-existing namespaces, so restrictive quotas and limits land in shared and system-like namespaces",
+      "validation": {
+        "counterEvidence": [
+          "ResourceQuota creation is rejected when current usage already exceeds the hard values, so some hot namespaces reject the injection.",
+          "The injected NetworkPolicy is inert unless pods carry the app=myapp label, limiting the blast radius to quota and limit-range effects.",
+          "Operators can widen -skip-prefixes, which mitigates but does not fix the naming-convention control."
+        ],
+        "evidence": [
+          "Shipped args are only -v=2, so the default -skip-prefixes=\"kube-\" is the effective filter (deploy/deploy.yaml:62-63).",
+          "Enqueue is the sole consumer of skipPrefixes; sync performs no second check."
+        ],
+        "evidenceRefs": [
+          "f1-e1",
+          "f1-e3"
+        ],
+        "method": "Source review plus dependency-source verification in the Go module cache (k8s.io/client-go v0.30.0).",
+        "summary": "Confirmed by reading the full reconcile path and the shipped deployment, and by verifying in the pinned client-go v0.30.0 module source that the shared informer delivers initial-list items to registered handlers through OnAdd, so every Active namespace is enqueued on controller start."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "f2-e1",
+            "f2-e2"
+          ],
+          "summary": "A principal with delete and create rights on its own namespace deletes and recreates it around the GC window; the controller's create-time UID capture plus AlreadyExists tolerance converts the race into permanently unreconciled default resources."
+        },
+        "reachability": {
+          "evidenceRefs": [
+            "f2-e2"
+          ],
+          "summary": "Reachable by a namespace owner through ordinary delete/recreate churn; no elevated privilege required, but timing-dependent."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "\tu.SetNamespace(owner.Name)\n\tu.SetOwnerReferences([]metav1.OwnerReference{\n\t\t*metav1.NewControllerRef(owner, corev1.SchemeGroupVersion.WithKind(\"Namespace\")),\n\t})",
+          "endLine": 230,
+          "id": "f2-e1",
+          "path": "internal/defaults/defaults.go",
+          "startLine": 227
+        },
+        {
+          "code": "\t\tif err != nil && !apierrors.IsAlreadyExists(err) {\n\t\t\treturn fmt.Errorf(\"creating %s/%s in namespace %s: %w\",\n\t\t\t\tres.Body.GetKind(), res.Body.GetName(), ns.Name, err)\n\t\t}\n\t\tif err == nil {\n\t\t\tklog.InfoS(\"created default resource\",",
+          "endLine": 143,
+          "id": "f2-e2",
+          "path": "internal/controller/controller.go",
+          "startLine": 136
+        }
+      ],
+      "confidence": {
+        "level": "medium",
+        "rationale": "The NewControllerRef semantics were verified directly against the pinned apimachinery v0.30.0 source, and the tolerate-AlreadyExists plus Add-only code paths are in repository source; the end-to-end loss depends on garbage-collector timing that cannot be reproduced from source alone."
+      },
+      "findingId": "csf_176a506e058f134e85cc1f51",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:54f44e63efd6c5fa4fff45c78da128c50187388706cfc4312db7aa7bf063e59f"
+      },
+      "identity": {
+        "anchor": "internal/defaults/defaults.go-ownedby-controller-ref"
+      },
+      "locations": [
+        {
+          "endLine": 231,
+          "path": "internal/defaults/defaults.go",
+          "role": "root_control",
+          "startLine": 226
+        },
+        {
+          "endLine": 146,
+          "path": "internal/controller/controller.go",
+          "role": "sink",
+          "startLine": 123
+        },
+        {
+          "endLine": 61,
+          "path": "internal/controller/controller.go",
+          "role": "control_gap",
+          "startLine": 53
+        },
+        {
+          "endLine": 28,
+          "path": "cmd/namespace-watch/main.go",
+          "role": "configuration",
+          "startLine": 27
+        }
+      ],
+      "occurrenceId": "occ_7b0e17712d1596e1c195eee9",
+      "provenance": {
+        "source": "PKT-A investigator, re-validated by the parent scan with dependency-source confirmation"
+      },
+      "remediation": "On AlreadyExists, compare the existing object's controller ownerReference UID against the live namespace and repair or requeue when it is stale; register Update handlers or enable a bounded resync so drift self-heals; consider ownerReferences without blockOwnerDeletion since namespace deletion already cascades to contained resources.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f2-e1",
+          "f2-e2"
+        ],
+        "facts": [
+          "metav1.NewControllerRef sets Controller=true and BlockOwnerDeletion=true (verified in apimachinery v0.30.0 pkg/apis/meta/v1/controller_ref.go).",
+          "sync treats AlreadyExists as success without checking the stored owner UID.",
+          "-resync-period defaults to 0 and the shipped deployment does not set it."
+        ],
+        "summary": "Ownership is captured from a cached Namespace UID at create time and never repaired afterwards, while reconciliation is driven only by Add events with resync disabled by default."
+      },
+      "ruleId": "controller-ownerref-delete-recreate-race-drops-defaults",
+      "severity": {
+        "level": "low",
+        "rationale": "Impact is medium (tenant guardrails silently absent in one namespace, undetected) but likelihood is low: it requires a delete/recreate race against GC timing, and a controller restart heals the state via the initial-list replay. Medium impact with low likelihood calibrates to low."
+      },
+      "summary": "OwnedBy attaches a metav1.NewControllerRef ownerReference (controller=true and blockOwnerDeletion=true, verified in apimachinery v0.30.0) pointing at the Namespace UID held in the informer cache. If a namespace is deleted and recreated with the same name before the garbage collector drains the old dependents, the recreated namespace's sync hits AlreadyExists on the stale-UID objects and tolerates it; the GC then deletes those dependents, and because only Add events reconcile and resync is disabled by default, nothing re-creates them, silently removing the quota and limit-range guardrails until the next controller restart.",
+      "taxonomy": {
+        "category": "concurrency-state-handling",
+        "cwe": [
+          "CWE-367"
+        ]
+      },
+      "title": "Delete/recreate UID race with controller ownerReferences and Add-only reconciliation can permanently drop namespace guardrails",
+      "validation": {
+        "counterEvidence": [
+          "In smaller clusters the GC usually drains dependents before recreation, after which creates succeed with fresh ownerReferences.",
+          "A controller restart replays the initial list and restores missing defaults, so the loss is not permanent across restarts."
+        ],
+        "evidence": [
+          "No UpdateFunc or DeleteFunc is registered anywhere in the controller.",
+          "The informer indexer read in sync cannot distinguish a recreated namespace with the same name."
+        ],
+        "evidenceRefs": [
+          "f2-e1"
+        ],
+        "method": "Dependency-source verification plus control-flow review of sync and event handlers.",
+        "summary": "Verified NewControllerRef field semantics in the pinned dependency source and the absence of any owner-reference repair path in repository source; the race itself is a reasoned interleaving of documented GC behavior with the confirmed code paths."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "f3-e3"
+          ],
+          "summary": "No external attacker is required: the shipped RBAC plus emitted object content deterministically produces permanent API errors that the workqueue retries forever. A namespace owner pre-creating one of the six fixed names with an owner the SA cannot finalize reproduces the same unbounded requeue for that key."
+        },
+        "reachability": {
+          "evidenceRefs": [
+            "f3-e1"
+          ],
+          "summary": "Automatic in any enforcing deployment; attacker-assisted variant is reachable by an ordinary namespace tenant but adds nothing beyond the self-inflicted path."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "  - apiGroups: [\"\"]\n    resources: [\"limitranges\", \"resourcequotas\", \"serviceaccounts\"]\n    verbs: [\"create\"]\n  - apiGroups: [\"rbac.authorization.k8s.io\"]\n    resources: [\"roles\", \"rolebindings\"]\n    verbs: [\"create\"]",
+          "endLine": 25,
+          "id": "f3-e1",
+          "path": "deploy/deploy.yaml",
+          "startLine": 20
+        },
+        {
+          "code": "\t\t\"rules\": []interface{}{\n\t\t\tmap[string]interface{}{\n\t\t\t\t\"apiGroups\": []interface{}{\"\"},\n\t\t\t\t\"resources\": []interface{}{\"configmaps\"},\n\t\t\t\t\"verbs\":     []interface{}{\"get\", \"list\"},\n\t\t\t},\n\t\t},",
+          "endLine": 125,
+          "id": "f3-e2",
+          "path": "internal/defaults/defaults.go",
+          "startLine": 119
+        },
+        {
+          "code": "\t\tdefault:\n\t\t\tklog.ErrorS(err, \"sync failed, requeueing\", \"namespace\", key)\n\t\t\tc.queue.AddRateLimited(key)",
+          "endLine": 117,
+          "id": "f3-e3",
+          "path": "internal/controller/controller.go",
+          "startLine": 114
+        }
+      ],
+      "confidence": {
+        "level": "medium",
+        "rationale": "The grant set, the emitted object content, and the unbounded default requeue branch are all confirmed in repository and pinned-dependency source; the triggering admission checks live in k8s.io/apiserver, which is not in the module graph, so their activation depends on cluster version and enabled plugins."
+      },
+      "findingId": "csf_67eaabfff563f64feffdb365",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:0dbae8dae4d72be6071463585575b747d0c3fe3b3b7d0df4de6e3a755992f821"
+      },
+      "identity": {
+        "anchor": "deploy/deploy.yaml-clusterrole-grants"
+      },
+      "locations": [
+        {
+          "endLine": 28,
+          "path": "deploy/deploy.yaml",
+          "role": "root_control",
+          "startLine": 16
+        },
+        {
+          "endLine": 153,
+          "path": "internal/defaults/defaults.go",
+          "role": "sink",
+          "startLine": 112
+        },
+        {
+          "endLine": 231,
+          "path": "internal/defaults/defaults.go",
+          "role": "contributing_control",
+          "startLine": 226
+        },
+        {
+          "endLine": 119,
+          "path": "internal/controller/controller.go",
+          "role": "amplifier",
+          "startLine": 100
+        }
+      ],
+      "occurrenceId": "occ_39d689ab5658ea5b02c0aec0",
+      "provenance": {
+        "source": "PKT-B investigator and PKT-A investigator, merged and re-validated by the parent scan"
+      },
+      "remediation": "Either align the grant set with what the API server requires for the intended objects (bind on the specific resourceNames, and namespaces update or the finalizers subresource if blockOwnerDeletion is required) or emit objects that do not need those permissions (drop blockOwnerDeletion; ship the Role/RoleBinding via the deployment instead of the controller); classify non-transient validation errors as terminal with a metric instead of requeueing without a bound.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f3-e1",
+          "f3-e2",
+          "f3-e3"
+        ],
+        "facts": [
+          "The SA's own rules never include configmaps get/list, yet it creates a Role granting them.",
+          "No bind verb or resourceNames restriction appears anywhere in the manifest.",
+          "DefaultControllerRateLimiter provides backoff but no max-requeue bound; resync is off by default, so a permanent failure never clears."
+        ],
+        "summary": "The manifest was written against verbs only, but the objects the code emits also require escalation-prevention, role-bind, and ownerReference finalizer admission to be satisfied, and the reconcile loop treats permanent validation rejections as transient."
+      },
+      "ruleId": "cluster-role-missing-bind-and-finalizer-permissions",
+      "severity": {
+        "level": "low",
+        "rationale": "Impact is product failure with log and worker churn rather than privilege compromise: the same RBAC mismatch keeps the controller below its own intended grants, and API-server enforcement also keeps it below escalation. The server-side enforcement point could not be source-verified, and clusters without the relevant admission behavior are unaffected, so severity is capped at low with medium confidence."
+      },
+      "summary": "The controller creates a Role granting configmaps get/list, a RoleBinding binding it, and objects carrying blockOwnerDeletion=true controller ownerReferences to Namespaces, while its ClusterRole grants create-only verbs and namespaces get/list/watch. On API servers enforcing the standard escalation-prevention, role-bind, and ownerReference finalizer admission checks, the ServiceAccount cannot legally create these objects, so every sync fails with a non-transient error that processNext classifies as retryable and requeues forever with no max-requeue bound.",
+      "taxonomy": {
+        "category": "security-configuration",
+        "cwe": [
+          "CWE-269"
+        ]
+      },
+      "title": "Deployed ClusterRole lacks the bind and namespaces/finalizers permissions that the controller's own Role, RoleBinding, and blockOwnerDeletion ownerReferences require; permanent validation errors requeue unbounded",
+      "validation": {
+        "counterEvidence": [
+          "Clusters whose version or admission configuration does not enforce these checks are unaffected, which is why confidence is medium rather than high."
+        ],
+        "evidence": [
+          "ClusterRole and ClusterRoleBinding are the only grants to the controller ServiceAccount (deploy/deploy.yaml:12-41).",
+          "processNext only forgets NotFound errors; everything else is AddRateLimited without a bound."
+        ],
+        "evidenceRefs": [
+          "f3-e3"
+        ],
+        "method": "Source review of manifest and templates plus documented admission-control behavior; no cluster was available for runtime confirmation.",
+        "summary": "Repository evidence confirms the grant set, the emitted Role/RoleBinding content, the blockOwnerDeletion=true controller references, and the unbounded requeue branch. The API-server admission requirements behind the break are established from Kubernetes documented behavior, not repository source, and are recorded as a proof gap."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "f4-e1"
+          ],
+          "summary": "Deployment args flow through strings.Split into the enqueue filter unmodified; representation variants of the exclusion list silently broaden or disable the control."
+        },
+        "reachability": {
+          "evidenceRefs": [
+            "f4-e1"
+          ],
+          "summary": "Requires write access to the controller Deployment spec, i.e. the operator path; no runtime cluster user can reach the flag."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "\tctrl := controller.New(dyn, informerFactory,\n\t\tstrings.Split(*skipPrefixes, \",\"))",
+          "endLine": 54,
+          "id": "f4-e1",
+          "path": "cmd/namespace-watch/main.go",
+          "startLine": 53
+        },
+        {
+          "code": "\tfor _, prefix := range c.skipPrefixes {\n\t\tif strings.HasPrefix(ns.Name, prefix) {\n\t\t\treturn\n\t\t}\n\t}",
+          "endLine": 90,
+          "id": "f4-e2",
+          "path": "internal/controller/controller.go",
+          "startLine": 86
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Go standard-library semantics of strings.Split and strings.HasPrefix with an empty prefix are deterministic, and the enqueue filter is the sole consumer of the parsed value; both are directly in repository source."
+      },
+      "findingId": "csf_ad7e8fd519e45ebffd5b96d3",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:63a0c83d258ec4bc2dc5c402f7374274b54ee759cd3438eec718edf0cd3f016f"
+      },
+      "identity": {
+        "anchor": "cmd/namespace-watch/main.go-skip-prefixes-split"
+      },
+      "locations": [
+        {
+          "endLine": 54,
+          "path": "cmd/namespace-watch/main.go",
+          "role": "root_control",
+          "startLine": 53
+        },
+        {
+          "endLine": 93,
+          "path": "internal/controller/controller.go",
+          "role": "sink",
+          "startLine": 82
+        },
+        {
+          "endLine": 31,
+          "path": "cmd/namespace-watch/main.go",
+          "role": "configuration",
+          "startLine": 30
+        }
+      ],
+      "occurrenceId": "occ_8b3e06c4fd29882e56c8ff6f",
+      "provenance": {
+        "source": "PKT-A and PKT-B investigators, merged and direction-corrected by the parent scan"
+      },
+      "remediation": "Trim whitespace per element, drop empty elements, fail startup when the resulting prefix set is empty or contains entries that cannot match a namespace name, log the effective filter at startup, and re-assert the filter inside sync.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f4-e1",
+          "f4-e2"
+        ],
+        "facts": [
+          "strings.HasPrefix(x, \"\") is true for every x, so an empty element turns the filter into skip-all (silent no-op).",
+          "A padded element such as \" istio-\" can never equal the prefix of a valid namespace name, so that protection silently never applies.",
+          "Nothing logs the effective prefix set, so both failure faces are invisible."
+        ],
+        "summary": "The exclusion list is consumed verbatim with no normalization, so representation variants of the flag flip the control in both directions: an empty element matches everything and skips everything, while an unrecoverable padded element matches nothing and protects nothing."
+      },
+      "ruleId": "skip-prefixes-flag-parsing-unvalidated",
+      "severity": {
+        "level": "low",
+        "rationale": "Only an operator who can edit the Deployment args can reach this, and that principal already controls the controller; the realistic damage is self-inflicted quota injection into protected namespaces or a silent product no-op. Operator-only reachability caps severity at low despite the concrete availability potential."
+      },
+      "summary": "strings.Split on the raw flag value produces empty elements for empty values, trailing commas, or doubled commas, and never trims whitespace. An empty prefix matches every namespace name in the enqueue filter, so the controller silently stops provisioning everything (fail-closed no-op with no log or error). A padded element such as the second entry in \"kube-, istio-\" can never match a valid RFC 1123 name, so that namespace family is silently unprotected and receives the production quota and limit range (fail-open).",
+      "taxonomy": {
+        "category": "input-validation",
+        "cwe": [
+          "CWE-20"
+        ]
+      },
+      "title": "-skip-prefixes is split without trimming or validation: an empty element silently disables all provisioning, and a whitespace-padded element silently removes that namespace protection",
+      "validation": {
+        "counterEvidence": [
+          "The no-op face disables provisioning rather than injecting into system namespaces, so the two faces have different impacts and neither reaches beyond operator control."
+        ],
+        "evidence": [
+          "The shipped default \"kube-\" is itself safe; both faces require an operator to edit args."
+        ],
+        "evidenceRefs": [
+          "f4-e2"
+        ],
+        "method": "Source review with careful re-derivation of the filter direction; corrected a worker-reported inversion.",
+        "summary": "Confirmed by direct reading of the flag parsing and the sole consumer of skipPrefixes; Go semantics for Split and HasPrefix with empty and padded elements are deterministic. Note: an earlier worker draft inverted the empty-element direction (claiming quotas would be injected into system namespaces); parent re-derivation of the enqueue semantics corrects this: an empty prefix causes HasPrefix to return true, which skips the namespace, so the empty-element face is a silent no-op, and the fail-open face comes from padded elements."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "f5-e1"
+          ],
+          "summary": "A tag mutation in whatever store the kubelet resolves flows unchanged into container execution mounted with the cluster-privileged ServiceAccount token."
+        },
+        "reachability": {
+          "evidenceRefs": [
+            "f5-e1"
+          ],
+          "summary": "Requires control of the registry, CI pipeline, or node image store; not reachable from ordinary cluster user privileges."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "      serviceAccountName: namespace-watch\n      containers:\n        - name: namespace-watch\n          image: namespace-watch:latest",
+          "endLine": 61,
+          "id": "f5-e1",
+          "path": "deploy/deploy.yaml",
+          "startLine": 58
+        },
+        {
+          "code": "FROM gcr.io/distroless/static:nonroot\nCOPY --from=build /namespace-watch /namespace-watch\nENTRYPOINT [\"/namespace-watch\"]",
+          "endLine": 10,
+          "id": "f5-e2",
+          "path": "Dockerfile",
+          "startLine": 8
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "The image reference, the ServiceAccount binding, and the grant set are directly readable in the manifest; no integrity or admission control exists anywhere in the repository."
+      },
+      "findingId": "csf_9f724fd8d5a218d9ad58e995",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:28685bbe971eaced902694e0a01fb2200b6ef80342d10750936c80087e71dcbd"
+      },
+      "identity": {
+        "anchor": "deploy/deploy.yaml-image-reference"
+      },
+      "locations": [
+        {
+          "endLine": 63,
+          "path": "deploy/deploy.yaml",
+          "role": "root_control",
+          "startLine": 57
+        },
+        {
+          "endLine": 41,
+          "path": "deploy/deploy.yaml",
+          "role": "impact_context",
+          "startLine": 12
+        }
+      ],
+      "occurrenceId": "occ_4a8218b149dc7a99923470e3",
+      "provenance": {
+        "source": "baseline auditor, re-validated by the parent scan"
+      },
+      "remediation": "Reference the image by registry domain plus immutable digest (or an immutable version tag with imagePullPolicy IfNotPresent), pin the Dockerfile base image by digest, enforce digest pinning for privileged namespaces with an admission policy, and sign artifacts with verification at admission.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f5-e1",
+          "f5-e2"
+        ],
+        "facts": [
+          "imagePullPolicy is unset, and :latest defaults to Always, so every restart re-resolves the tag.",
+          "The distroless base image is likewise tag-resolved at build time."
+        ],
+        "summary": "Artifact identity is expressed as a mutable tag for a workload whose identity carries cluster-wide write capability, so tag substitution silently inherits the RBAC."
+      },
+      "ruleId": "mutable-latest-image-for-cluster-privileged-sa",
+      "severity": {
+        "level": "low",
+        "rationale": "Impact if exploited is near cluster-takeover, but likelihood is low: exploitation requires registry, CI, or node image-store control rather than cluster access, and the unqualified placeholder name limits public-registry squatting. High impact with low likelihood calibrates to low."
+      },
+      "summary": "The Deployment runs with a ServiceAccount bound to a cluster-wide ClusterRole but references image namespace-watch:latest, an implicit-registry mutable tag with no digest and no imagePullPolicy. Whoever can repoint that tag in the registry or node image store substitutes the binary that receives cluster-wide create rights in every namespace, collapsing the separation between artifact integrity and cluster-wide RBAC.",
+      "taxonomy": {
+        "category": "supply-chain",
+        "cwe": [
+          "CWE-494"
+        ]
+      },
+      "title": "Cluster-privileged Deployment pulls a mutable :latest image with no registry host or digest pinning",
+      "validation": {
+        "counterEvidence": [
+          "Dev clusters typically side-load such images instead of pulling, which shrinks the tag-mutation surface; an external admission controller outside this repository could already enforce pinning."
+        ],
+        "evidence": [
+          "No digest, registry host, imagePullPolicy, or admission-based verification appears anywhere in the repository."
+        ],
+        "evidenceRefs": [
+          "f5-e1"
+        ],
+        "method": "Manifest review.",
+        "summary": "Confirmed directly in deploy/deploy.yaml together with the ClusterRole grant set it inherits. The pod-level hardening that is present (nonroot, read-only rootfs, no privilege escalation) reduces post-execution risk but does not verify artifact identity."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "f6-e1"
+          ],
+          "summary": "An ambient credential file read by the default loading rules becomes the effective identity for all six dynamic Create calls, silently crossing from the controller's scoped identity to a broader user identity."
+        },
+        "reachability": {
+          "evidenceRefs": [
+            "f6-e1"
+          ],
+          "summary": "Reached whenever the image runs outside its intended Deployment with a readable kubeconfig present; deployer- and environment-controlled."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "\tif cfg, err := rest.InClusterConfig(); err == nil {\n\t\treturn cfg, nil\n\t}\n\treturn clientcmd.NewNonInteractiveDeferredLoadingClientConfig(\n\t\tclientcmd.NewDefaultClientConfigLoadingRules(),\n\t\t&clientcmd.ConfigOverrides{},\n\t).ClientConfig()",
+          "endLine": 75,
+          "id": "f6-e1",
+          "path": "cmd/namespace-watch/main.go",
+          "startLine": 69
+        }
+      ],
+      "confidence": {
+        "level": "medium",
+        "rationale": "The fallback chain and the swallowed in-cluster error are directly in source; whether any real deployment exposes ambient credentials depends on environments outside the repository."
+      },
+      "findingId": "csf_4b1369aa857f98a23a509b34",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:bfce390c1ca9d8efddee56f3a4e80ea16a09c1c6508ad9b896cde9b10d5931a5"
+      },
+      "identity": {
+        "anchor": "cmd/namespace-watch/main.go-buildrestconfig"
+      },
+      "locations": [
+        {
+          "endLine": 76,
+          "path": "cmd/namespace-watch/main.go",
+          "role": "root_control",
+          "startLine": 65
+        }
+      ],
+      "occurrenceId": "occ_5db82d191d92523324203a60",
+      "provenance": {
+        "source": "PKT-B investigator, re-validated by the parent scan"
+      },
+      "remediation": "Gate the ambient fallback behind an explicit out-of-cluster opt-in flag or environment variable, refuse it when a service-account root or pod environment is detected, and log the resolved cluster and identity at startup so an operator can always see which credential is in use.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f6-e1"
+        ],
+        "facts": [
+          "The InClusterConfig error is discarded rather than used to decide fail-closed vs fallback.",
+          "ConfigOverrides are empty, so no context or identity restriction constrains the ambient selection.",
+          "Nothing logs the chosen identity or cluster."
+        ],
+        "summary": "Identity selection fails open: any failure of the in-cluster configuration silently switches the controller's identity to whatever ambient kubeconfig exists, with no signal and no explicit opt-in."
+      },
+      "ruleId": "silent-ambient-kubeconfig-fallback",
+      "severity": {
+        "level": "low",
+        "rationale": "This is a credential-confusion trust-boundary weakness rather than an exploitable remote path: in the shipped Deployment the fallback is dead code, reaching it requires an operator or environment to place a broader credential where the image can read it, and the -kubeconfig flag's trust is standard operator behavior. Low with concrete boundary-crossing shape calibrates to low."
+      },
+      "summary": "When the -kubeconfig flag is empty and rest.InClusterConfig fails, the error is swallowed and the controller falls through to the default client loading rules, silently adopting $KUBECONFIG or ~/.kube/config. Any environment where the image runs without in-cluster config (automount disabled, host-network pod, kind/minikube, CI, a developer machine) then executes the controller's privileged writes under an ambient, often much broader, identity with no log of which credential was chosen and no fail-closed.",
+      "taxonomy": {
+        "category": "credential-management",
+        "cwe": [
+          "CWE-1188"
+        ]
+      },
+      "title": "buildRESTConfig silently falls back to ambient kubeconfig credentials when in-cluster config is unavailable",
+      "validation": {
+        "counterEvidence": [
+          "No repository file references ~/.kube or KUBECONFIG; exploitation requires an operator or environment to mount a credential the image can read."
+        ],
+        "evidence": [
+          "The fallback is the standard client-go loading-rules chain, which also honors exec-credential plugins from the loaded file."
+        ],
+        "evidenceRefs": [
+          "f6-e1"
+        ],
+        "method": "Source review of the credential resolution chain.",
+        "summary": "Confirmed by reading the full resolution order. The in intended-cluster path (serviceAccountName set, automount default true) the fallback is never reached, which bounds exposure to non-standard executions of the same image."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "f7-e1"
+          ],
+          "summary": "A secret file in the build directory is copied into the build-stage layer and remains recoverable from pushed cache or intermediate stages, reaching anyone with registry-cache read access."
+        },
+        "reachability": {
+          "evidenceRefs": [
+            "f7-e1"
+          ],
+          "summary": "Requires a build to run while a secret is present in the tree plus access to build cache or published intermediate layers."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "FROM golang:1.22 AS build\nWORKDIR /src\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .",
+          "endLine": 6,
+          "id": "f7-e1",
+          "path": "Dockerfile",
+          "startLine": 2
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "The absence of .dockerignore anywhere in the scan root and the COPY . . instruction are directly verifiable."
+      },
+      "findingId": "csf_296f7332c0a16b07e4eb2da9",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:a99657785fc1cc80590c6a911af45235e4fb8072066c34f2b980e3359932b1ab"
+      },
+      "identity": {
+        "anchor": "dockerfile-copy-build-context"
+      },
+      "locations": [
+        {
+          "endLine": 6,
+          "path": "Dockerfile",
+          "role": "root_control",
+          "startLine": 1
+        },
+        {
+          "endLine": 10,
+          "path": "Dockerfile",
+          "role": "mitigating_control",
+          "startLine": 8
+        }
+      ],
+      "occurrenceId": "occ_260565fe16721503092199c7",
+      "provenance": {
+        "source": "PKT-B investigator, re-validated by the parent scan"
+      },
+      "remediation": "Add a .dockerignore (at minimum .git, bin, .env, kubeconfig*, dotfiles) or replace COPY . . with an explicit allowlist of go.mod, go.sum, cmd/, and internal/; build from a pristine VCS checkout in CI and do not push intermediate stages.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f7-e1"
+        ],
+        "facts": [
+          "No .dockerignore, .gitignore, or dotfile exists in the scan root.",
+          "Build-cache pushes and intermediate-stage targets expose the copied layer contents."
+        ],
+        "summary": "The whole working tree becomes build-layer content with no ignore file to exclude secrets, so layer history inherits whatever happened to be in the directory at build time."
+      },
+      "ruleId": "build-context-copied-without-dockerignore",
+      "severity": {
+        "level": "low",
+        "rationale": "No secret is currently in the context and the shipped final image contains only the binary; impact requires a future build performed while a secret sits in the tree plus reader access to cache or intermediate layers. Low likelihood and conditional impact calibrate to low."
+      },
+      "summary": "The build stage runs COPY . . with no .dockerignore present. Any kubeconfig, token file, .env, or VCS material sitting in the build directory at build time is copied into the build-stage layer and remains retrievable from builder cache, pushed cache stages, or intermediate-stage artifacts, even though the final distroless stage copies only the binary. The current context contains no secrets, so this is exposure shaped by construction rather than an active leak.",
+      "taxonomy": {
+        "category": "information-exposure",
+        "cwe": [
+          "CWE-497"
+        ]
+      },
+      "title": "Dockerfile copies the entire build context with no .dockerignore, so build-time secrets are baked into intermediate layers and build cache",
+      "validation": {
+        "counterEvidence": [
+          "The present context contains no secret material, so this is shaped-by-construction exposure rather than an active leak."
+        ],
+        "evidence": [
+          "Final stage copies only /namespace-watch, so runtime images do not carry the context contents."
+        ],
+        "evidenceRefs": [
+          "f7-e1"
+        ],
+        "method": "Build-pipeline review.",
+        "summary": "Confirmed by directory listing (no ignore file of any kind) and the Dockerfile itself; the two-stage build limits the shipped image but not cache or intermediate artifacts."
+      }
+    }
+  ],
+  "scanId": "2026-09-11-nwq38fn-e531cd90",
+  "schemaVersion": "1.0"
+}
