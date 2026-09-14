@@ -1,0 +1,111 @@
+{
+  "completeness": "complete",
+  "deferred": [],
+  "documentType": "codex-security.coverage",
+  "excludePaths": [],
+  "explicitExclusions": [],
+  "includePaths": [
+    "."
+  ],
+  "inventoryStrategy": "repository",
+  "mode": "repository",
+  "openQuestions": [
+    {
+      "question": "CRs that never reach status.isCreated=true retain their finalizer forever and appear stuck in Terminating (the finalizer is only removed in the isCreated && pendingDeletion path)."
+    },
+    {
+      "question": "ExecuteRemoteCommand loads kubeconfig via clientcmd default loading rules instead of the in-cluster config; inside the manager pod this likely fails, which would block status.isCreated from ever being set. Verify the intended deployment configuration."
+    },
+    {
+      "question": "spec.patterns strings are interpolated verbatim into ollama Modelfiles via fmt.Sprintf, letting a tenant escape the SYSTEM block and control Modelfile directives \u2014 but only for models in their own workspace. Confirm this is acceptable."
+    },
+    {
+      "question": "spec.models entries trigger ollama pulls in the workspace's own Ollama instance; a tenant can pull arbitrarily large models and exhaust the 20Gi PVC or cluster egress. Consider a size/count limit."
+    },
+    {
+      "question": "ensureIngress does not set a controller owner reference on Ingress objects (unlike every other ensure* path), orphaning them if the namespace survives CR removal (e.g. operator uninstalled)."
+    }
+  ],
+  "scanId": "6bca2ac4706df6e392d748308c1a163d30276b2e_20260913T181412Z",
+  "schemaVersion": "1.0",
+  "surfaces": [
+    {
+      "disposition": "reported",
+      "id": "crd-and-api-validation",
+      "label": "CRD API types, kubebuilder validation markers, and CRD YAML (api/v1alpha1, config/crd)",
+      "notes": "Reviewed all CRD spec fields and validation markers. spec.workspaceName is only marked Required+Immutable (CEL self == oldSelf) with no format/pattern/length constraints and is used verbatim as the target namespace; see findings input-validation.workspace-namespace-control and access-control.workspace-name-collision."
+    },
+    {
+      "disposition": "reported",
+      "id": "reconcile-and-lifecycle",
+      "label": "Controller reconcile, create/update/delete, and finalizer logic (internal/controller)",
+      "notes": "Reviewed reconcile flow, deleteAIChatWorkspace, and finalizer add/remove. The CR deletion path deletes the namespace named by the unvalidated spec.workspaceName, enabling arbitrary namespace deletion with the operator's wildcard RBAC; see finding input-validation.workspace-namespace-control."
+    },
+    {
+      "disposition": "reported",
+      "id": "k8s-resource-adapters",
+      "label": "k8s adapter that creates workspace resources (internal/adapters/k8s)",
+      "notes": "Reviewed common.go ensure* helpers and apps.go Deployment/Service builders. webui Deployment has its SecurityContext blocks commented out (PodSecurityContext, runAsNonRoot, allowPrivilegeEscalation false, seccompProfile) while the ollama Deployment is hardened; see finding misconfiguration.webui-security-context. Ingress host is derived from the unvalidated workspace name (see finding access-control.workspace-name-collision)."
+    },
+    {
+      "disposition": "reported",
+      "id": "ingress-and-exposure",
+      "label": "Ingress, Service, and external exposure of workspace web UI",
+      "notes": "Reviewed ingress.go, service.go, and open-webui.go. Ingress host <workspaceName>.<DefaultDomain> is derived from an unvalidated, tenant-controlled field; webui is served unauthenticated, so any second tenant choosing the same name reaches the first tenant's web UI; see finding access-control.workspace-name-collision. Note: ensureIngress does not set a controller owner reference (tracked as open question)."
+    },
+    {
+      "disposition": "reported",
+      "id": "rbac-and-privileges",
+      "label": "Operator RBAC, service account, and cluster privileges (config/rbac)",
+      "notes": "Reviewed role.yaml and role_binding.yaml. The operator ClusterRole uses wildcard resources/verbs cluster-wide, including namespaces and events, which is what elevates the unvalidated workspaceName input into cluster-level impact; see finding input-validation.workspace-namespace-control."
+    },
+    {
+      "disposition": "reported",
+      "id": "credentials-and-secrets",
+      "label": "Credentials, secrets, and credential defaults (config/default, internal/config)",
+      "notes": "Reviewed mysql-secret.yaml, mysql-deployment.yaml, and the default kustomization overlay. Default credentials (MYSQL_PASSWORD=\"aichatworkspace\", secret key password: \"password\") are shipped in manifests included by the default overlay; see finding hardcoded-credentials.mysql-defaults."
+    },
+    {
+      "disposition": "reported",
+      "id": "container-and-runtime-hardening",
+      "label": "Container images, Dockerfile, manager deployment, and runtime configuration",
+      "notes": "Reviewed Dockerfile (distroless static, nonroot user) and config/manager/manager.yaml (runAsNonRoot, seccompRuntimeDefault, capabilities dropped). Image and manager hardening is adequate; the webui workload security-context gap is reported separately."
+    },
+    {
+      "disposition": "reported",
+      "id": "operator-runtime-entrypoints",
+      "label": "Manager entrypoint and embedded HTTP/debug servers (cmd/main.go)",
+      "notes": "cmd/main.go starts a debug HTTP server (pprof, expvar, statsviz) on localhost:6060 and passes Development: true to the manager; reachable from anything that obtains a pod foothold; see finding sensitive-data-exposure.debug-endpoints."
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "ollama-adapter",
+      "label": "Ollama adapter (internal/adapters/ollama)",
+      "notes": "Reviewed ollama.go. Base URL is always the workspace's own in-cluster Ollama service derived from the operator's own reconciled resources, so no externally controllable URL reaches the adapter (no SSRF path). Model pulls are tenant-directed but scoped to the tenant's own instance and storage (tracked as open question)."
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "modelfiles-and-prompts",
+      "label": "Modelfile template generation and prompt content (internal/adapters/ai)",
+      "notes": "Reviewed modelfiles.go. spec.patterns strings are interpolated verbatim into ollama Modelfiles via fmt.Sprintf, allowing a tenant to escape the SYSTEM block, but the resulting model only affects models in the tenant's own workspace (tracked as open question). No cross-tenant or cluster-level effect identified."
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "build-ci-and-packaging",
+      "label": "Dockerfile, Makefile, build targets, and GitHub workflows",
+      "notes": "Reviewed Dockerfile, Makefile, and .github/workflows. No piped remote script execution, no credential exposure in CI, and no obvious supply-chain tampering path; workflow permissions use needs.* outputs but are not a privilege escalation vector in this repo's context."
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "tests",
+      "label": "Unit and e2e test fixtures (test/, *_test.go)",
+      "notes": "Reviewed test/ fixtures (chainsaw workspace.yaml) and unit tests. Test data contains no credentials or secret material beyond the already-reported default MySQL fixtures in config/default."
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "docs-and-hack-manifests",
+      "label": "Documentation, hack manifests, and project metadata",
+      "notes": "Reviewed docs, hack/, and project metadata. No embedded credentials or risky instructions; README usage examples match the shipped manifests."
+    }
+  ]
+}

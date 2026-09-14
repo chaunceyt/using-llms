@@ -1,0 +1,1269 @@
+{
+  "documentType": "codex-security.findings",
+  "findings": [
+    {
+      "attackPath": {
+        "attacker": "cluster user with namespaced create/delete rights on AIChatWorkspace only",
+        "dataflow": {
+          "evidenceRefs": [
+            "f1-del",
+            "f1-exists",
+            "f1-pull"
+          ],
+          "summary": "CR spec.workspaceName -> ensureNamespace adopts existing namespace -> quota/PVC/service-accounts/statefulset/deployment/ingress created or reused inside it -> status.IsCreated set -> CR deletion triggers deleteAIChatWorkspace -> namespace deleted with all its workloads and PVCs."
+        },
+        "reachability": {
+          "prerequisites": [
+            "namespaced RBAC to create/delete AIChatWorkspace CRs (the shipped editor ClusterRole exists for exactly this)"
+          ],
+          "summary": "Reachable in any cluster with the shipped install; no additional prerequisites beyond the editor-role-equivalent CR rights. Target namespace must be a valid DNS-1123 label, which every real namespace is."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "namespace := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: instance.Spec.WorkspaceName}}\nerr := r.Delete(context.TODO(), namespace)",
+          "endLine": 240,
+          "id": "f1-del",
+          "path": "internal/controller/aichatworkspace_controller.go",
+          "startLine": 235
+        },
+        {
+          "code": "err := r.Get(context.TODO(), types.NamespacedName{Name: ns.Name}, found)\nif err != nil && errors.IsNotFound(err) { ... Create ... }\n// existing namespace: falls through and returns nil, nil with no ownership check",
+          "endLine": 63,
+          "id": "f1-exists",
+          "path": "internal/controller/namespace.go",
+          "startLine": 41
+        },
+        {
+          "code": "if isCreated && pendingDeletion {\n\tif controllerutil.ContainsFinalizer(instance.aichatWorkspaceConfig, aichatWorkspaceFinalizerName) {\n\t\tif err = instance.r.deleteAIChatWorkspace(instance.ctx, instance.aichatWorkspaceConfig); err != nil {",
+          "endLine": 38,
+          "id": "f1-gate",
+          "path": "internal/controller/delete.go",
+          "startLine": 35
+        },
+        {
+          "code": "workspaceName: ... XValidation rule=\"self == oldSelf\" only; no pattern, no enum, no webhook (webhook server in cmd/main.go registers no handlers)",
+          "endLine": 62,
+          "id": "f1-crd",
+          "path": "config/crd/bases/apps.aichatworkspaces.io_aichatworkspaces.yaml",
+          "startLine": 56
+        },
+        {
+          "code": "resources: [namespaces, persistentvolumeclaims, pods, pods/exec, resourcequotas, serviceaccounts, services] verbs: ['*']  # ClusterRole bound cluster-wide by role_binding.yaml",
+          "endLine": 24,
+          "id": "f1-rbac",
+          "path": "config/rbac/role.yaml",
+          "startLine": 13
+        },
+        {
+          "code": "ollamaServerURI := fmt.Sprintf(\"http://%s.%s.svc.cluster.local:%d\", serviceName, instance.Spec.WorkspaceName, ollamaPort)\n... ollama.PullModel(llm, ollamaServerURI) // attacker-chosen models pulled into the targeted namespace's Ollama",
+          "endLine": 119,
+          "id": "f1-pull",
+          "path": "internal/controller/ollama.go",
+          "startLine": 102
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Source-verified end to end: no pattern/enum or webhook validation on workspaceName, no ownership comparison on any ensure path, ClusterRoleBinding confirms cluster-wide namespace delete, and the delete path runs purely from IsCreated + DeletionTimestamp + finalizer."
+      },
+      "findingId": "csf_f47e530c1008c2428df7b7c7",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:23afbde874a9474bf823eb1020523b77536357e4a4dd1143840017298604c88e"
+      },
+      "identity": {
+        "anchor": "internal-controller-aichatworkspace_controller.go-deleteaichatworkspace"
+      },
+      "locations": [
+        {
+          "endLine": 248,
+          "path": "internal/controller/aichatworkspace_controller.go",
+          "role": "root_control",
+          "startLine": 232
+        },
+        {
+          "endLine": 51,
+          "path": "internal/controller/delete.go",
+          "startLine": 30
+        },
+        {
+          "endLine": 64,
+          "path": "internal/controller/namespace.go",
+          "startLine": 36
+        },
+        {
+          "endLine": 134,
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 44
+        },
+        {
+          "endLine": 132,
+          "path": "internal/controller/ollama.go",
+          "startLine": 51
+        },
+        {
+          "endLine": 28,
+          "path": "api/v1alpha1/aichatworkspace_types.go",
+          "startLine": 24
+        },
+        {
+          "endLine": 62,
+          "path": "config/crd/bases/apps.aichatworkspaces.io_aichatworkspaces.yaml",
+          "startLine": 56
+        },
+        {
+          "endLine": 24,
+          "path": "config/rbac/role.yaml",
+          "startLine": 13
+        },
+        {
+          "endLine": 18,
+          "path": "config/rbac/role_binding.yaml",
+          "startLine": 1
+        }
+      ],
+      "occurrenceId": "occ_b3f896b3f9a9b0949bf483bb",
+      "provenance": {
+        "source": "codex-security-standard-scan: baseline auditor + forward-perspective investigator, parent-validated against source"
+      },
+      "remediation": "Derive the workspace namespace from the CR (e.g. <cr-namespace>--<cr-name>) and reject spec.workspaceName values that do not match; require an existing target namespace to carry an operator-written ownership label/annotation tied to this CR before any ensure*/model-pull; before deleting a namespace verify the same ownership marker and denylist kube-system, kube-default, kube-public, kube-node-lease, and the operator namespace; stop ignoring the error from controllerutil.SetControllerReference; shrink the ClusterRole so namespace lifecycle rights cannot be exercised on arbitrary names.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f1-del",
+          "f1-exists",
+          "f1-crd"
+        ],
+        "summary": "spec.workspaceName is an attacker-chosen identifier used directly as the target namespace (and as the namespace delete argument) with no derivation from, or ownership check against, the requesting CR; namespaces cannot carry a namespaced-CR ownerReference and the ignored SetControllerReference error leaves only labels, which the delete path never inspects."
+      },
+      "ruleId": "unvalidated-workspacename-namespace-takeover",
+      "severity": {
+        "changeConditions": [
+          "Exploitability is removed if a validating webhook or policy engine outside this repository enforces workspaceName ownership; the shipped manifests register none."
+        ],
+        "level": "critical",
+        "rationale": "Namespaced, low-privilege attacker; cluster-wide destructive impact (cascading deletion of any namespace including kube-system, cross-tenant data destruction) plus pre-deletion pollution/DoS of system namespaces. High likelihood: the shipped aichatworkspace-editor-role grants exactly the namespaced CR rights assumed, and every gate (ensureNamespace existing-branch, IsCreated, finalizer) is satisfiable."
+      },
+      "summary": "The reconciler treats spec.workspaceName as the literal target namespace for every operation and deletes it on CR deletion, without any ownership check, no validating webhook, and with cluster-wide wildcard RBAC. A user who can only create an AIChatWorkspace CR in their own namespace can make the operator create quotas, workloads, service accounts, PVCs and Ingresses inside any existing namespace (e.g. kube-system, default, another tenant's workspace) and then, by deleting the CR, cause deletion of that entire namespace.",
+      "taxonomy": {
+        "category": "broken-access-control",
+        "cwe": [
+          "CWE-441",
+          "CWE-863",
+          "CWE-269"
+        ]
+      },
+      "title": "Cluster-privileged operator uses spec.workspaceName as an unauthenticated namespace selector: arbitrary namespace takeover and deletion",
+      "validation": {
+        "evidenceRefs": [
+          "f1-gate",
+          "f1-rbac",
+          "f1-pull"
+        ],
+        "summary": "Attacker = namespaced CR author (editor role grants create/delete). Entry = CR create, then CR delete. Dataflow = spec.workspaceName -> ensureNamespace (adopts existing namespace) -> all ensure* and Ollama model pull inside that namespace -> IsCreated=true -> finalizer -> r.Delete(namespace). Control absent: no webhook, no label/owner check, no denylist. Counterevidence considered: workspaceName immutability (not a mitigation; chosen at create time), DNS-1123 namespace grammar (blocks syntax injection, not selection of existing names)."
+      }
+    },
+    {
+      "attackPath": {
+        "attacker": "any network user able to reach the ingress controller",
+        "dataflow": {
+          "evidenceRefs": [
+            "f2-bare",
+            "f2-dns"
+          ],
+          "summary": "Attacker request -> Ingress host <ws>-api.<domain> -> Ollama ClusterIP service :11434 -> /api/pull, /api/generate, /api/create, /api/delete on the workspace instance."
+        },
+        "reachability": {
+          "prerequisites": [
+            "ingress controller + DNS for defaultDomain",
+            "or any in-cluster network position for the ClusterIP path"
+          ],
+          "summary": "Default-reachable once an ingress controller and DNS exist; otherwise reachable by any in-cluster workload because no workspace NetworkPolicy is applied."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "ollamaDNSName := setIngressDNSHost(config, aichat.Spec.WorkspaceName, constants.OllamaName)\nresult, err = r.ensureIngress(ctx, aichat, k8s.NewIngress(aichat.Spec.WorkspaceName, constants.OllamaName, ollamaBackend, ollamaDNSName, constants.OllamaPort))",
+          "endLine": 131,
+          "id": "f2-ing",
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 129
+        },
+        {
+          "code": "case \"ollama\": dnsName = fmt.Sprintf(\"%s-api.%s\", workspace, config.DefaultDomain)",
+          "endLine": 158,
+          "id": "f2-dns",
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 155
+        },
+        {
+          "code": "Spec: networkingv1.IngressSpec{Rules: ... HTTP: Paths: Path \"/\" Backend: Service ...} // no annotations, no auth, no TLS",
+          "endLine": 227,
+          "id": "f2-bare",
+          "path": "internal/adapters/k8s/common.go",
+          "startLine": 204
+        },
+        {
+          "code": "defaultDomain: \"localtest.me\"   // public wildcard DNS domain shipped as the default",
+          "endLine": 6,
+          "id": "f2-domain",
+          "path": "config/default/system-configmap.yaml",
+          "startLine": 6
+        }
+      ],
+      "confidence": {
+        "level": "medium",
+        "rationale": "The unauthenticated code path is source-verified and no default-installed control exists; the remaining uncertainty is deployment topology (whether an ingress controller is present) and product intent."
+      },
+      "findingId": "csf_ba36c8693a89f36f6cc41613",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:10800604bf00bc745a0d6df91d7ba8e652723afdc285545f29ccf679158b409c"
+      },
+      "identity": {
+        "anchor": "internal-controller-handle_reconcile.go-ollama-ingress"
+      },
+      "locations": [
+        {
+          "endLine": 134,
+          "path": "internal/controller/handle_reconcile.go",
+          "role": "root_control",
+          "startLine": 128
+        },
+        {
+          "endLine": 163,
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 150
+        },
+        {
+          "endLine": 230,
+          "path": "internal/adapters/k8s/common.go",
+          "startLine": 189
+        },
+        {
+          "endLine": 39,
+          "path": "config/default/kustomization.yaml",
+          "startLine": 30
+        },
+        {
+          "endLine": 8,
+          "path": "config/default/system-configmap.yaml",
+          "startLine": 6
+        }
+      ],
+      "occurrenceId": "occ_f39e6db5235a86644fee4f67",
+      "provenance": {
+        "source": "codex-security-standard-scan: backward-perspective investigator + baseline auditor, parent-validated against source"
+      },
+      "remediation": "Do not create the Ollama API Ingress by default; when enabled, require an authentication mechanism (auth-proxy/OIDC or nginx auth-type with a real secret), pin allowed models, and ship a default NetworkPolicy denying cross-namespace access to workspace pods.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f2-ing",
+          "f2-bare"
+        ],
+        "summary": "The reconcile path unconditionally provisions a public route to an unauthenticated upstream service (Ollama) with no authentication layer and no default NetworkPolicy."
+      },
+      "ruleId": "unauthenticated-ollama-api-ingress",
+      "severity": {
+        "changeConditions": [
+          "An ingress controller and DNS for defaultDomain must be deployed by the operator admin.",
+          "Adopting the envoy/basic-auth demos (or a mesh) would front the endpoint with authentication."
+        ],
+        "level": "high",
+        "rationale": "High impact (unmetered compute, PVC exhaustion, attacker-controlled model inventory) against a boundary the product itself creates; likelihood gated on an ingress controller + DNS (the repo quickstart installs ingress-nginx and ships the public wildcard domain localtest.me), and exposure may be an intended feature, so high rather than critical."
+      },
+      "summary": "handleReconcile always creates a second Ingress routing the Ollama service to host <workspaceName>-api.<defaultDomain> with no annotations, no auth backend, and no TLS. Ollama has no authentication, so anyone who can reach that host can pull arbitrary models into the 20Gi PVC, run unlimited inference, and create/delete/copy models. The only auth mechanisms in the repo (hack/envoy-sidecar, nginx basic-auth) are demos referenced by no kustomization.",
+      "taxonomy": {
+        "category": "missing-authentication",
+        "cwe": [
+          "CWE-306"
+        ]
+      },
+      "title": "Operator creates an unauthenticated Ingress exposing the raw Ollama API for every workspace",
+      "validation": {
+        "evidenceRefs": [
+          "f2-dns",
+          "f2-domain"
+        ],
+        "summary": "Entry point: HTTP(S) to <workspace>-api.<defaultDomain>. No repo-shipped control authenticates the host: hack/envoy-sidecar and hack/ollama-ingress.yaml exist in no kustomization resources list; config/network-policy covers only operator metrics and is commented out of the default overlay. Ollama API capabilities (pull/create/copy/delete/generate) are exercised by the repo's own envoy README."
+      }
+    },
+    {
+      "attackPath": {
+        "attacker": "any external network user reaching the workspace openwebui host",
+        "dataflow": {
+          "evidenceRefs": [
+            "f3-ing",
+            "f3-env"
+          ],
+          "summary": "Remote user -> openwebui Ingress -> registration endpoint -> (first) admin account claim -> inference and data access on the workspace backend."
+        },
+        "reachability": {
+          "prerequisites": [
+            "ingress controller + DNS, or in-cluster network position"
+          ],
+          "summary": "Same topology prerequisites as the Ollama exposure; additionally any in-cluster client can reach the openwebui ClusterIP service."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "Env: []v1.EnvVar{ {Name: \"OLLAMA_BASE_URL\"...}, {Name: \"OPENAI_API_BASE_URL\"...}, {Name: \"ENV\", Value: \"dev\"}, {Name: \"WEBUI_NAME\"...}, {Name: \"KEY_FILE\", Value: \"/tmp/.webui_secret_key\"} } // no ENABLE_SIGNUP, no admin bootstrap",
+          "endLine": 97,
+          "id": "f3-env",
+          "path": "internal/adapters/k8s/apps.go",
+          "startLine": 76
+        },
+        {
+          "code": "openwebuiDNSName := setIngressDNSHost(config, aichat.Spec.WorkspaceName, constants.OpenwebuiName)\nresult, err = r.ensureIngress(ctx, aichat, k8s.NewIngress(aichat.Spec.WorkspaceName, constants.OpenwebuiName, openwebBackend, openwebuiDNSName, constants.OpenwebuiContainerPort))",
+          "endLine": 123,
+          "id": "f3-ing",
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 121
+        }
+      ],
+      "confidence": {
+        "level": "medium",
+        "rationale": "Source-verified that the operator ships no signup/admin/access restriction anywhere (exhaustive Env list in NewDeployment; git grep for ENABLE_SIGNUP/WEBUI_SECRET_KEY/auth finds nothing). The open-registration and first-user-admin behavior is upstream Open WebUI default, not this repo's code, which is why confidence is medium."
+      },
+      "findingId": "csf_87d3cb066214ee0a304d7e2a",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:1115a347682eddbdf1f6f1a88cd9db16e07dd0a2937380649a0ff3fcb8c2f269"
+      },
+      "identity": {
+        "anchor": "internal-adapters-k8s-apps.go-newdeployment-env"
+      },
+      "locations": [
+        {
+          "endLine": 97,
+          "path": "internal/adapters/k8s/apps.go",
+          "role": "root_control",
+          "startLine": 76
+        },
+        {
+          "endLine": 126,
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 119
+        },
+        {
+          "endLine": 230,
+          "path": "internal/adapters/k8s/common.go",
+          "startLine": 189
+        }
+      ],
+      "occurrenceId": "occ_3efbe296a5a001bac6dd4e75",
+      "provenance": {
+        "source": "codex-security-standard-scan: backward-perspective investigator, parent-validated against source"
+      },
+      "remediation": "Set ENABLE_SIGNUP=false (or an invite/SSO mechanism) and provide a fixed WEBUI_SECRET_KEY from a Secret (currently only an ephemeral /tmp KEY_FILE is set); front the openwebui Ingress with authentication by default; document admin bootstrap.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f3-env",
+          "f3-ing"
+        ],
+        "summary": "The generated deployment neither configures Open WebUI registration/admin defaults nor places any identity control in front of the public Ingress host."
+      },
+      "ruleId": "openwebui-open-registration-public-ingress",
+      "severity": {
+        "changeConditions": [
+          "An external auth-proxy or ENABLE_SIGNUP=false removes the open-registration path.",
+          "Requires an ingress controller + DNS as with the Ollama endpoint."
+        ],
+        "level": "high",
+        "rationale": "Unauthenticated network attacker can claim the admin account of a workspace instance or use its inference backend; impact is full workspace compromise. Likelihood depends on upstream default behavior plus deployment topology, so high/medium rather than critical."
+      },
+      "summary": "NewDeployment sets only OLLAMA_BASE_URL, OPENAI_API_BASE_URL, ENV=dev, WEBUI_NAME, KEY_FILE and the deployment is exposed on host <workspace>.<defaultDomain> with no auth. Open WebUI permits open registration by default and grants administrative control to the first registered account; nothing here disables signup, bootstraps an admin, or fronts the UI with authentication.",
+      "taxonomy": {
+        "category": "insecure-defaults",
+        "cwe": [
+          "CWE-1188",
+          "CWE-284"
+        ]
+      },
+      "title": "Open WebUI exposed on a public Ingress with no signup/admin configuration: open self-registration and first-user admin claim",
+      "validation": {
+        "evidenceRefs": [
+          "f3-env"
+        ],
+        "summary": "Attacker = remote network user at <workspace>.<defaultDomain>. The Env slice in NewDeployment is exhaustive; no signup/access control variable is set, and the Ingress carries no auth annotations. KEY_FILE points at the ephemeral container layer (/tmp) while only /app/backend/data is persisted, so the session/JWT key is regenerated per pod restart."
+      }
+    },
+    {
+      "attackPath": {
+        "attacker": "any cluster workload or tenant able to reach the mysql ClusterIP service",
+        "dataflow": {
+          "evidenceRefs": [
+            "f5-secret",
+            "f5-deploy"
+          ],
+          "summary": "In-cluster client -> mysql-service:3306 -> authenticates with repo-published password/aichatworkspace -> full access to the aichatworkspace database."
+        },
+        "reachability": {
+          "prerequisites": [
+            "in-cluster network position"
+          ],
+          "summary": "Requires only cluster network access; no NetworkPolicy is enabled by default."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "stringData:\n  password: password",
+          "endLine": 7,
+          "id": "f5-secret",
+          "path": "config/default/mysql-secret.yaml",
+          "startLine": 6
+        },
+        {
+          "code": "- image: mysql:5.6 ... MYSQL_USER aichatworkspace; MYSQL_PASSWORD value: \"aichatworkspace\"; MYSQL_ROOT_PASSWORD from secret mysql-secret key password",
+          "endLine": 30,
+          "id": "f5-deploy",
+          "path": "config/default/mysql-deployment.yaml",
+          "startLine": 17
+        },
+        {
+          "code": "- system-configmap.yaml\n- mysql-secret.yaml\n- mysql-storage.yaml\n- mysql-deployment.yaml\n- mysql-service.yaml   # applied by default; #- ../network-policy on line 34 remains commented out",
+          "endLine": 39,
+          "id": "f5-kustomize",
+          "path": "config/default/kustomization.yaml",
+          "startLine": 35
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "The values are literal committed stringData/env values applied by the default kustomize resources list; no override exists anywhere in the repo."
+      },
+      "findingId": "csf_a9ef6222bb0ba2bbc7477e89",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:9380365f25b7541f59d4300e029feb87883644e155d12efdd39753e492a4a9b0"
+      },
+      "identity": {
+        "anchor": "config-default-mysql-secret.yaml-root-password"
+      },
+      "locations": [
+        {
+          "endLine": 7,
+          "path": "config/default/mysql-secret.yaml",
+          "role": "root_control",
+          "startLine": 1
+        },
+        {
+          "endLine": 31,
+          "path": "config/default/mysql-deployment.yaml",
+          "startLine": 16
+        },
+        {
+          "endLine": 39,
+          "path": "config/default/kustomization.yaml",
+          "startLine": 34
+        }
+      ],
+      "occurrenceId": "occ_5febd40947e4f076fc0b01b0",
+      "provenance": {
+        "source": "codex-security-standard-scan: backward-perspective + open-ended investigators, parent-validated against source"
+      },
+      "remediation": "Remove the mysql-* resources from the default overlay (or generate random credentials at install via sealed-secrets/external secret store); never ship working passwords; retire mysql:5.6.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f5-secret",
+          "f5-kustomize"
+        ],
+        "summary": "Working database credentials were committed to a public repository and wired into the default install path instead of being generated or injected at deployment time."
+      },
+      "ruleId": "hardcoded-mysql-credentials-default-deploy",
+      "severity": {
+        "changeConditions": [
+          "A NetworkPolicy or external secret store with rotated credentials removes the published-credential exposure."
+        ],
+        "level": "medium",
+        "rationale": "Any in-cluster workload can authenticate with repo-published credentials (full read/write, root) against every default installation that did not change them; impact bounded because the database is unused by the shipped code and requires cluster network position, so medium rather than high."
+      },
+      "summary": "config/default/kustomization.yaml actively ships mysql-secret.yaml, mysql-deployment.yaml, mysql-storage.yaml and mysql-service.yaml. The secret holds password: 'password'; the deployment hardcodes MYSQL_PASSWORD 'aichatworkspace' and root from that secret, runs mysql:5.6 (EOL since Feb 2021) and exposes ClusterIP 3306 with no NetworkPolicy applied. No operator code consumes this database, so it is unused attack surface with public credentials.",
+      "taxonomy": {
+        "category": "hardcoded-credentials",
+        "cwe": [
+          "CWE-798",
+          "CWE-259"
+        ]
+      },
+      "title": "Default overlay deploys MySQL with credentials published in the repository (root 'password', app 'aichatworkspace') on EOL mysql:5.6",
+      "validation": {
+        "evidenceRefs": [
+          "f5-deploy"
+        ],
+        "summary": "git grep across config/, hack/, test/ and docs confirms these are the only real committed credential values in the default overlay; no Go code reads the database, so exposure is the MySQL instance itself. Counterevidence: values are obviously placeholder-like, and reachability requires in-cluster network position."
+      }
+    },
+    {
+      "attackPath": {
+        "attacker": "any AIChatWorkspace CR creator",
+        "dataflow": {
+          "evidenceRefs": [
+            "f6-ctx",
+            "f6-call"
+          ],
+          "summary": "spec.models -> PullModel(context.Background(), no timeout) -> single reconcile worker blocked -> every workspace's reconcile queue stalls."
+        },
+        "reachability": {
+          "prerequisites": [
+            "namespaced rights to create/update AIChatWorkspace CRs"
+          ],
+          "summary": "Available to any CR author in any default install; no prerequisites beyond CR write access."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "func PullModel(modelName string, defaultBaseURL string) error { httpClient := http.DefaultClient ... ctx := context.Background() ... err = client.Pull(ctx, req, progressFunc) } // synchronous, no timeout, reconcile ctx never propagated",
+          "endLine": 64,
+          "id": "f6-ctx",
+          "path": "internal/adapters/ollama/ollama.go",
+          "startLine": 43
+        },
+        {
+          "code": "for _, llm := range instance.Spec.Models { ok, err := ollama.DoesModelExist(llm, ollamaServerURI) ... err = ollama.PullModel(llm, ollamaServerURI)",
+          "endLine": 119,
+          "id": "f6-call",
+          "path": "internal/controller/ollama.go",
+          "startLine": 106
+        }
+      ],
+      "confidence": {
+        "level": "medium",
+        "rationale": "Source-verified that PullModel never honors a caller context and SetupWithManager sets no concurrency; exact stall duration depends on the Ollama registry response (large/stalled blob), which is attacker-selectable but not reproducible offline."
+      },
+      "findingId": "csf_b1bf929fcb6d791df4e3c9dd",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:fe86a4b6d4c6c714fe7fff0caf20eaa000ac27259a931581667ecf363bf0e952"
+      },
+      "identity": {
+        "anchor": "internal-adapters-ollama-ollama.go-pullmodel"
+      },
+      "locations": [
+        {
+          "endLine": 70,
+          "path": "internal/adapters/ollama/ollama.go",
+          "role": "root_control",
+          "startLine": 43
+        },
+        {
+          "endLine": 132,
+          "path": "internal/controller/ollama.go",
+          "startLine": 101
+        },
+        {
+          "endLine": 145,
+          "path": "internal/controller/aichatworkspace_controller.go",
+          "startLine": 133
+        }
+      ],
+      "occurrenceId": "occ_838ef3e136b91eec28b3eed8",
+      "provenance": {
+        "source": "codex-security-standard-scan: baseline auditor, parent-validated against source"
+      },
+      "remediation": "Propagate the reconcile context (with cancellation/timeout), validate model names against an allow-list/pattern, move pulls to async jobs (goroutine with ownerRef-tracked status or a Job resource), and raise MaxConcurrentReconciles with per-workspace isolation.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f6-ctx"
+        ],
+        "summary": "Long-running external I/O driven by user input is performed inline in Reconcile with a detached, timeout-less context on a single-worker controller."
+      },
+      "ruleId": "blocking-unbounded-model-pull-in-reconcile",
+      "severity": {
+        "changeConditions": [
+          "MaxConcurrentReconciles > 1 or async pulls bound to the reconcile context removes the cross-tenant stall."
+        ],
+        "level": "medium",
+        "rationale": "Availability loss of the whole operator product from a namespaced privilege, trivially repeatable; no confidentiality/integrity impact, hence medium despite high likelihood."
+      },
+      "summary": "spec.Models flows into ollama.PullModel, which uses context.Background() and http.DefaultClient with no timeout and blocks until the pull finishes. The controller runs with the default single worker (no MaxConcurrentReconciles), so a single attacker-chosen multi-GB or stalled model reference blocks status updates, workload creation, and deletion finalization for all other AIChatWorkspace objects.",
+      "taxonomy": {
+        "category": "denial-of-service",
+        "cwe": [
+          "CWE-400"
+        ]
+      },
+      "title": "Synchronous, timeout-less model pull inside Reconcile lets one CR starve reconciliation of every workspace",
+      "validation": {
+        "evidenceRefs": [
+          "f6-call"
+        ],
+        "summary": "CreateFromModelFile, CopyModel, DeleteModel, ShowModel share the same context.Background() pattern; SetupWithManager registers with default concurrency, so controller-runtime serializes all AIChatWorkspace reconciles behind a blocked pull. Counterevidence: normal models and a responsive registry make stalls invisible; the abuse requires a large or stalled model reference."
+      }
+    },
+    {
+      "attackPath": {
+        "attacker": "principal with the manager SA token, code execution in the manager pod, or any input-driven operator flaw",
+        "dataflow": {
+          "evidenceRefs": [
+            "f7-role"
+          ],
+          "summary": "Manager identity + '*' on pods/pods/exec/namespaces cluster-wide -> pod creation or exec in kube-system and every tenant namespace -> cluster takeover."
+        },
+        "reachability": {
+          "prerequisites": [
+            "manager SA token, pod compromise, or a CR-input flaw"
+          ],
+          "summary": "Amplification surface; direct use requires the manager identity or an operator input-handling flaw such as the workspaceName takeover reported in this scan."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "resources: [namespaces, persistentvolumeclaims, pods, pods/exec, resourcequotas, serviceaccounts, services] verbs: ['*'] (+ deployments, statefulsets, ingresses, httpscaledobjects '*')",
+          "endLine": 24,
+          "id": "f7-role",
+          "path": "config/rbac/role.yaml",
+          "startLine": 13
+        },
+        {
+          "code": "ExecuteRemoteCommand ... SubResource(\"exec\") ... Command: []string{\"/bin/sh\", \"-c\", command} // only ever used for du -sh <constant path>, yet granted cluster-wide",
+          "endLine": 343,
+          "id": "f7-exec",
+          "path": "internal/adapters/k8s/common.go",
+          "startLine": 304
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "role.yaml and role_binding.yaml are shipped verbatim and generated directly from the markers in internal/controller/aichatworkspace_controller.go."
+      },
+      "findingId": "csf_b8f00747e1a47b3666203a30",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:f7b110086f24d0ccd67977ed282218807567128208743b4e13c9478de6f9beef"
+      },
+      "identity": {
+        "anchor": "config-rbac-role.yaml-wildcards"
+      },
+      "locations": [
+        {
+          "endLine": 24,
+          "path": "config/rbac/role.yaml",
+          "role": "root_control",
+          "startLine": 13
+        },
+        {
+          "endLine": 18,
+          "path": "config/rbac/role_binding.yaml",
+          "startLine": 1
+        },
+        {
+          "endLine": 80,
+          "path": "internal/controller/aichatworkspace_controller.go",
+          "startLine": 72
+        }
+      ],
+      "occurrenceId": "occ_d3a5283e670d4f83eb725639",
+      "provenance": {
+        "source": "codex-security-standard-scan: forward-perspective investigator, parent-validated against source"
+      },
+      "remediation": "Restrict verbs to what is used; scope pods/exec to workspace-owned pods via namespaced Roles; move namespace rights behind the ownership validation; prefer namespaced per-workspace Roles over the single cluster-wide wildcard.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f7-role",
+          "f7-exec"
+        ],
+        "summary": "Cluster-wide wildcard RBAC far exceeds the demonstrated needs of the reconcile path, and is the amplifier that turns CR input bugs into cluster compromise."
+      },
+      "ruleId": "overbroad-operator-cluster-rbac",
+      "severity": {
+        "level": "medium",
+        "rationale": "Not directly exploitable by a lower-privileged principal; severity comes from amplification of the CR-driven flaws and of manager-pod compromise. The manager pod itself is hardened (non-root, dropped caps) and some breadth (namespace create) is intrinsic to the product, so medium."
+      },
+      "summary": "Generated from the controller markers, manager-role grants wildcard verbs over namespaces, pods, pods/exec, PVCs, services, service accounts, resource quotas, deployments, statefulsets, ingresses and httpscaledobjects, bound via ClusterRoleBinding. The reconciler never needs exec outside its own workspace pods (only du -sh on constant paths), so any input-driven flaw (as in the workspaceName finding) or manager-pod compromise escalates to pod creation and exec across kube-system and every tenant.",
+      "taxonomy": {
+        "category": "privilege-management",
+        "cwe": [
+          "CWE-269"
+        ]
+      },
+      "title": "ClusterRole grants '*' over namespaces, pods, pods/exec and all workload types cluster-wide (cluster-admin-equivalent operator)",
+      "validation": {
+        "evidenceRefs": [
+          "f7-role"
+        ],
+        "summary": "Cross-checked role.yaml against every API call the reconciler makes: the only execs are fixed du commands; namespace writes are only used for the (already-faulty) workspaceName selection. Counterevidence: namespace creation is inherent to the product design; the manager runs non-root with dropped capabilities."
+      }
+    },
+    {
+      "attackPath": {
+        "attacker": "anyone achieving code execution in Open WebUI (e.g. via the exposed UI or a malicious model/tool output)",
+        "dataflow": {
+          "evidenceRefs": [
+            "f4-cmt"
+          ],
+          "summary": "App compromise -> root container -> read/write of /app/backend/data PVC (chat data, webui.db), writable filesystem, raw network to all ClusterIP services."
+        },
+        "reachability": {
+          "prerequisites": [
+            "code execution in the open-webui container"
+          ],
+          "summary": "Second-stage impact; entry points are the exposed UI/API reported separately."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "// at the moment having issues getting open webui to run as non-root\n// SecurityContext: defaultPodSecurityContext(),\n... // SecurityContext: defaultSecurityContext(),",
+          "endLine": 75,
+          "id": "f4-cmt",
+          "path": "internal/adapters/k8s/apps.go",
+          "startLine": 69
+        },
+        {
+          "code": "SecurityContext: defaultPodSecurityContext(), // ollama sts: runAsNonRoot 10001, drop ALL, readOnlyRootFS, RuntimeDefault seccomp",
+          "endLine": 199,
+          "id": "f4-ollama",
+          "path": "internal/adapters/k8s/apps.go",
+          "startLine": 187
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Literal commented-out source with the author's note; the hardened helpers exist in the same file and are applied only to the Ollama workload."
+      },
+      "findingId": "csf_e8d4b007df79b79224f39dff",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:d085711ed97a919a2b38dbe5f8d5d6d7a960a56e744dd92ca91354792f91c739"
+      },
+      "identity": {
+        "anchor": "internal-adapters-k8s-apps.go-newdeployment-securitycontext"
+      },
+      "locations": [
+        {
+          "endLine": 75,
+          "path": "internal/adapters/k8s/apps.go",
+          "role": "root_control",
+          "startLine": 63
+        },
+        {
+          "endLine": 219,
+          "path": "internal/adapters/k8s/apps.go",
+          "startLine": 182
+        }
+      ],
+      "occurrenceId": "occ_0f30337d3eb54fa4ab811970",
+      "provenance": {
+        "source": "codex-security-standard-scan: backward-perspective investigator, parent-validated against source"
+      },
+      "remediation": "Run open-webui with runAsNonRoot, drop ALL capabilities and seccomp RuntimeDefault; split writable paths so readOnlyRootFilesystem is feasible; reuse defaultSecurityContext()/defaultPodSecurityContext() like the Ollama path.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f4-cmt",
+          "f4-ollama"
+        ],
+        "summary": "The deployment path knowingly skips the file's hardened security contexts for Open WebUI because of an unresolved non-root issue."
+      },
+      "ruleId": "openwebui-container-runs-as-root",
+      "severity": {
+        "changeConditions": [
+          "Enabling either commented SecurityContext call (or an admission PSP/PodSecurity 'restricted' namespace label) remediates."
+        ],
+        "level": "medium",
+        "rationale": "Defense-in-depth failure that materially widens a compromise whose entry points (open ingress exposure, open signup) are already reported; not itself remotely triggerable, so medium."
+      },
+      "summary": "NewDeployment comments out both the pod SecurityContext ('at the moment having issues getting open webui to run as non-root') and the container SecurityContext, so the open-webui container runs with the image default (root, all capabilities, no seccomp), while NewStatefulSet applies runAsNonRoot 10001, dropped capabilities, read-only root filesystem and RuntimeDefault seccomp to Ollama. A web-layer compromise therefore yields root in the container with write access to the workspace PVC and free egress to cluster ClusterIPs.",
+      "taxonomy": {
+        "category": "container-hardening",
+        "cwe": [
+          "CWE-250",
+          "CWE-1188"
+        ]
+      },
+      "title": "Open WebUI container deliberately shipped with SecurityContext commented out while the sibling Ollama workload is hardened",
+      "validation": {
+        "evidenceRefs": [
+          "f4-cmt"
+        ],
+        "summary": "Both workloads correctly set AutomountServiceAccountToken=false and carry no hostPath/hostNetwork/privileged; no NetworkPolicy is deployed for workspace namespaces, so a compromised container retains full cluster-internal egress (including MySQL)."
+      }
+    },
+    {
+      "attackPath": {
+        "attacker": "AIChatWorkspace CR creator (workspace owner)",
+        "dataflow": {
+          "evidenceRefs": [
+            "f8-tpl",
+            "f8-call"
+          ],
+          "summary": "spec.patterns -> prompt() sprintf -> /api/create Modelfile -> injected directives executed by the workspace Ollama."
+        },
+        "reachability": {
+          "prerequisites": [
+            "rights to create an AIChatWorkspace CR with spec.patterns"
+          ],
+          "summary": "Any workspace whose CR the attacker controls; delivered cross-tenant only in combination with the workspaceName takeover finding."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "var promptTemplate = \"\\nFROM %s ... SYSTEM \\\"\\\"\\\"\\n%s\\\"\\\"\\\"\"; return fmt.Sprintf(promptTemplate, model, pattern) // no escaping of quotes/newlines",
+          "endLine": 51,
+          "id": "f8-tpl",
+          "path": "internal/adapters/ai/modelfiles/modelfiles.go",
+          "startLine": 38
+        },
+        {
+          "code": "for _, pattern := range patterns { createModelName := fmt.Sprintf(\"%s-%s\", modelName, pattern); modelfile := modelfiles.GetSystemPromptPattern(modelName, pattern); err = client.Create(ctx, &ollama.CreateRequest{Model: createModelName, Modelfile: modelfile}, progressFunc)",
+          "endLine": 311,
+          "id": "f8-call",
+          "path": "internal/adapters/ollama/ollama.go",
+          "startLine": 304
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "The sprintf with no escaping is verbatim in prompt(); CRD carries no pattern constraint on models/patterns; the embedded allow-list is confirmed unreferenced."
+      },
+      "findingId": "csf_10ecad05235bf61da155c5a1",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:f03a94f0e78a85a3e232f9abd816ec813c276458ece82594b375cf48be1fe502"
+      },
+      "identity": {
+        "anchor": "internal-adapters-ai-modelfiles-modelfiles.go-prompt"
+      },
+      "locations": [
+        {
+          "endLine": 51,
+          "path": "internal/adapters/ai/modelfiles/modelfiles.go",
+          "role": "root_control",
+          "startLine": 38
+        },
+        {
+          "endLine": 316,
+          "path": "internal/adapters/ollama/ollama.go",
+          "startLine": 304
+        },
+        {
+          "endLine": 38,
+          "path": "api/v1alpha1/aichatworkspace_types.go",
+          "startLine": 33
+        },
+        {
+          "endLine": 53,
+          "path": "config/crd/bases/apps.aichatworkspaces.io_aichatworkspaces.yaml",
+          "startLine": 42
+        }
+      ],
+      "occurrenceId": "occ_4c1f843cf1f385d54e9d444e",
+      "provenance": {
+        "source": "codex-security-standard-scan: baseline + forward investigators, parent-validated against source"
+      },
+      "remediation": "Resolve patterns by key against the embedded pattern map (reject unknown keys), validate model names against the Ollama name grammar in the CRD, and escape or reject quote/newline sequences before Modelfile interpolation.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f8-tpl"
+        ],
+        "summary": "Free-form CR strings are concatenated into the Modelfile instruction language instead of being looked up against the embedded, bounded pattern set."
+      },
+      "ruleId": "modelfile-directive-injection-via-patterns",
+      "severity": {
+        "changeConditions": [
+          "A CRD pattern constraint or validating webhook restricting patterns to known keys removes the injection."
+        ],
+        "level": "low",
+        "rationale": "Within a workspace the creator already controls the same Ollama API (and can name any base model via spec.models), so the injection adds no privilege there; residual impact is integrity of operator-generated 'pattern models', poisoned chat templates shaping that workspace's end users, and remote-content fetch via ADAPTER. Downgraded to low as a same-tenant control gap; cross-tenant delivery of this primitive is captured in the workspaceName finding."
+      },
+      "summary": "GetSystemPromptPattern builds the Modelfile with fmt.Sprintf over raw spec.models/spec.patterns values: a pattern containing \"\"\" followed by a newline terminates the SYSTEM block and injects arbitrary Modelfile directives, which the operator submits to the workspace Ollama /api/create. The embedded fabric pattern map that could serve as an allow-list is dead code (variables.go embeds are never referenced).",
+      "taxonomy": {
+        "category": "injection",
+        "cwe": [
+          "CWE-74"
+        ]
+      },
+      "title": "spec.patterns interpolated unescaped into Ollama Modelfiles: SYSTEM triple-quote breakout allows arbitrary FROM/ADAPTER/TEMPLATE/PARAMETER directives",
+      "validation": {
+        "evidenceRefs": [
+          "f8-call"
+        ],
+        "summary": "Model pull/create requests are JSON (official ollama/api client), so this is directive-language injection into the Modelfile body, not URL/path injection. Ollama's own model-name validation bounds the FROM interpolation, and worst-case server-side consequences inside Ollama's model processor are not established by this repository."
+      }
+    },
+    {
+      "attackPath": {
+        "attacker": "same-pod peer (sidecar/ephemeral debug container), or holder of pods/exec|port-forward",
+        "dataflow": {
+          "evidenceRefs": [
+            "f9-pprof"
+          ],
+          "summary": "loopback :6060 -> /debug/pprof/heap (memory incl. SA token), /profile (CPU DoS), /debug/vars (flags/build), statsviz live telemetry."
+        },
+        "reachability": {
+          "prerequisites": [
+            "same-pod code execution, pods/exec, or kubectl port-forward"
+          ],
+          "summary": "Pod-local only by default; hack/envoy-sidecar demonstrates sidecar injection into workspace pods as a supported pattern."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "go func() { mux := http.NewServeMux(); mux.HandleFunc(\"/debug/pprof/\", pprof.Index); ... statsviz.Register(mux); http.ListenAndServe(\"localhost:6060\", mux) }() // no auth, error ignored",
+          "endLine": 124,
+          "id": "f9-pprof",
+          "path": "cmd/main.go",
+          "startLine": 113
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Unconditional startup of the mux is verbatim; the contrast with the authn/authz-filtered metrics server shows the difference is deliberate; bind-address scope (pod netns only) also verified."
+      },
+      "findingId": "csf_2855b5203c5542624743b99e",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:05315416e5dfeaa4d8cf5b380a55cf47a714a462741f7fb3a28d4db99876ad3d"
+      },
+      "identity": {
+        "anchor": "cmd-main.go-pprof-listenandserve"
+      },
+      "locations": [
+        {
+          "endLine": 124,
+          "path": "cmd/main.go",
+          "role": "root_control",
+          "startLine": 106
+        }
+      ],
+      "occurrenceId": "occ_a7ce0f7647807951a08a1291",
+      "provenance": {
+        "source": "codex-security-standard-scan: open-ended investigator, parent-validated against source"
+      },
+      "remediation": "Remove the debug mux or gate it behind a flag/build tag defaulting off; check the ListenAndServe error; if profiling is needed, use ephemeral debug containers or front it with authentication.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f9-pprof"
+        ],
+        "summary": "Production manager always compiles in and starts an unauthenticated profiling/introspection endpoint on the pod loopback."
+      },
+      "ruleId": "pprof-debug-endpoint-always-enabled",
+      "severity": {
+        "changeConditions": [
+          "Injecting any sidecar or debug container into the manager pod, or granting pods/portforward to broader audiences, raises the practical likelihood."
+        ],
+        "level": "low",
+        "rationale": "No remote or cross-pod reachability in the default single-container distroless pod; exploitation requires an existing same-pod foothold or exec/port-forward rights (a position from which the SA token is often already readable). Amplifier rather than standalone breach: the SA it protects is cluster-admin-adjacent."
+      },
+      "summary": "main.go unconditionally serves pprof (including /debug/pprof/profile and heap/goroutine dumps), expvar and statsviz on localhost:6060; the ListenAndServe error is ignored. Inside a pod, localhost means any same-pod network-namespace peer (sidecar, ephemeral debug container) and anyone with pods/exec or port-forward rights reaches these listeners. Heap dumps expose the mounted ServiceAccount token and in-memory config, and CPU profiles are a cheap DoS against the 500m-limited single replica.",
+      "taxonomy": {
+        "category": "information-disclosure",
+        "cwe": [
+          "CWE-489",
+          "CWE-200"
+        ]
+      },
+      "title": "Unauthenticated pprof/expvar/statsviz debug endpoints always enabled on localhost:6060 of the cluster-privileged manager pod",
+      "validation": {
+        "evidenceRefs": [
+          "f9-pprof"
+        ],
+        "summary": "Metrics (:8443 via patch) uses filters.WithAuthenticationAndAuthorization and health probes are pings only, so :6060 is the sole unauthenticated manager listener. Reachability is bounded to the pod network namespace; no hostNetwork."
+      }
+    },
+    {
+      "attackPath": {
+        "attacker": "upstream 'main' tag mutator, or operator-namespace ConfigMap writer",
+        "dataflow": {
+          "evidenceRefs": [
+            "f10-sprintf"
+          ],
+          "summary": "ConfigMap tag -> Sprintf image reference -> every new/recreated workspace pod runs the substituted image."
+        },
+        "reachability": {
+          "prerequisites": [
+            "mutable 'main' re-push or ConfigMap write access in the operator namespace"
+          ],
+          "summary": "Requires upstream tag substitution or operator-namespace write access; affects new workspaces only."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "defaultDomain: \"localtest.me\"\nopenwebuiImageTag: \"main\"\nollamaImageTag: \"0.5.4\"",
+          "endLine": 8,
+          "id": "f10-tag",
+          "path": "config/default/system-configmap.yaml",
+          "startLine": 6
+        },
+        {
+          "code": "containerImage := fmt.Sprintf(\"%s:%s\", constants.OpenwebuiContainerImageName, openwebuiContainerImageTag)",
+          "endLine": 49,
+          "id": "f10-sprintf",
+          "path": "internal/adapters/k8s/apps.go",
+          "startLine": 49
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Sprintf interpolation of unvalidated ConfigMap values and the shipped ':main' default are both verbatim; no sha256 pin exists anywhere in the repo."
+      },
+      "findingId": "csf_46dd37b2c6c9806224f4f806",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:a2825b071de12f50ae321d76a916a625f82af802b24fdd9f94ff9bb8e86e5f79"
+      },
+      "identity": {
+        "anchor": "config-default-system-configmap.yaml-openwebuiimagetag"
+      },
+      "locations": [
+        {
+          "endLine": 8,
+          "path": "config/default/system-configmap.yaml",
+          "role": "root_control",
+          "startLine": 6
+        },
+        {
+          "endLine": 49,
+          "path": "internal/adapters/k8s/apps.go",
+          "startLine": 49
+        },
+        {
+          "endLine": 154,
+          "path": "internal/adapters/k8s/apps.go",
+          "startLine": 154
+        },
+        {
+          "endLine": 69,
+          "path": "internal/config/config.go",
+          "startLine": 37
+        }
+      ],
+      "occurrenceId": "occ_0c24df7108185c379a943de9",
+      "provenance": {
+        "source": "codex-security-standard-scan: backward-perspective investigator, parent-validated against source"
+      },
+      "remediation": "Pin images by digest (name:tag@sha256:...), validate tags against ^[a-zA-Z0-9_.-]+$ when reading the ConfigMap, and scope the config ConfigMap with tight RBAC.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f10-tag",
+          "f10-sprintf"
+        ],
+        "summary": "Image identity is delegated to an unvalidated mutable string sourced from a ConfigMap, with no digest pinning or format validation."
+      },
+      "ruleId": "mutable-unpinned-workspace-image-tags",
+      "severity": {
+        "changeConditions": [
+          "Digest-pinned tags in system-configmap.yaml and tag validation in GetConfig remove the mutable-tag path."
+        ],
+        "level": "low",
+        "rationale": "Supply-chain exposure contingent on an upstream 'main' re-push or on write access to the operator-namespace ConfigMap (already a privileged position); tag grammar bounds it to version selection, not registry redirection."
+      },
+      "summary": "GetConfig reads openwebuiImageTag/ollamaImageTag/defaultDomain from the operator ConfigMap and apps.go composes the image as fmt.Sprintf(\"%s:%s\", name, tag) with zero validation and no digest. system-configmap.yaml ships openwebuiImageTag: \"main\", so every recreated workspace pod silently tracks a mutable upstream tag; a configmap-writer can silently select any image version for all new workspaces, and defaultDomain from the same ConfigMap flows unvalidated into every Ingress host.",
+      "taxonomy": {
+        "category": "supply-chain",
+        "cwe": [
+          "CWE-1104",
+          "CWE-1188"
+        ]
+      },
+      "title": "Workspace images selected from a mutable ConfigMap tag string interpolated without validation; shipped default is open-webui:main",
+      "validation": {
+        "evidenceRefs": [
+          "f10-tag"
+        ],
+        "summary": "Ollama is pinned to 0.5.4 (still a mutable tag, but versioned); Open WebUI's 'main' is a moving branch tag. The same ConfigMap's defaultDomain reaches Ingress hosts unvalidated. Counterevidence: the shipped manager ClusterRole lacks configmaps read permission (functional gap), so any working deployment adds RBAC of unknown scope."
+      }
+    },
+    {
+      "attackPath": {
+        "attacker": "any reader of the public repository that reaches an unchanged adoption",
+        "dataflow": {
+          "evidenceRefs": [
+            "f11-basic"
+          ],
+          "summary": "Repo credential -> Authorization header -> envoy-gated Ollama API; Envoy admin :9901 reachable from in-cluster."
+        },
+        "reachability": {
+          "prerequisites": [
+            "unchanged adoption of hack/envoy-sidecar"
+          ],
+          "summary": "Only where the demo manifests were applied; not default-deployed."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "exact_match: \"Basic b2xsYW1hOm9sbGFtYQ==\"  // base64 of ollama:ollama",
+          "endLine": 36,
+          "id": "f11-basic",
+          "path": "hack/envoy-sidecar/envoy-config.yaml",
+          "startLine": 36
+        },
+        {
+          "code": "# echo  \"ollama:$apr1$i9ygHJeq$DtM1NF4LbsHMeo3WBMQKV0\" > auth\nkubectl create secret generic basic-auth --from-file=auth -n envoy-test",
+          "endLine": 9,
+          "id": "f11-htpasswd",
+          "path": "hack/envoy-sidecar/README.md",
+          "startLine": 8
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Literal committed values verified at the cited lines."
+      },
+      "findingId": "csf_818ad7f58c4b946e3aa09487",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:90470d1cc5f74df714b4a28d5d7df90436959af7398c079c2b6421a263af0dd2"
+      },
+      "identity": {
+        "anchor": "hack-envoy-sidecar-envoy-config.yaml-exact-match"
+      },
+      "locations": [
+        {
+          "endLine": 36,
+          "path": "hack/envoy-sidecar/envoy-config.yaml",
+          "role": "root_control",
+          "startLine": 36
+        },
+        {
+          "endLine": 65,
+          "path": "hack/envoy-sidecar/envoy-config.yaml",
+          "startLine": 60
+        },
+        {
+          "endLine": 9,
+          "path": "hack/envoy-sidecar/README.md",
+          "startLine": 8
+        },
+        {
+          "endLine": 7,
+          "path": "hack/envoy-sidecar/ollama-ingress.yaml",
+          "startLine": 7
+        }
+      ],
+      "occurrenceId": "occ_e78738f81383d081350bb46e",
+      "provenance": {
+        "source": "codex-security-standard-scan: open-ended investigator, parent-validated against source"
+      },
+      "remediation": "Replace committed hashes/credentials with placeholders and generate-per-install instructions; use bcrypt htpasswd; bind Envoy admin to 127.0.0.1 and remove it from the Service.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f11-basic",
+          "f11-htpasswd"
+        ],
+        "summary": "Static, published credential material is the entire access-control story of the shipped secure-path demo, plus an in-cluster admin listener."
+      },
+      "ruleId": "committed-demo-credentials-and-envoy-admin-exposure",
+      "severity": {
+        "changeConditions": [
+          "Adoption unchanged is required; placeholder credentials fully remediate."
+        ],
+        "level": "low",
+        "rationale": "Optional demo material outside every kustomization (envoy-test/localtest.me), so no default-install impact; reported because it is the project's shipped answer to protecting the Ollama API and users are likely to copy it verbatim."
+      },
+      "summary": "The repo's own 'secured Ollama' recipe routes on a literal Authorization header match of Basic b2xsYW1hOm9sbGFtYQ== (ollama:ollama), documents an htpasswd line with an Apache MD5-crypt ($apr1$) hash and plaintext --user ollama:ollama, and binds Envoy admin to 0.0.0.0:9901 with the port exported as a Service port. Anyone who can read the public repo authenticates against any unchanged adoption; admin port allows config dumps/stats in-cluster.",
+      "taxonomy": {
+        "category": "hardcoded-credentials",
+        "cwe": [
+          "CWE-798",
+          "CWE-327"
+        ]
+      },
+      "title": "hack/envoy-sidecar auth demo commits working credentials (Basic ollama:ollama, apr1 hash) and exposes Envoy admin on 0.0.0.0:9901",
+      "validation": {
+        "evidenceRefs": [
+          "f11-htpasswd"
+        ],
+        "summary": "hack/envoy-sidecar has no kustomization and appears in no resources list (verified), bounding this to opt-in usage; the nginx fallback (ollama-ingress.yaml) references the same repo-generated secret pattern."
+      }
+    },
+    {
+      "attackPath": {
+        "attacker": "network position against a maintainer machine, or compromise of the download endpoint",
+        "dataflow": {
+          "evidenceRefs": [
+            "f12-helm",
+            "f12-dev"
+          ],
+          "summary": "curl | tar -> LOCALBIN -> executed by helm-build/helm-build releases on contributor machines."
+        },
+        "reachability": {
+          "prerequisites": [
+            "a maintainer runs `make helm`/the devcontainer with a substituted download"
+          ],
+          "summary": "Developer/maintainer context only; no runtime cluster impact."
+        }
+      },
+      "codeEvidence": [
+        {
+          "code": "HELM_INSTALLER ?= \"https://get.helm.sh/helm-v3.10.1-$(OSARCH).tar.gz\" ... cd $(LOCALBIN) && curl -s $(HELM_INSTALLER) | tar -xzf - -C $(LOCALBIN)",
+          "endLine": 159,
+          "id": "f12-helm",
+          "path": "Makefile",
+          "startLine": 153
+        },
+        {
+          "code": "curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64 ... curl -L -o kubebuilder https://go.kubebuilder.io/dl/latest/linux/amd64 ... curl -LO https://dl.k8s.io/release/$KUBECTL_VERSION/... without checksums",
+          "endLine": 13,
+          "id": "f12-dev",
+          "path": ".devcontainer/post-install.sh",
+          "startLine": 4
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "The download-and-execute commands are verbatim; all other tool installs use pinned go install through checksummed proxies (verified), which bounds the finding to these specific paths."
+      },
+      "findingId": "csf_fa5cac34535c00c7f5a36ada",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:2bcefccfd362725a3b2979f418bcf88b22ff0fbe389ac6c4139a69be15f1b827"
+      },
+      "identity": {
+        "anchor": "makefile-helm-curl-tar"
+      },
+      "locations": [
+        {
+          "endLine": 159,
+          "path": "Makefile",
+          "role": "root_control",
+          "startLine": 153
+        },
+        {
+          "endLine": 164,
+          "path": "Makefile",
+          "startLine": 161
+        },
+        {
+          "endLine": 15,
+          "path": ".devcontainer/post-install.sh",
+          "startLine": 4
+        }
+      ],
+      "occurrenceId": "occ_86be97f0caa102cd8ed155b6",
+      "provenance": {
+        "source": "codex-security-standard-scan: open-ended investigator, parent-validated against source"
+      },
+      "remediation": "Verify SHA-256/provenance for helm/kind/kubebuilder/kubectl downloads, pin helmify, and prefer go-install or cosign-verified artifacts.",
+      "rootCause": {
+        "evidenceRefs": [
+          "f12-helm"
+        ],
+        "summary": "Trusted binaries are fetched over HTTPS but executed with no integrity verification, and one path tracks unpinned 'latest'."
+      },
+      "ruleId": "unverified-build-tool-downloads",
+      "severity": {
+        "changeConditions": [
+          "Re-enabling CI on these targets, or checksum verification, raises respectively the likelihood or removes the finding."
+        ],
+        "level": "low",
+        "rationale": "Maintainer/CI network-position attacker only; the shipped Dockerfile is clean (two-stage, distroless nonroot, USER 65532, no curl|sh) and all GitHub workflow files are fully commented out, so no release path currently executes these targets unattended."
+      },
+      "summary": "The Makefile helm target pipes curl -s https://get.helm.sh/... | tar into LOCALBIN and executes it without checksum or signature verification; helmify is installed unpinned (@latest, with the target duplicated); .devcontainer/post-install.sh downloads 'latest' kind and kubebuilder and a kubectl binary with no checksum. A substituted download yields code execution on maintainer machines feeding the release pipeline.",
+      "taxonomy": {
+        "category": "supply-chain",
+        "cwe": [
+          "CWE-494"
+        ]
+      },
+      "title": "Build/devcontainer tooling downloaded and executed without checksum or signature verification",
+      "validation": {
+        "evidenceRefs": [
+          "f12-dev"
+        ],
+        "summary": "Checked all other tool installs (kustomize, controller-gen, setup-envtest, golangci-lint) use pinned go install with module checksums; workflows are fully commented out (no active CI surface today). Counterevidence: over HTTPS and pinned v3.10.1 for helm, limiting exposure to endpoint compromise or network position."
+      }
+    }
+  ],
+  "scanId": "6bca2ac4706df6e392d748308c1a163d30276b2e_20260913T160441Z",
+  "schemaVersion": "1.0"
+}

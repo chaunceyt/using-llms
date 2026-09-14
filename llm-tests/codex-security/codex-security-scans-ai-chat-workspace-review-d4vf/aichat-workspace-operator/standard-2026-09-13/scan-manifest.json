@@ -1,0 +1,40 @@
+{
+  "documentType": "codex-security.scan-manifest",
+  "scan": {
+    "artifacts": [
+      {
+        "mediaType": "application/json",
+        "path": "findings.json",
+        "sha256": "0c03ac142e5e4b245b0456036a794d022e2ed8bbc113f844406f87a8983203bb"
+      },
+      {
+        "mediaType": "application/json",
+        "path": "coverage.json",
+        "sha256": "4d1b7249714b7937955c83450652a6c7284745bc611eb15475820f4726471615"
+      }
+    ],
+    "completedAt": "2026-09-13T01:00:00Z",
+    "coverageRef": "coverage.json",
+    "findingsRef": "findings.json",
+    "id": "standard-2026-09-13",
+    "producer": {
+      "mode": "prompt-only-headless",
+      "name": "codex-security-standard-scan",
+      "version": "1.0"
+    },
+    "scope": {
+      "excludePaths": [],
+      "includePaths": []
+    },
+    "sealedAt": "2026-09-13T01:00:00Z",
+    "startedAt": "2026-09-13T00:05:00Z",
+    "status": "completed",
+    "target": {
+      "displayName": "AIChatWorkspace Operator (aichat-workspace-operator)",
+      "kind": "git_revision",
+      "revision": "6bca2ac4706df6e392d748308c1a163d30276b2e",
+      "targetId": "aichat-workspace-operator@6bca2ac4706df6e392d748308c1a163d30276b2e"
+    }
+  },
+  "schemaVersion": "1.0"
+}

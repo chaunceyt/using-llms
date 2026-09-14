@@ -1,0 +1,78 @@
+{
+  "completeness": "complete",
+  "deferred": [],
+  "documentType": "codex-security.coverage",
+  "excludePaths": [],
+  "explicitExclusions": [
+    "binary diagrams/*.png and diagrams/*.puml (rendered diagrams and plantuml sources, non-executable)",
+    "bodies of the ~250 static markdown prompt templates under internal/adapters/ai/modelfiles/files/ (embedded prompt content; the Go loader and Modelfile generation that consume them were reviewed instead)"
+  ],
+  "includePaths": [
+    "."
+  ],
+  "inventoryStrategy": "repository",
+  "mode": "repository",
+  "openQuestions": [
+    {
+      "question": "Whether the operator-authored Ingress exposing the raw Ollama API is an intended product feature; README/notes do not state, and the only auth mechanisms (hack/envoy-sidecar, nginx basic-auth) are demos outside every kustomization."
+    },
+    {
+      "question": "Whether Ollama's Modelfile processor (external binary, image tag chosen from a ConfigMap) turns injected ADAPTER/TEMPLATE directives into code execution; the injection primitive itself is established in this repository, its server-side amplification is not."
+    },
+    {
+      "question": "Whether deployed installations add a validating webhook, policy engine, or derived-namespace convention outside this repository; the shipped manifests register none."
+    },
+    {
+      "question": "The shipped manager ClusterRole grants no configmaps permission even though internal/config/config.go must read the operator ConfigMap; working deployments must add RBAC of unknown extent."
+    }
+  ],
+  "scanId": "6bca2ac4706df6e392d748308c1a163d30276b2e_20260913T160441Z",
+  "schemaVersion": "1.0",
+  "surfaces": [
+    {
+      "disposition": "reported",
+      "id": "operator-reconcile-path",
+      "label": "Operator control plane and reconcile path (cmd/, internal/controller/, internal/adapters/)"
+    },
+    {
+      "disposition": "reported",
+      "id": "api-crd-validation",
+      "label": "AIChatWorkspace API types and CRD validation rules (api/v1alpha1/, config/crd/)"
+    },
+    {
+      "disposition": "reported",
+      "id": "rbac-deploy-manifests",
+      "label": "RBAC and default deploy manifests (config/rbac/, config/default/, config/manager/)"
+    },
+    {
+      "disposition": "reported",
+      "id": "generated-workspace-workloads",
+      "label": "Generated workspace workloads: Ollama StatefulSet, Open WebUI Deployment, Services, Ingresses"
+    },
+    {
+      "disposition": "reported",
+      "id": "hack-example-manifests",
+      "label": "hack/ example manifests, envoy sidecar demo, and scale-to-zero material"
+    },
+    {
+      "disposition": "reported",
+      "id": "build-ci-supply-chain",
+      "label": "Dockerfile, Makefile, from-scratch.sh, .devcontainer/, .github/workflows/"
+    },
+    {
+      "disposition": "rejected",
+      "id": "manager-listener-surfaces",
+      "label": "Metrics, health probes, and webhook listener configuration"
+    },
+    {
+      "disposition": "rejected",
+      "id": "exec-ssrf-syntax-injection",
+      "label": "pods/exec command construction, Ollama URI/SSRF, label and ingress-host syntax injection"
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "embedded-prompt-assets",
+      "label": "Embedded fabric prompt markdown (internal/adapters/ai/modelfiles/files/)"
+    }
+  ]
+}
