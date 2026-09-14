@@ -1,0 +1,1227 @@
+{
+  "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/schemas/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "automationDetails": {
+        "id": "6bca2ac4706df6e392d748308c1a163d30276b2e_20260913T160441Z"
+      },
+      "properties": {
+        "codexSecuritySchemaVersion": "1.0",
+        "codexSecurityTargetKind": "git_revision"
+      },
+      "results": [
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/default/system-configmap.yaml"
+                },
+                "region": {
+                  "endLine": 8,
+                  "startLine": 6
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/apps.go"
+                },
+                "region": {
+                  "endLine": 49,
+                  "startLine": 49
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/apps.go"
+                },
+                "region": {
+                  "endLine": 154,
+                  "startLine": 154
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/config/config.go"
+                },
+                "region": {
+                  "endLine": 69,
+                  "startLine": 37
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "GetConfig reads openwebuiImageTag/ollamaImageTag/defaultDomain from the operator ConfigMap and apps.go composes the image as fmt.Sprintf(\"%s:%s\", name, tag) with zero validation and no digest. system-configmap.yaml ships openwebuiImageTag: \"main\", so every recreated workspace pod silently tracks a mutable upstream tag; a configmap-writer can silently select any image version for all new workspaces, and defaultDomain from the same ConfigMap flows unvalidated into every Ingress host."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:a2825b071de12f50ae321d76a916a625f82af802b24fdd9f94ff9bb8e86e5f79",
+            "primaryLocationLineHash": "c66e008358fff02d:1"
+          },
+          "properties": {
+            "category": "supply-chain",
+            "confidence": "high",
+            "findingId": "csf_46dd37b2c6c9806224f4f806",
+            "occurrenceId": "occ_0c24df7108185c379a943de9",
+            "severity": "low"
+          },
+          "ruleId": "mutable-unpinned-workspace-image-tags",
+          "ruleIndex": 4
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/apps.go"
+                },
+                "region": {
+                  "endLine": 75,
+                  "startLine": 63
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/apps.go"
+                },
+                "region": {
+                  "endLine": 219,
+                  "startLine": 182
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f4-cmt"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/apps.go"
+                },
+                "region": {
+                  "endLine": 75,
+                  "startLine": 69
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f4-ollama"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/apps.go"
+                },
+                "region": {
+                  "endLine": 199,
+                  "startLine": 187
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "NewDeployment comments out both the pod SecurityContext ('at the moment having issues getting open webui to run as non-root') and the container SecurityContext, so the open-webui container runs with the image default (root, all capabilities, no seccomp), while NewStatefulSet applies runAsNonRoot 10001, dropped capabilities, read-only root filesystem and RuntimeDefault seccomp to Ollama. A web-layer compromise therefore yields root in the container with write access to the workspace PVC and free egress to cluster ClusterIPs."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:d085711ed97a919a2b38dbe5f8d5d6d7a960a56e744dd92ca91354792f91c739",
+            "primaryLocationLineHash": "120909d79f157a15:1"
+          },
+          "properties": {
+            "category": "container-hardening",
+            "confidence": "high",
+            "findingId": "csf_e8d4b007df79b79224f39dff",
+            "occurrenceId": "occ_0f30337d3eb54fa4ab811970",
+            "severity": "medium"
+          },
+          "ruleId": "openwebui-container-runs-as-root",
+          "ruleIndex": 5
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/apps.go"
+                },
+                "region": {
+                  "endLine": 97,
+                  "startLine": 76
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/handle_reconcile.go"
+                },
+                "region": {
+                  "endLine": 126,
+                  "startLine": 119
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/common.go"
+                },
+                "region": {
+                  "endLine": 230,
+                  "startLine": 189
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f3-ing"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/handle_reconcile.go"
+                },
+                "region": {
+                  "endLine": 123,
+                  "startLine": 121
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "NewDeployment sets only OLLAMA_BASE_URL, OPENAI_API_BASE_URL, ENV=dev, WEBUI_NAME, KEY_FILE and the deployment is exposed on host <workspace>.<defaultDomain> with no auth. Open WebUI permits open registration by default and grants administrative control to the first registered account; nothing here disables signup, bootstraps an admin, or fronts the UI with authentication."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:1115a347682eddbdf1f6f1a88cd9db16e07dd0a2937380649a0ff3fcb8c2f269",
+            "primaryLocationLineHash": "bc31fe897e502c3d:1"
+          },
+          "properties": {
+            "category": "insecure-defaults",
+            "confidence": "medium",
+            "findingId": "csf_87d3cb066214ee0a304d7e2a",
+            "occurrenceId": "occ_3efbe296a5a001bac6dd4e75",
+            "severity": "high"
+          },
+          "ruleId": "openwebui-open-registration-public-ingress",
+          "ruleIndex": 6
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/ai/modelfiles/modelfiles.go"
+                },
+                "region": {
+                  "endLine": 51,
+                  "startLine": 38
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/ollama/ollama.go"
+                },
+                "region": {
+                  "endLine": 316,
+                  "startLine": 304
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "api/v1alpha1/aichatworkspace_types.go"
+                },
+                "region": {
+                  "endLine": 38,
+                  "startLine": 33
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/crd/bases/apps.aichatworkspaces.io_aichatworkspaces.yaml"
+                },
+                "region": {
+                  "endLine": 53,
+                  "startLine": 42
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f8-call"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/ollama/ollama.go"
+                },
+                "region": {
+                  "endLine": 311,
+                  "startLine": 304
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "GetSystemPromptPattern builds the Modelfile with fmt.Sprintf over raw spec.models/spec.patterns values: a pattern containing \"\"\" followed by a newline terminates the SYSTEM block and injects arbitrary Modelfile directives, which the operator submits to the workspace Ollama /api/create. The embedded fabric pattern map that could serve as an allow-list is dead code (variables.go embeds are never referenced)."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:f03a94f0e78a85a3e232f9abd816ec813c276458ece82594b375cf48be1fe502",
+            "primaryLocationLineHash": "69e28701709e3e0:1"
+          },
+          "properties": {
+            "category": "injection",
+            "confidence": "high",
+            "findingId": "csf_10ecad05235bf61da155c5a1",
+            "occurrenceId": "occ_4c1f843cf1f385d54e9d444e",
+            "severity": "low"
+          },
+          "ruleId": "modelfile-directive-injection-via-patterns",
+          "ruleIndex": 3
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/default/mysql-secret.yaml"
+                },
+                "region": {
+                  "endLine": 7,
+                  "startLine": 1
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/default/mysql-deployment.yaml"
+                },
+                "region": {
+                  "endLine": 31,
+                  "startLine": 16
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/default/kustomization.yaml"
+                },
+                "region": {
+                  "endLine": 39,
+                  "startLine": 34
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f5-secret"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/default/mysql-secret.yaml"
+                },
+                "region": {
+                  "endLine": 7,
+                  "startLine": 6
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f5-deploy"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/default/mysql-deployment.yaml"
+                },
+                "region": {
+                  "endLine": 30,
+                  "startLine": 17
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f5-kustomize"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/default/kustomization.yaml"
+                },
+                "region": {
+                  "endLine": 39,
+                  "startLine": 35
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "config/default/kustomization.yaml actively ships mysql-secret.yaml, mysql-deployment.yaml, mysql-storage.yaml and mysql-service.yaml. The secret holds password: 'password'; the deployment hardcodes MYSQL_PASSWORD 'aichatworkspace' and root from that secret, runs mysql:5.6 (EOL since Feb 2021) and exposes ClusterIP 3306 with no NetworkPolicy applied. No operator code consumes this database, so it is unused attack surface with public credentials."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:9380365f25b7541f59d4300e029feb87883644e155d12efdd39753e492a4a9b0",
+            "primaryLocationLineHash": "5497b3d063ebc2aa:1"
+          },
+          "properties": {
+            "category": "hardcoded-credentials",
+            "confidence": "high",
+            "findingId": "csf_a9ef6222bb0ba2bbc7477e89",
+            "occurrenceId": "occ_5febd40947e4f076fc0b01b0",
+            "severity": "medium"
+          },
+          "ruleId": "hardcoded-mysql-credentials-default-deploy",
+          "ruleIndex": 2
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/ollama/ollama.go"
+                },
+                "region": {
+                  "endLine": 70,
+                  "startLine": 43
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/ollama.go"
+                },
+                "region": {
+                  "endLine": 132,
+                  "startLine": 101
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/aichatworkspace_controller.go"
+                },
+                "region": {
+                  "endLine": 145,
+                  "startLine": 133
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f6-ctx"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/ollama/ollama.go"
+                },
+                "region": {
+                  "endLine": 64,
+                  "startLine": 43
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f6-call"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/ollama.go"
+                },
+                "region": {
+                  "endLine": 119,
+                  "startLine": 106
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "spec.Models flows into ollama.PullModel, which uses context.Background() and http.DefaultClient with no timeout and blocks until the pull finishes. The controller runs with the default single worker (no MaxConcurrentReconciles), so a single attacker-chosen multi-GB or stalled model reference blocks status updates, workload creation, and deletion finalization for all other AIChatWorkspace objects."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:fe86a4b6d4c6c714fe7fff0caf20eaa000ac27259a931581667ecf363bf0e952",
+            "primaryLocationLineHash": "99a547f527f51e87:1"
+          },
+          "properties": {
+            "category": "denial-of-service",
+            "confidence": "medium",
+            "findingId": "csf_b1bf929fcb6d791df4e3c9dd",
+            "occurrenceId": "occ_838ef3e136b91eec28b3eed8",
+            "severity": "medium"
+          },
+          "ruleId": "blocking-unbounded-model-pull-in-reconcile",
+          "ruleIndex": 0
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Makefile"
+                },
+                "region": {
+                  "endLine": 159,
+                  "startLine": 153
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Makefile"
+                },
+                "region": {
+                  "endLine": 164,
+                  "startLine": 161
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".devcontainer/post-install.sh"
+                },
+                "region": {
+                  "endLine": 15,
+                  "startLine": 4
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f12-dev"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".devcontainer/post-install.sh"
+                },
+                "region": {
+                  "endLine": 13,
+                  "startLine": 4
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The Makefile helm target pipes curl -s https://get.helm.sh/... | tar into LOCALBIN and executes it without checksum or signature verification; helmify is installed unpinned (@latest, with the target duplicated); .devcontainer/post-install.sh downloads 'latest' kind and kubebuilder and a kubectl binary with no checksum. A substituted download yields code execution on maintainer machines feeding the release pipeline."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:2bcefccfd362725a3b2979f418bcf88b22ff0fbe389ac6c4139a69be15f1b827",
+            "primaryLocationLineHash": "4d5d45d739f06780:1"
+          },
+          "properties": {
+            "category": "supply-chain",
+            "confidence": "high",
+            "findingId": "csf_fa5cac34535c00c7f5a36ada",
+            "occurrenceId": "occ_86be97f0caa102cd8ed155b6",
+            "severity": "low"
+          },
+          "ruleId": "unverified-build-tool-downloads",
+          "ruleIndex": 11
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cmd/main.go"
+                },
+                "region": {
+                  "endLine": 124,
+                  "startLine": 106
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f9-pprof"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cmd/main.go"
+                },
+                "region": {
+                  "endLine": 124,
+                  "startLine": 113
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "main.go unconditionally serves pprof (including /debug/pprof/profile and heap/goroutine dumps), expvar and statsviz on localhost:6060; the ListenAndServe error is ignored. Inside a pod, localhost means any same-pod network-namespace peer (sidecar, ephemeral debug container) and anyone with pods/exec or port-forward rights reaches these listeners. Heap dumps expose the mounted ServiceAccount token and in-memory config, and CPU profiles are a cheap DoS against the 500m-limited single replica."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:05315416e5dfeaa4d8cf5b380a55cf47a714a462741f7fb3a28d4db99876ad3d",
+            "primaryLocationLineHash": "17246d46f67b61fb:1"
+          },
+          "properties": {
+            "category": "information-disclosure",
+            "confidence": "high",
+            "findingId": "csf_2855b5203c5542624743b99e",
+            "occurrenceId": "occ_a7ce0f7647807951a08a1291",
+            "severity": "low"
+          },
+          "ruleId": "pprof-debug-endpoint-always-enabled",
+          "ruleIndex": 8
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/aichatworkspace_controller.go"
+                },
+                "region": {
+                  "endLine": 248,
+                  "startLine": 232
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/delete.go"
+                },
+                "region": {
+                  "endLine": 51,
+                  "startLine": 30
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/namespace.go"
+                },
+                "region": {
+                  "endLine": 64,
+                  "startLine": 36
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/handle_reconcile.go"
+                },
+                "region": {
+                  "endLine": 134,
+                  "startLine": 44
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/ollama.go"
+                },
+                "region": {
+                  "endLine": 132,
+                  "startLine": 51
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "api/v1alpha1/aichatworkspace_types.go"
+                },
+                "region": {
+                  "endLine": 28,
+                  "startLine": 24
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/crd/bases/apps.aichatworkspaces.io_aichatworkspaces.yaml"
+                },
+                "region": {
+                  "endLine": 62,
+                  "startLine": 56
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/rbac/role.yaml"
+                },
+                "region": {
+                  "endLine": 24,
+                  "startLine": 13
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/rbac/role_binding.yaml"
+                },
+                "region": {
+                  "endLine": 18,
+                  "startLine": 1
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f1-del"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/aichatworkspace_controller.go"
+                },
+                "region": {
+                  "endLine": 240,
+                  "startLine": 235
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f1-exists"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/namespace.go"
+                },
+                "region": {
+                  "endLine": 63,
+                  "startLine": 41
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f1-gate"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/delete.go"
+                },
+                "region": {
+                  "endLine": 38,
+                  "startLine": 35
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f1-pull"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/ollama.go"
+                },
+                "region": {
+                  "endLine": 119,
+                  "startLine": 102
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The reconciler treats spec.workspaceName as the literal target namespace for every operation and deletes it on CR deletion, without any ownership check, no validating webhook, and with cluster-wide wildcard RBAC. A user who can only create an AIChatWorkspace CR in their own namespace can make the operator create quotas, workloads, service accounts, PVCs and Ingresses inside any existing namespace (e.g. kube-system, default, another tenant's workspace) and then, by deleting the CR, cause deletion of that entire namespace."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:23afbde874a9474bf823eb1020523b77536357e4a4dd1143840017298604c88e",
+            "primaryLocationLineHash": "7789c6d1f8e7429b:1"
+          },
+          "properties": {
+            "category": "broken-access-control",
+            "confidence": "high",
+            "findingId": "csf_f47e530c1008c2428df7b7c7",
+            "occurrenceId": "occ_b3f896b3f9a9b0949bf483bb",
+            "severity": "critical"
+          },
+          "ruleId": "unvalidated-workspacename-namespace-takeover",
+          "ruleIndex": 10
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/rbac/role.yaml"
+                },
+                "region": {
+                  "endLine": 24,
+                  "startLine": 13
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/rbac/role_binding.yaml"
+                },
+                "region": {
+                  "endLine": 18,
+                  "startLine": 1
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/aichatworkspace_controller.go"
+                },
+                "region": {
+                  "endLine": 80,
+                  "startLine": 72
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f7-exec"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/common.go"
+                },
+                "region": {
+                  "endLine": 343,
+                  "startLine": 304
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Generated from the controller markers, manager-role grants wildcard verbs over namespaces, pods, pods/exec, PVCs, services, service accounts, resource quotas, deployments, statefulsets, ingresses and httpscaledobjects, bound via ClusterRoleBinding. The reconciler never needs exec outside its own workspace pods (only du -sh on constant paths), so any input-driven flaw (as in the workspaceName finding) or manager-pod compromise escalates to pod creation and exec across kube-system and every tenant."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:f7b110086f24d0ccd67977ed282218807567128208743b4e13c9478de6f9beef",
+            "primaryLocationLineHash": "145018ed64e6e8b2:1"
+          },
+          "properties": {
+            "category": "privilege-management",
+            "confidence": "high",
+            "findingId": "csf_b8f00747e1a47b3666203a30",
+            "occurrenceId": "occ_d3a5283e670d4f83eb725639",
+            "severity": "medium"
+          },
+          "ruleId": "overbroad-operator-cluster-rbac",
+          "ruleIndex": 7
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "hack/envoy-sidecar/envoy-config.yaml"
+                },
+                "region": {
+                  "endLine": 36,
+                  "startLine": 36
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "hack/envoy-sidecar/envoy-config.yaml"
+                },
+                "region": {
+                  "endLine": 65,
+                  "startLine": 60
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "hack/envoy-sidecar/README.md"
+                },
+                "region": {
+                  "endLine": 9,
+                  "startLine": 8
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "hack/envoy-sidecar/ollama-ingress.yaml"
+                },
+                "region": {
+                  "endLine": 7,
+                  "startLine": 7
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The repo's own 'secured Ollama' recipe routes on a literal Authorization header match of Basic b2xsYW1hOm9sbGFtYQ== (ollama:ollama), documents an htpasswd line with an Apache MD5-crypt ($apr1$) hash and plaintext --user ollama:ollama, and binds Envoy admin to 0.0.0.0:9901 with the port exported as a Service port. Anyone who can read the public repo authenticates against any unchanged adoption; admin port allows config dumps/stats in-cluster."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:90470d1cc5f74df714b4a28d5d7df90436959af7398c079c2b6421a263af0dd2",
+            "primaryLocationLineHash": "b0ab769de05c2966:1"
+          },
+          "properties": {
+            "category": "hardcoded-credentials",
+            "confidence": "high",
+            "findingId": "csf_818ad7f58c4b946e3aa09487",
+            "occurrenceId": "occ_e78738f81383d081350bb46e",
+            "severity": "low"
+          },
+          "ruleId": "committed-demo-credentials-and-envoy-admin-exposure",
+          "ruleIndex": 1
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/handle_reconcile.go"
+                },
+                "region": {
+                  "endLine": 134,
+                  "startLine": 128
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/handle_reconcile.go"
+                },
+                "region": {
+                  "endLine": 163,
+                  "startLine": 150
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/common.go"
+                },
+                "region": {
+                  "endLine": 230,
+                  "startLine": 189
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/default/kustomization.yaml"
+                },
+                "region": {
+                  "endLine": 39,
+                  "startLine": 30
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/default/system-configmap.yaml"
+                },
+                "region": {
+                  "endLine": 8,
+                  "startLine": 6
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f2-ing"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/handle_reconcile.go"
+                },
+                "region": {
+                  "endLine": 131,
+                  "startLine": 129
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f2-dns"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/handle_reconcile.go"
+                },
+                "region": {
+                  "endLine": 158,
+                  "startLine": 155
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f2-bare"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/common.go"
+                },
+                "region": {
+                  "endLine": 227,
+                  "startLine": 204
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:f2-domain"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/default/system-configmap.yaml"
+                },
+                "region": {
+                  "endLine": 6,
+                  "startLine": 6
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "handleReconcile always creates a second Ingress routing the Ollama service to host <workspaceName>-api.<defaultDomain> with no annotations, no auth backend, and no TLS. Ollama has no authentication, so anyone who can reach that host can pull arbitrary models into the 20Gi PVC, run unlimited inference, and create/delete/copy models. The only auth mechanisms in the repo (hack/envoy-sidecar, nginx basic-auth) are demos referenced by no kustomization."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:10800604bf00bc745a0d6df91d7ba8e652723afdc285545f29ccf679158b409c",
+            "primaryLocationLineHash": "92d9ddc61ce5608e:1"
+          },
+          "properties": {
+            "category": "missing-authentication",
+            "confidence": "medium",
+            "findingId": "csf_ba36c8693a89f36f6cc41613",
+            "occurrenceId": "occ_f39e6db5235a86644fee4f67",
+            "severity": "high"
+          },
+          "ruleId": "unauthenticated-ollama-api-ingress",
+          "ruleIndex": 9
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "Codex Security",
+          "rules": [
+            {
+              "id": "blocking-unbounded-model-pull-in-reconcile",
+              "name": "blocking-unbounded-model-pull-in-reconcile",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "blocking-unbounded-model-pull-in-reconcile"
+              }
+            },
+            {
+              "id": "committed-demo-credentials-and-envoy-admin-exposure",
+              "name": "committed-demo-credentials-and-envoy-admin-exposure",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "committed-demo-credentials-and-envoy-admin-exposure"
+              }
+            },
+            {
+              "id": "hardcoded-mysql-credentials-default-deploy",
+              "name": "hardcoded-mysql-credentials-default-deploy",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "hardcoded-mysql-credentials-default-deploy"
+              }
+            },
+            {
+              "id": "modelfile-directive-injection-via-patterns",
+              "name": "modelfile-directive-injection-via-patterns",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "modelfile-directive-injection-via-patterns"
+              }
+            },
+            {
+              "id": "mutable-unpinned-workspace-image-tags",
+              "name": "mutable-unpinned-workspace-image-tags",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "mutable-unpinned-workspace-image-tags"
+              }
+            },
+            {
+              "id": "openwebui-container-runs-as-root",
+              "name": "openwebui-container-runs-as-root",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "openwebui-container-runs-as-root"
+              }
+            },
+            {
+              "id": "openwebui-open-registration-public-ingress",
+              "name": "openwebui-open-registration-public-ingress",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "openwebui-open-registration-public-ingress"
+              }
+            },
+            {
+              "id": "overbroad-operator-cluster-rbac",
+              "name": "overbroad-operator-cluster-rbac",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "overbroad-operator-cluster-rbac"
+              }
+            },
+            {
+              "id": "pprof-debug-endpoint-always-enabled",
+              "name": "pprof-debug-endpoint-always-enabled",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "pprof-debug-endpoint-always-enabled"
+              }
+            },
+            {
+              "id": "unauthenticated-ollama-api-ingress",
+              "name": "unauthenticated-ollama-api-ingress",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "unauthenticated-ollama-api-ingress"
+              }
+            },
+            {
+              "id": "unvalidated-workspacename-namespace-takeover",
+              "name": "unvalidated-workspacename-namespace-takeover",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "unvalidated-workspacename-namespace-takeover"
+              }
+            },
+            {
+              "id": "unverified-build-tool-downloads",
+              "name": "unverified-build-tool-downloads",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "unverified-build-tool-downloads"
+              }
+            }
+          ],
+          "version": "1.0.0"
+        }
+      },
+      "versionControlProvenance": [
+        {
+          "repositoryUri": "https://github.com/chaunceyt/aichat-workspace-operator",
+          "revisionId": "6bca2ac4706df6e392d748308c1a163d30276b2e"
+        }
+      ]
+    }
+  ],
+  "version": "2.1.0"
+}

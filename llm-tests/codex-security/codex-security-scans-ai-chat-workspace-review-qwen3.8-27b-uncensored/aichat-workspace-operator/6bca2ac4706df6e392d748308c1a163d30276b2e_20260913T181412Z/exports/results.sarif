@@ -1,0 +1,490 @@
+{
+  "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/schemas/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "automationDetails": {
+        "id": "6bca2ac4706df6e392d748308c1a163d30276b2e_20260913T181412Z"
+      },
+      "properties": {
+        "codexSecuritySchemaVersion": "1.0",
+        "codexSecurityTargetKind": "git_revision"
+      },
+      "results": [
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/apps.go"
+                },
+                "region": {
+                  "endLine": 75,
+                  "startLine": 65
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "expected_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/apps.go"
+                },
+                "region": {
+                  "endLine": 199,
+                  "startLine": 184
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "`NewDeployment` for Open WebUI ships with both the pod and container SecurityContexts commented out, so the network-exposed, unauthenticated webui container runs as root with default capabilities and a writable root filesystem. The sibling Ollama StatefulSet in the same file applies the hardened `defaultPodSecurityContext()`/`defaultSecurityContext()` helpers, showing the intended baseline that the webui path omits."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:c018f60adef538122f932fcd6cbdc10469dffacf610f04f51923f1f325f2179b",
+            "primaryLocationLineHash": "150f956686881cf6:1"
+          },
+          "properties": {
+            "category": "Security Misconfiguration",
+            "confidence": "high",
+            "findingId": "csf_416c71929aeafca15e1e292a",
+            "occurrenceId": "occ_13c98d09f51b82c287e1303f",
+            "severity": "low"
+          },
+          "ruleId": "misconfiguration.webui-security-context",
+          "ruleIndex": 3
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "api/v1alpha1/aichatworkspace_types.go"
+                },
+                "region": {
+                  "endLine": 28,
+                  "startLine": 25
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "propagation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/crd/bases/apps.aichatworkspaces.io_aichatworkspaces.yaml"
+                },
+                "region": {
+                  "endLine": 15,
+                  "startLine": 15
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "propagation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/handle_reconcile.go"
+                },
+                "region": {
+                  "endLine": 47,
+                  "startLine": 46
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "propagation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/handle_reconcile.go"
+                },
+                "region": {
+                  "endLine": 163,
+                  "startLine": 153
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "sink"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/apps.go"
+                },
+                "region": {
+                  "endLine": 97,
+                  "startLine": 76
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "AIChatWorkspace CRs are namespaced, but `spec.workspaceName` maps to a cluster-scoped namespace and a public ingress hostname with no uniqueness enforcement. Two tenants that choose the same workspaceName target the same namespace: the first reconcile wins the workload names, and the Open WebUI it serves \u2014 deployed with no authentication at `<name>.<DefaultDomain>` \u2014 becomes reachable by the second tenant (and anyone who knows the name), disclosing the first tenant's chat history, uploaded documents, and Ollama model configuration."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:45d13d30a2466140ce49f47ccf85dfbb55371e70c1c1a97c0ed9c80aa152bf4f",
+            "primaryLocationLineHash": "e8abce60602a7e80:1"
+          },
+          "properties": {
+            "category": "Access Control",
+            "confidence": "medium",
+            "findingId": "csf_91c7f36582951c36a58ba132",
+            "occurrenceId": "occ_15d436d6cb3864da0c7b8fc4",
+            "severity": "medium"
+          },
+          "ruleId": "access-control.workspace-name-collision",
+          "ruleIndex": 0
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cmd/main.go"
+                },
+                "region": {
+                  "endLine": 123,
+                  "startLine": 112
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "propagation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cmd/main.go"
+                },
+                "region": {
+                  "endLine": 85,
+                  "startLine": 83
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "`cmd/main.go` unconditionally starts an additional HTTP server on `localhost:6060` exposing `net/http/pprof` (including `/debug/pprof/cmdline`), `expvar`, and `statsviz` with no authentication, and initializes the zap logger with `Development: true`. Any code sharing the manager pod's network namespace (a sidecar, a host-network peer, or a `pods/exec` session) can read runtime profiles, command-line arguments, and internal statistics from this unauthenticated surface."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:7302b8e4fcf3eb21d44c4e18f5df14219ebbd85160dbabb2c541da8b24bbab3e",
+            "primaryLocationLineHash": "201d447534cd8dcb:1"
+          },
+          "properties": {
+            "category": "Sensitive Data Exposure",
+            "confidence": "high",
+            "findingId": "csf_fae837672b471c465e0cf67e",
+            "occurrenceId": "occ_282af3778bb69733f09179cf",
+            "severity": "low"
+          },
+          "ruleId": "sensitive-data-exposure.debug-endpoints",
+          "ruleIndex": 4
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/default/mysql-deployment.yaml"
+                },
+                "region": {
+                  "endLine": 30,
+                  "startLine": 22
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "propagation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/default/mysql-secret.yaml"
+                },
+                "region": {
+                  "endLine": 7,
+                  "startLine": 5
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "propagation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/default/kustomization.yaml"
+                },
+                "region": {
+                  "endLine": 39,
+                  "startLine": 35
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The default deployment overlay ships a MySQL deployment whose application user password is the literal string `aichatworkspace` in plaintext, and a Secret whose root password is the literal string `password`. Both files are included by `config/default/kustomization.yaml`, so a stock install provisions a database with publicly known, dictionary-grade credentials."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:21e4de4ec0ea636f49650509b64d86fbb8d531439f0751f68aad642249817d5b",
+            "primaryLocationLineHash": "b43d7294d8b29b5:1"
+          },
+          "properties": {
+            "category": "Sensitive Data Exposure",
+            "confidence": "high",
+            "findingId": "csf_4f0c3705cd114824f9b860b4",
+            "occurrenceId": "occ_2cd28a287561a0c4d95494b3",
+            "severity": "medium"
+          },
+          "ruleId": "hardcoded-credentials.mysql-defaults",
+          "ruleIndex": 1
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "message": {
+                "text": "root_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/aichatworkspace_controller.go"
+                },
+                "region": {
+                  "endLine": 248,
+                  "startLine": 232
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "user_input"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "api/v1alpha1/aichatworkspace_types.go"
+                },
+                "region": {
+                  "endLine": 28,
+                  "startLine": 25
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "propagation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/delete.go"
+                },
+                "region": {
+                  "endLine": 49,
+                  "startLine": 35
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "propagation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/handle_reconcile.go"
+                },
+                "region": {
+                  "endLine": 55,
+                  "startLine": 44
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "propagation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/namespace.go"
+                },
+                "region": {
+                  "endLine": 49,
+                  "startLine": 41
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "sink"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/common.go"
+                },
+                "region": {
+                  "endLine": 176,
+                  "startLine": 169
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "sink"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/constants/constants.go"
+                },
+                "region": {
+                  "endLine": 54,
+                  "startLine": 51
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "expected_control"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/rbac/role.yaml"
+                },
+                "region": {
+                  "endLine": 24,
+                  "startLine": 13
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "evidence:delete-trigger"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/delete.go"
+                },
+                "region": {
+                  "endLine": 45,
+                  "startLine": 35
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The AIChatWorkspace CRD accepts `spec.workspaceName` as an arbitrary string with only an immutability CEL rule \u2014 no pattern, length, or reserved-name validation. The reconciler uses the field verbatim as the target namespace for every resource it creates (Namespace, ResourceQuota, PVCs, ServiceAccounts, StatefulSet, Deployment, Services, Ingresses) and the finalizer deletion path deletes the namespace bearing that exact name. Combined with the operator's cluster-wide wildcard RBAC, any principal that can create an AIChatWorkspace CR can inject a ResourceQuota (pods: 2, persistentvolumeclaims: 2, services: 5) and full operator-managed workloads into any existing namespace such as `kube-system`, and delete that namespace when the CR is deleted. Multi-label names (dots are legal namespace names) additionally let a tenant claim arbitrary `<x>.<DefaultDomain>` ingress hostnames."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:b66a50c3f6bc390519247a0005a20043eecc649a7204b0cf7215923202450ae9",
+            "primaryLocationLineHash": "7789c6d1f8e7429b:1"
+          },
+          "properties": {
+            "category": "Input Validation",
+            "confidence": "high",
+            "findingId": "csf_27f31a0b85cf77991ea2c736",
+            "occurrenceId": "occ_a94e3210921fd323fb3517cb",
+            "severity": "high"
+          },
+          "ruleId": "input-validation.workspace-namespace-control",
+          "ruleIndex": 2
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "Codex Security",
+          "rules": [
+            {
+              "id": "access-control.workspace-name-collision",
+              "name": "access-control.workspace-name-collision",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "access-control.workspace-name-collision"
+              }
+            },
+            {
+              "id": "hardcoded-credentials.mysql-defaults",
+              "name": "hardcoded-credentials.mysql-defaults",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "hardcoded-credentials.mysql-defaults"
+              }
+            },
+            {
+              "id": "input-validation.workspace-namespace-control",
+              "name": "input-validation.workspace-namespace-control",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "input-validation.workspace-namespace-control"
+              }
+            },
+            {
+              "id": "misconfiguration.webui-security-context",
+              "name": "misconfiguration.webui-security-context",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "misconfiguration.webui-security-context"
+              }
+            },
+            {
+              "id": "sensitive-data-exposure.debug-endpoints",
+              "name": "sensitive-data-exposure.debug-endpoints",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "sensitive-data-exposure.debug-endpoints"
+              }
+            }
+          ],
+          "version": "1.0"
+        }
+      },
+      "versionControlProvenance": [
+        {
+          "repositoryUri": "https://github.com/chaunceyt/aichat-workspace-operator",
+          "revisionId": "6bca2ac4706df6e392d748308c1a163d30276b2e"
+        }
+      ]
+    }
+  ],
+  "version": "2.1.0"
+}

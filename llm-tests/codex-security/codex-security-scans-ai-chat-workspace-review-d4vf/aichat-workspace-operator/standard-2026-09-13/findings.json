@@ -1,0 +1,515 @@
+{
+  "documentType": "codex-security.findings",
+  "findings": [
+    {
+      "attackPath": {
+        "dataflow": {
+          "summary": "CR spec.workspaceName -> reconcile -> ensure*/New* (Namespace target) or deleteAIChatWorkspace (Namespace DELETE) -> kubernetes API via privileged manager SA."
+        },
+        "reachability": {
+          "summary": "Attacker-controlled CR field reaches cluster-scoped API actions with no intermediate control; requires only create+delete on the aichatworkspaces resource."
+        },
+        "summary": "A principal able to create an AIChatWorkspace CR (editor role) sets spec.workspaceName to an existing sensitive or peer namespace; the operator SA (verbs=* cluster-wide) then creates workloads/quotas/SAs there, and a subsequent CR delete triggers Namespace DELETE of that namespace."
+      },
+      "codeEvidence": [
+        {
+          "code": "func (r *AIChatWorkspaceReconciler) ensureNamespace(...){\n  err := r.Get(context.TODO(), types.NamespacedName{Name: ns.Name}, found)\n  if err != nil && errors.IsNotFound(err) { ... create ... } else if err != nil { ... }\n  return nil, nil // existing namespace adopted; reconcile proceeds\n}",
+          "endLine": 64,
+          "id": "ce-f1-ns",
+          "path": "internal/controller/namespace.go",
+          "startLine": 36
+        },
+        {
+          "code": "namespace := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: instance.Spec.WorkspaceName}}\nerr := r.Delete(context.TODO(), namespace)",
+          "endLine": 248,
+          "id": "ce-f1-del",
+          "path": "internal/controller/aichatworkspace_controller.go",
+          "startLine": 232
+        },
+        {
+          "code": "WorkspaceName string `json:\"workspaceName\"` // +kubebuilder:validation:XValidation:rule=\"self == oldSelf\"",
+          "endLine": 31,
+          "id": "ce-f1-type",
+          "path": "api/v1alpha1/aichatworkspace_types.go",
+          "startLine": 28
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Source-confirmed dataflow: workspaceName flows unchanged from api types into every ensure* New* constructor as the target namespace (handle_reconcile.go), adoption of existing namespaces is verified in namespace.go, and unconditional Namespace DELETE on teardown is in aichatworkspace_controller.go; operator ClusterRole grants verbs=* on namespaces."
+      },
+      "findingId": "csf_3c0a4b43825788ac2f640b47",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:a9876731b614bf8252d1a549a19f42593ade8f71f5e09e3859fad095125c772c"
+      },
+      "identity": {
+        "anchor": "unvalidated-workspace-namespace"
+      },
+      "locations": [
+        {
+          "endLine": 131,
+          "path": "internal/controller/handle_reconcile.go",
+          "role": "namespace target for all created resources",
+          "startLine": 47
+        },
+        {
+          "endLine": 64,
+          "path": "internal/controller/namespace.go",
+          "role": "adopts existing namespace without ownership check",
+          "startLine": 36
+        },
+        {
+          "endLine": 248,
+          "path": "internal/controller/aichatworkspace_controller.go",
+          "role": "deletes Namespace named spec.workspaceName on CR deletion",
+          "startLine": 232
+        },
+        {
+          "endLine": 31,
+          "path": "api/v1alpha1/aichatworkspace_types.go",
+          "role": "unconstrained workspaceName input",
+          "startLine": 28
+        },
+        {
+          "endLine": 24,
+          "path": "config/rbac/role.yaml",
+          "role": "ClusterRole verbs=* on namespaces and workloads",
+          "startLine": 14
+        }
+      ],
+      "occurrenceId": "occ_403d6cee89b25121d4e370a5",
+      "provenance": {
+        "source": "static-analysis"
+      },
+      "remediation": "Tie workspaceName to ownership: require it to equal the CR's own metadata.namespace (CEL rule such as `self == object.metadata.namespace`) or enforce a strict RFC1123 pattern + allowlist via a validating admission webhook; reject names of pre-existing, non-operator-owned namespaces; scope the manager ClusterRole away from verbs=* on namespaces and drop namespace 'delete'; on teardown delete only resources the controller created (ownerReferences/labels) instead of DELETE-ing the raw Namespace.",
+      "rootCause": {
+        "evidenceRefs": [
+          "ce-f1-type",
+          "ce-f1-ns"
+        ],
+        "summary": "No validation ties spec.workspaceName to the CR's own namespace or owner, and no ownership check is made before the controller uses it as a target namespace (creation) or deletes it (teardown), while the operator holds cluster-scoped verbs=*."
+      },
+      "ruleId": "unvalidated-workspace-namespace",
+      "severity": {
+        "level": "high",
+        "score": 8.5,
+        "scoringSystem": "CVSS-3.1"
+      },
+      "summary": "The controller uses the user-controlled AIChatWorkspace.spec.workspaceName verbatim as the Kubernetes namespace in which it creates namespaces, ResourceQuotas, PVCs, ServiceAccounts, StatefulSets, Deployments, Services and Ingresses, and on CR deletion issues a Namespace DELETE for that exact name. ensureNamespace adopts an existing namespace silently (it only creates when NotFound), so a CR whose workspaceName matches any pre-existing namespace causes the operator's privileged service account to inject workloads and quotas into that namespace; deleting such a CR deletes the entire namespace and everything in it.",
+      "taxonomy": {
+        "category": "Broken Access Control / Tenant Isolation",
+        "cwe": [
+          "CWE-284"
+        ]
+      },
+      "title": "Unvalidated spec.workspaceName enables cross-tenant resource injection and arbitrary namespace deletion via cluster-scoped RBAC",
+      "validation": {
+        "evidenceRefs": [
+          "ce-f1-ns",
+          "ce-f1-del"
+        ],
+        "summary": "Confirmed by direct source review: handle_reconcile.go passes aichat.Spec.WorkspaceName as Namespace to NewNamespace/NewResourceQuota/NewPersistentVolumeClaim/NewServiceAccount/NewStatefulSet/NewDeployment/NewIngress; namespace.go only creates when NotFound, so pre-existing namespaces are adopted; deleteAIChatWorkspace deletes the raw Namespace. The CEL rule is immutability-only and does not constrain allowed values; no validating admission webhook is registered."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "summary": "Internet -> Ingress host / <workspace>-api.<domain> -> Ollama Service:11434 (unauthenticated) or Open WebUI :8080."
+        },
+        "reachability": {
+          "summary": "Reachability depends on an externally routed ingress controller for the cluster's defaultDomain; source establishes the exposed surface."
+        },
+        "summary": "A remote attacker who can resolve/predict <workspace>[-api].defaultDomain reaches the Ollama API without credentials, enabling unauthenticated inference (resource/cost abuse), model pull/delete (availability/data integrity), and arbitrary create; Open WebUI is also reachable."
+      },
+      "codeEvidence": [
+        {
+          "code": "return &networkingv1.Ingress{ Spec: networkingv1.IngressSpec{ Rules: []networkingv1.IngressRule{{ Host: hostname, ... }} } } // no TLS block, no auth annotations",
+          "endLine": 230,
+          "id": "ce-f2-ing",
+          "path": "internal/adapters/k8s/common.go",
+          "startLine": 189
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "NewIngress clearly omits tls and auth; setIngressDNSHost builds predictable public hosts; README documents auth as unimplemented. External reachability depends on cluster ingress exposure, noted as a deployment prerequisite."
+      },
+      "findingId": "csf_651f22407f38726a9472c0ce",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:8db1fe157d226014adc37e9caa63fa8e23527b773ce9af3c1332fdeadaeb21ac"
+      },
+      "identity": {
+        "anchor": "unauthenticated-ollama-ingress"
+      },
+      "locations": [
+        {
+          "endLine": 230,
+          "path": "internal/adapters/k8s/common.go",
+          "role": "NewIngress - no TLS, no auth",
+          "startLine": 189
+        },
+        {
+          "endLine": 134,
+          "path": "internal/controller/handle_reconcile.go",
+          "role": "creates openwebui and ollama ingresses",
+          "startLine": 121
+        },
+        {
+          "endLine": 163,
+          "path": "internal/controller/handle_reconcile.go",
+          "role": "setIngressDNSHost builds <workspace>[-api].defaultDomain",
+          "startLine": 153
+        }
+      ],
+      "occurrenceId": "occ_90cf3f8966196e227059fa69",
+      "provenance": {
+        "source": "static-analysis"
+      },
+      "remediation": "Add spec.tls with a managed certificate per ingress host; front the ingresses with an authentication layer (OIDC/basic-auth sidecar or ingress-nginx auth annotation); require bearer-token auth on the Ollama API or bind it to localhost and expose only through an authenticated proxy; restrict /api/pull, /api/create, /api/delete to operator service accounts; add NetworkPolicy limiting traffic to the ingress controller; disable open signup in Open WebUI.",
+      "rootCause": {
+        "evidenceRefs": [
+          "ce-f2-ing"
+        ],
+        "summary": "The generated Ingress omits both transport encryption and authentication while exposing the unauthenticated Ollama management/inference API."
+      },
+      "ruleId": "unauthenticated-ollama-ingress",
+      "severity": {
+        "level": "medium",
+        "score": 6.0,
+        "scoringSystem": "CVSS-3.1"
+      },
+      "summary": "handle_reconcile.go creates Ingresses for both workloads at <workspace>.defaultDomain (openwebui) and <workspace>-api.defaultDomain (ollama). NewIngress defines a path '/' rule with no spec.tls block and no auth annotations, routing to the unauthenticated Ollama API (port 11434) and Open WebUI. The README lists adding auth to the Ollama endpoint as unimplemented roadmap, confirming the surface is intentionally open.",
+      "taxonomy": {
+        "category": "Missing Authentication / Security Misconfiguration",
+        "cwe": [
+          "CWE-306"
+        ]
+      },
+      "title": "Ollama API and Open WebUI exposed via Ingress without authentication or TLS",
+      "validation": {
+        "evidenceRefs": [
+          "ce-f2-ing"
+        ],
+        "summary": "No tls or auth field is set in NewIngress; README.md:51 marks 'Add auth to the Ollama endpoint' as unimplemented. The KEDA interceptor-proxy path that could front it is commented out (handle_reconcile.go:136-140)."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "summary": "CR spec.models/spec.patterns -> ensureStatefulSet -> ollama.CreateFromModelFile -> modelfiles.GetSystemPromptPattern -> Ollama /api/create."
+        },
+        "reachability": {
+          "summary": "Trivially reachable from CR spec with no intermediate control; bounded by per-workspace namespace/ResourceQuota isolation."
+        },
+        "summary": "Tenant sets a crafted pattern/model; controller builds and posts an injected Modelfile to the tenant's own Ollama, which can load a chosen base model or trigger in-cluster fetches; no privilege gain beyond the submitting workspace."
+      },
+      "codeEvidence": [
+        {
+          "code": "var promptTemplate = `\nFROM %s\n...\nSYSTEM \"\"\"\n%s\n\"\"\"`\nreturn fmt.Sprintf(promptTemplate, model, pattern)",
+          "endLine": 52,
+          "id": "ce-f3-mf",
+          "path": "internal/adapters/ai/modelfiles/modelfiles.go",
+          "startLine": 38
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Direct source confirmation: raw fmt.Sprintf of untrusted strings into a Modelfile template with no escaping; CRD schema imposes no constraints on models/patterns."
+      },
+      "findingId": "csf_4f462d9c720b46ae0adc554c",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:10f1d90a209936f36a5e1f58d999550a38fcdf3982b8619e48049e6259dcd49f"
+      },
+      "identity": {
+        "anchor": "modelfile-template-injection"
+      },
+      "locations": [
+        {
+          "endLine": 52,
+          "path": "internal/adapters/ai/modelfiles/modelfiles.go",
+          "role": "Modelfile built via fmt.Sprintf without escaping",
+          "startLine": 38
+        },
+        {
+          "endLine": 319,
+          "path": "internal/adapters/ollama/ollama.go",
+          "role": "CreateFromModelFile sends modelfile to /api/create",
+          "startLine": 287
+        },
+        {
+          "endLine": 131,
+          "path": "internal/controller/ollama.go",
+          "role": "iterates user-controlled spec.Models / spec.Patterns",
+          "startLine": 106
+        }
+      ],
+      "occurrenceId": "occ_1adc720044721c7d0a087cb1",
+      "provenance": {
+        "source": "static-analysis"
+      },
+      "remediation": "Validate/sanitize spec.models and spec.patterns at admission time (CRD CEL pattern disallowing newlines and `\"\"\"`, maxLength) and additionally escape/neutralize triple-quotes, backslashes and newlines in prompt(); prefer building the Modelfile from structured fields rather than string interpolation; never concatenate untrusted text into directives such as FROM.",
+      "rootCause": {
+        "evidenceRefs": [
+          "ce-f3-mf"
+        ],
+        "summary": "User-controlled model/pattern strings are interpolated verbatim into an Ollama Modelfile without neutralization, allowing directive injection."
+      },
+      "ruleId": "modelfile-template-injection",
+      "severity": {
+        "level": "medium",
+        "score": 5.0,
+        "scoringSystem": "CVSS-3.1"
+      },
+      "summary": "prompt() in modelfiles.go builds an Ollama Modelfile with fmt.Sprintf embedding the user-supplied model into `FROM %s` and pattern into `SYSTEM \"\"\"%s\"\"\"` with no escaping or sanitization. The CRD imposes no pattern/maxLength on models/patterns, so newlines and triple-quotes can break out and inject arbitrary Modelfile directives (e.g. a different FROM base model or extra TEMPLATE/PARAMETER lines), which the controller sends to /api/create.",
+      "taxonomy": {
+        "category": "Injection (unsafe code generation)",
+        "cwe": [
+          "CWE-74"
+        ]
+      },
+      "title": "Ollama Modelfile template injection via unescaped spec.models / spec.patterns",
+      "validation": {
+        "evidenceRefs": [
+          "ce-f3-mf"
+        ],
+        "summary": "No escaping or sanitization exists; a pattern containing a newline plus `\"\"\"` terminates the SYSTEM block and injects directives. Impact is confined to the tenant's own per-workspace Ollama StatefulSet (no cross-tenant path), but allows attacker-chosen base models / in-cluster fetch targets via FROM."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "summary": "Compromise of open-webui container -> runs as default (root-capable) user with default capabilities."
+        },
+        "reachability": {
+          "summary": "Depends on a code-execution primitive in Open WebUI or its image; lowers the cost/impact of such a compromise."
+        },
+        "summary": "A remote compromise of the exposed Open WebUI process yields execution with default container privileges rather than a least-privilege non-root context; automount=false bounds cluster escalation."
+      },
+      "codeEvidence": [
+        {
+          "code": "// at the moment having issues getting open webui to run as non-root\n// SecurityContext: defaultPodSecurityContext(),\n...\n// SecurityContext: defaultSecurityContext(),",
+          "endLine": 75,
+          "id": "ce-f4-ow",
+          "path": "internal/adapters/k8s/apps.go",
+          "startLine": 66
+        }
+      ],
+      "confidence": {
+        "level": "medium",
+        "rationale": "SecurityContext is demonstrably omitted (commented out); whether the container actually executes as UID 0 depends on the upstream image's default USER directive."
+      },
+      "findingId": "csf_0ed7e74b4987e92c910c99b8",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:c3f3631cd872a862f1260d6361bb3c80e0ff6e94ff28399c8a388b76ed388a10"
+      },
+      "identity": {
+        "anchor": "openwebui-unrestricted-securitycontext"
+      },
+      "locations": [
+        {
+          "endLine": 75,
+          "path": "internal/adapters/k8s/apps.go",
+          "role": "open-webui SecurityContext commented out",
+          "startLine": 66
+        },
+        {
+          "endLine": 199,
+          "path": "internal/adapters/k8s/apps.go",
+          "role": "Ollama StatefulSet applies hardened SecurityContext (contrast)",
+          "startLine": 188
+        }
+      ],
+      "occurrenceId": "occ_48205f4e62a3918beb36cfe8",
+      "provenance": {
+        "source": "static-analysis"
+      },
+      "remediation": "Re-enable defaultSecurityContext()/defaultPodSecurityContext() on the open-webui Deployment with a fixed runAsUser/runAsNonRoot consistent with the image, drop all capabilities, and apply RuntimeDefault seccomp.",
+      "rootCause": {
+        "evidenceRefs": [
+          "ce-f4-ow"
+        ],
+        "summary": "The internet-facing Open WebUI deployment omits the container/pod security context used on Ollama, running with unnecessary privileges and capabilities."
+      },
+      "ruleId": "openwebui-unrestricted-securitycontext",
+      "severity": {
+        "level": "low",
+        "score": 3.0,
+        "scoringSystem": "CVSS-3.1"
+      },
+      "summary": "NewDeployment for Open WebUI comments out both the pod and container SecurityContext, leaving the internet-exposed web UI to run with the upstream image's default user/capabilities. In contrast the Ollama StatefulSet applies defaultSecurityContext()/defaultPodSecurityContext() (RunAsNonRoot, drop ALL caps, readonly rootfs, RuntimeDefault seccomp).",
+      "taxonomy": {
+        "category": "Execution with Unnecessary Privileges",
+        "cwe": [
+          "CWE-250"
+        ]
+      },
+      "title": "Open WebUI Deployment runs without a hardened SecurityContext (likely as root)",
+      "validation": {
+        "evidenceRefs": [
+          "ce-f4-ow"
+        ],
+        "summary": "apps.go:70 and :75 comment out the hardened contexts; automountServiceAccountToken=false is set (mitigating token exposure). Defense-in-depth gap that amplifies the ingress-exposure finding."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "summary": "ConfigMap openwebUIImageTag/ollamaImageTag -> GetConfig -> NewDeployment/NewStatefulSet image string."
+        },
+        "reachability": {
+          "summary": "Requires admin-level write access to the operator namespace's ConfigMap; not reachable by tenants via the CR."
+        },
+        "summary": "A principal able to write the operator ConfigMap can substitute a malicious/malformed tag resulting in an unintended or trojaned base image scheduled into managed namespaces."
+      },
+      "codeEvidence": [
+        {
+          "code": "containerImage := fmt.Sprintf(\"%s:%s\", constants.OpenwebuiContainerImageName, openwebuiContainerImageTag)",
+          "endLine": 154,
+          "id": "ce-f5-img",
+          "path": "internal/adapters/k8s/apps.go",
+          "startLine": 49
+        }
+      ],
+      "confidence": {
+        "level": "medium",
+        "rationale": "Raw configmap strings are interpolated into image references (confirmed), but exploitation requires write access to the operator's cluster-scoped ConfigMap, which is normally admin-only."
+      },
+      "findingId": "csf_e4e1460ce177c5b8ea06bb80",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:bd6cd2f5913fa9d46d64c22e6c86f7f68c15925a2d72d9150febff9170e3ff84"
+      },
+      "identity": {
+        "anchor": "unvalidated-configmap-image-tags"
+      },
+      "locations": [
+        {
+          "endLine": 71,
+          "path": "internal/config/config.go",
+          "role": "reads image tags and defaultDomain without validation",
+          "startLine": 44
+        },
+        {
+          "endLine": 154,
+          "path": "internal/adapters/k8s/apps.go",
+          "role": "fmt.Sprintf image reference with configmap tag",
+          "startLine": 49
+        }
+      ],
+      "occurrenceId": "occ_580a80725db0b270ff5dcea0",
+      "provenance": {
+        "source": "static-analysis"
+      },
+      "remediation": "Pin images by digest instead of mutable tags, validate tag values in GetConfig against a strict allowlist regex (e.g. ^[A-Za-z0-9_.-]+$), and restrict write access to the operator ConfigMap; validate defaultDomain against an allowed suffix.",
+      "rootCause": {
+        "evidenceRefs": [
+          "ce-f5-img"
+        ],
+        "summary": "Container image tags and DNS hostnames are read from config without format/registry validation before being applied cluster-wide."
+      },
+      "ruleId": "unvalidated-configmap-image-tags",
+      "severity": {
+        "level": "low",
+        "score": 2.0,
+        "scoringSystem": "CVSS-3.1"
+      },
+      "summary": "config.GetConfig reads openwebUIImageTag/ollamaImageTag from the operator ConfigMap with no syntax or registry-allowlist validation and concatenates them into `repo:tag` image references applied to every workspace's StatefulSet/Deployment. A malformed tag could alter which registry/image is pulled.",
+      "taxonomy": {
+        "category": "Supply Chain / Configuration",
+        "cwe": [
+          "CWE-1357"
+        ]
+      },
+      "title": "ConfigMap-driven image tags concatenated into container images without validation",
+      "validation": {
+        "evidenceRefs": [
+          "ce-f5-img"
+        ],
+        "summary": "getConfigMapString returns the raw value with no check; NewStatefulSet/NewDeployment interpolate it directly. Image names are fixed to upstream constants, limiting but not removing substitution of an attacker-controlled tag."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "summary": "getPodInfo -> duSHCommand(constant) -> ExecuteRemoteCommand '/bin/sh -c du -sh <mount>'."
+        },
+        "reachability": {
+          "summary": "Latent; requires a future caller passing untrusted data or an operator-pod compromise."
+        },
+        "summary": "No current RCE: the exec command is not attacker-controlled. A compromised operator pod would already hold cluster-wide pod/exec and pod create rights (defense-in-depth concern), and any future tainted argument to ExecuteRemoteCommand becomes command injection."
+      },
+      "codeEvidence": [
+        {
+          "code": "VersionedParams(&corev1.PodExecOptions{ Command: []string{\"/bin/sh\", \"-c\", command}, ... })",
+          "endLine": 343,
+          "id": "ce-f6-exec",
+          "path": "internal/adapters/k8s/common.go",
+          "startLine": 304
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Verified the exec command is constants-derived today (no attacker-controlled input reaches it); the verbs=* grant and shell invocation are confirmed in source."
+      },
+      "findingId": "csf_c0b5eea7d18451a51d92fc44",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:e7bf5b7f1e3b8d9ffdf294d35e4208f0071f15343c5232c22fc95789e6e776bd"
+      },
+      "identity": {
+        "anchor": "overbroad-rbac-pods-exec"
+      },
+      "locations": [
+        {
+          "endLine": 343,
+          "path": "internal/adapters/k8s/common.go",
+          "role": "/bin/sh -c exec sink",
+          "startLine": 304
+        },
+        {
+          "endLine": 24,
+          "path": "config/rbac/role.yaml",
+          "role": "pods; pods/exec verbs=*",
+          "startLine": 14
+        }
+      ],
+      "occurrenceId": "occ_73853352ee78f30dd0baca32",
+      "provenance": {
+        "source": "static-analysis"
+      },
+      "remediation": "Tighten RBAC to minimal verbs and scope pods/exec to operator-owned namespaces (or drop exec in favor of metrics/filesystem APIs); invoke the specific binary without a full shell where feasible; never concatenate tainted data into the exec command.",
+      "rootCause": {
+        "evidenceRefs": [
+          "ce-f6-exec"
+        ],
+        "summary": "Operator holds cluster-wide pods/exec verbs=* and routes status collection through a full shell, exceeding the minimal privilege needed for the read-only du operation."
+      },
+      "ruleId": "overbroad-rbac-pods-exec",
+      "severity": {
+        "level": "low",
+        "score": 2.5,
+        "scoringSystem": "CVSS-3.1"
+      },
+      "summary": "The manager ClusterRole grants verbs=* on pods and pods/exec across all namespaces, and ExecuteRemoteCommand runs '/bin/sh -c <command>' inside tenant pods via the exec subresource. Today the command is built only from constant mount paths (du -sh), so it is not attacker-controlled; the risk is over-broad privilege plus a latent injection sink for any future caller that concatenates tainted data.",
+      "taxonomy": {
+        "category": "Improper Privilege Management / least privilege",
+        "cwe": [
+          "CWE-269"
+        ]
+      },
+      "title": "Cluster-scoped verbs=* on pods/pods/exec and shell exec sink (least-privilege / latent command injection)",
+      "validation": {
+        "evidenceRefs": [
+          "ce-f6-exec"
+        ],
+        "summary": "The only callers pass constant mount paths (duSHCommand(constants.OllamaVolumeMountPath / OpenwebuiVolumeMountPath)); no CR field or workspace name reaches the exec command, so there is no current injection."
+      }
+    }
+  ],
+  "scanId": "standard-2026-09-13",
+  "schemaVersion": "1.0"
+}

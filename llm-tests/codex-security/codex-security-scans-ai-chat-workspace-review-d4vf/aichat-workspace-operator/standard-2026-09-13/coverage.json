@@ -1,0 +1,69 @@
+{
+  "completeness": "complete",
+  "deferred": [],
+  "documentType": "codex-security.coverage",
+  "excludePaths": [],
+  "explicitExclusions": [
+    "test/e2e/",
+    "hack/",
+    "docs/",
+    "diagrams/",
+    "notes/",
+    "config/samples/"
+  ],
+  "includePaths": [],
+  "inventoryStrategy": "repository",
+  "mode": "repository",
+  "openQuestions": [
+    {
+      "question": "Whether AIChatWorkspace CR creation is actually granted to untrusted tenants in production (vs. platform-engineers only) determines the practical likelihood of the workspaceName tenant-isolation finding; no RBAC binding granting the editor role to end users is committed."
+    },
+    {
+      "question": "Whether the cluster ingress controller routes the generated <workspace>[-api].defaultDomain hosts publicly determines the real-world exposure of the unauthenticated Ollama API; this depends on cluster DNS/ingress configuration outside the repository."
+    }
+  ],
+  "scanId": "standard-2026-09-13",
+  "schemaVersion": "1.0",
+  "surfaces": [
+    {
+      "disposition": "reported",
+      "id": "controller",
+      "label": "internal/controller - AIChatWorkspace reconciliation, resource lifecycle, namespace/ingress/ollama/openwebui handling"
+    },
+    {
+      "disposition": "reported",
+      "id": "adapters-ollama",
+      "label": "internal/adapters/ollama - model pull/create/list via Ollama SDK"
+    },
+    {
+      "disposition": "reported",
+      "id": "adapters-k8s",
+      "label": "internal/adapters/k8s - resource constructors (Namespace, ServiceAccount, PVC, Service, Ingress, StatefulSet, Deployment) and pod exec helper"
+    },
+    {
+      "disposition": "reported",
+      "id": "adapters-modelfiles",
+      "label": "internal/adapters/ai/modelfiles - Ollama Modelfile generation"
+    },
+    {
+      "disposition": "reported",
+      "id": "config-constants",
+      "label": "internal/config and internal/constants - operator configuration from ConfigMap, image tags, domain"
+    },
+    {
+      "disposition": "reported",
+      "id": "api-types",
+      "label": "api/v1alpha1 - AIChatWorkspace CRD types and CEL validation rules"
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "cmd-entrypoint",
+      "label": "cmd/main.go - manager setup, metrics/probe servers, webhook server, pprof (localhost-bound)"
+    },
+    {
+      "disposition": "reported",
+      "id": "rbac",
+      "label": "config/rbac - operator manager ClusterRole and editor/viewer roles"
+    }
+  ]
+}

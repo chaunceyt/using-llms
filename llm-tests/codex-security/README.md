@@ -19,9 +19,22 @@ cd ~/.claude
 tar -xvzf /path/to/claude-codex-security-setup.tar.gz
 ```
 
+## Initial tests
+
 This test is what output does the LLM + codex-security components using claude code produce. Using the `skills`, `scripts`, `references`, and `preflight` from the installation of codex-security. Each LLM reviewed the code it generated. (just because)
 
 Results
 - LLM: deepseek-v4-flash, OUTPUTS: codex-security-scans-dv4f, dv4f-claude-codex-runtime.txt
 - LLM: qwen3.8-27b-uncensored, OUTPUTS: codex-security-scans-qwen3.8-27b-uncensored, qwen3.8-27b-uncensored-runtime.txt
 - LLM: qwen3.8-27b-fn, OUTPUTS: codex-security-scans-qwen3.8-27b-fn, qwen3.8-27b-fn-claude-code-runtime.txt
+
+## Additional testing
+
+Using each LLM with claude-code, against the same codebase.
+
+Repo: https://github.com/chaunceyt/aichat-workspace-operator.git
+
+- codex-security-scans-ai-chat-workspace-review-d4vf
+- codex-security-scans-ai-chat-workspace-review-qwen3.8-27b-fn
+- codex-security-scans-ai-chat-workspace-review-qwen3.8-27b-uncensored
+

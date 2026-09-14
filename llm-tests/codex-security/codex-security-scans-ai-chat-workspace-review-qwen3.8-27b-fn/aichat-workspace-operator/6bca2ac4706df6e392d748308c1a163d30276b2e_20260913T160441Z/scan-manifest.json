@@ -1,0 +1,79 @@
+{
+  "documentType": "codex-security.scan-manifest",
+  "scan": {
+    "artifacts": [
+      {
+        "mediaType": "application/json",
+        "path": "findings.json",
+        "sha256": "d0c40748bb0b7044abe358fe24205b6a3237c49b4f9fb5af9d4d9d35d1284c0a"
+      },
+      {
+        "mediaType": "application/json",
+        "path": "coverage.json",
+        "sha256": "23800d5d63aa51f1f74747f0be77f8ab6e4452647aacc362c396fb4d437c628a"
+      }
+    ],
+    "completedAt": "2026-09-13T16:04:41Z",
+    "coverageRef": "coverage.json",
+    "findingsRef": "findings.json",
+    "id": "6bca2ac4706df6e392d748308c1a163d30276b2e_20260913T160441Z",
+    "producer": {
+      "name": "codex-security-plugin",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "excludePaths": [],
+      "includePaths": [
+        "."
+      ]
+    },
+    "sealedAt": "2026-09-13T16:04:41Z",
+    "startedAt": "2026-09-13T16:04:41Z",
+    "status": "completed",
+    "target": {
+      "displayName": "aichat-workspace-operator",
+      "kind": "git_revision",
+      "remote": "https://github.com/chaunceyt/aichat-workspace-operator",
+      "revision": "6bca2ac4706df6e392d748308c1a163d30276b2e",
+      "targetId": "github.com/chaunceyt/aichat-workspace-operator@6bca2ac4706df6e392d748308c1a163d30276b2e"
+    }
+  },
+  "schemaVersion": "1.0",
+  "threatModel": {
+    "assets": [
+      "cluster-wide operator privileges (namespace/pod/exec wildcards held by the controller-manager ServiceAccount)",
+      "tenant workspace namespaces, workloads, PVCs, and model inventories",
+      "Ollama compute and storage (GPU/CPU quotas, 20Gi model PVC)",
+      "Open WebUI chat data, accounts, and signing key",
+      "system MySQL database deployed by the default overlay",
+      "operator runtime memory and mounted ServiceAccount token"
+    ],
+    "assumptions": [
+      "no out-of-repo admission webhook, policy engine, or service mesh is present; the webhook server in cmd/main.go registers no handlers",
+      "workspace namespaces are DNS-1123-label names; the API server rejects invalid namespace names, which constrains label/host syntax injection but not namespace selection",
+      "an ingress controller and wildcard DNS are deployment prerequisites for external exposure of the generated Ingresses"
+    ],
+    "attackerCapabilities": [
+      "create/update/delete AIChatWorkspace CRs in a namespace they control (namespaced privilege, no cluster rights)",
+      "reach Ingress-exposed workspace hosts once an ingress controller is deployed",
+      "reach any ClusterIP service in the cluster network (no NetworkPolicies applied by default)",
+      "same-pod position via sidecar, ephemeral debug container, or pods/exec/port-forward",
+      "commit or review supply-chain material in the public repository"
+    ],
+    "securityObjectives": [
+      "a namespaced CR author must only affect namespaces and resources the operator derives from their own CR",
+      "the operator must not delete or mutate namespaces it did not create for that CR",
+      "workspace services (Ollama, Open WebUI) must not be reachable by unauthenticated network users by default",
+      "workloads and the manager must run with least privilege",
+      "no working credentials may be published in the repository and deployed by default"
+    ],
+    "summary": "A Go Kubernetes operator (Kubebuilder) reconciles the namespaced AIChatWorkspace custom resource into a per-workspace namespace running Ollama and Open WebUI with Services and Ingresses. The operator runs with one cluster-wide ServiceAccount whose ClusterRole grants wildcard verbs over namespaces, pods, pods/exec, workloads, services, PVCs, service accounts, resource quotas, ingresses, and KEDA HTTPScaledObjects. The primary trust boundary is the AIChatWorkspace CR: a cluster user with only namespaced rights on that CR (the shipped aichatworkspace-editor-role is designed for exactly this) can supply spec.workspaceName, spec.models, and spec.patterns, which the cluster-privileged operator consumes with no admission or ownership validation. Secondary boundaries: network users reaching the operator-created Ingresses that expose the unauthenticated Ollama API and Open WebUI; the operator pod's localhost debug listener; in-cluster workloads reaching the default-deployed MySQL; and the build/devcontainer supply chain.",
+    "trustBoundaries": [
+      "AIChatWorkspace CR (namespaced user input) -> cluster-privileged operator reconcile path",
+      "external network via Ingress -> workspace Ollama API and Open WebUI",
+      "manager pod network namespace (sidecar/same-pod) -> localhost:6060 debug mux",
+      "operator system namespace ConfigMap -> workspace container image selection",
+      "repo/CI supply chain -> published operator image and dev workstations"
+    ]
+  }
+}

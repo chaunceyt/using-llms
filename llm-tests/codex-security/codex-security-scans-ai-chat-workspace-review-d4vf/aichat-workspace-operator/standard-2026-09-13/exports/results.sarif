@@ -1,0 +1,461 @@
+{
+  "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/schemas/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "automationDetails": {
+        "id": "standard-2026-09-13"
+      },
+      "properties": {
+        "codexSecuritySchemaVersion": "1.0",
+        "codexSecurityTargetKind": "git_revision"
+      },
+      "results": [
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "message": {
+                "text": "Modelfile built via fmt.Sprintf without escaping"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/ai/modelfiles/modelfiles.go"
+                },
+                "region": {
+                  "endLine": 52,
+                  "startLine": 38
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "CreateFromModelFile sends modelfile to /api/create"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/ollama/ollama.go"
+                },
+                "region": {
+                  "endLine": 319,
+                  "startLine": 287
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "iterates user-controlled spec.Models / spec.Patterns"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/ollama.go"
+                },
+                "region": {
+                  "endLine": 131,
+                  "startLine": 106
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "prompt() in modelfiles.go builds an Ollama Modelfile with fmt.Sprintf embedding the user-supplied model into `FROM %s` and pattern into `SYSTEM \"\"\"%s\"\"\"` with no escaping or sanitization. The CRD imposes no pattern/maxLength on models/patterns, so newlines and triple-quotes can break out and inject arbitrary Modelfile directives (e.g. a different FROM base model or extra TEMPLATE/PARAMETER lines), which the controller sends to /api/create."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:10f1d90a209936f36a5e1f58d999550a38fcdf3982b8619e48049e6259dcd49f",
+            "primaryLocationLineHash": "69e28701709e3e0:1"
+          },
+          "properties": {
+            "category": "Injection (unsafe code generation)",
+            "confidence": "high",
+            "findingId": "csf_4f462d9c720b46ae0adc554c",
+            "occurrenceId": "occ_1adc720044721c7d0a087cb1",
+            "severity": "medium"
+          },
+          "ruleId": "modelfile-template-injection",
+          "ruleIndex": 0
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "message": {
+                "text": "namespace target for all created resources"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/handle_reconcile.go"
+                },
+                "region": {
+                  "endLine": 131,
+                  "startLine": 47
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "adopts existing namespace without ownership check"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/namespace.go"
+                },
+                "region": {
+                  "endLine": 64,
+                  "startLine": 36
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "deletes Namespace named spec.workspaceName on CR deletion"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/aichatworkspace_controller.go"
+                },
+                "region": {
+                  "endLine": 248,
+                  "startLine": 232
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "unconstrained workspaceName input"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "api/v1alpha1/aichatworkspace_types.go"
+                },
+                "region": {
+                  "endLine": 31,
+                  "startLine": 28
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "ClusterRole verbs=* on namespaces and workloads"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/rbac/role.yaml"
+                },
+                "region": {
+                  "endLine": 24,
+                  "startLine": 14
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The controller uses the user-controlled AIChatWorkspace.spec.workspaceName verbatim as the Kubernetes namespace in which it creates namespaces, ResourceQuotas, PVCs, ServiceAccounts, StatefulSets, Deployments, Services and Ingresses, and on CR deletion issues a Namespace DELETE for that exact name. ensureNamespace adopts an existing namespace silently (it only creates when NotFound), so a CR whose workspaceName matches any pre-existing namespace causes the operator's privileged service account to inject workloads and quotas into that namespace; deleting such a CR deletes the entire namespace and everything in it."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:a9876731b614bf8252d1a549a19f42593ade8f71f5e09e3859fad095125c772c",
+            "primaryLocationLineHash": "c7ea2fef9bba8f2b:1"
+          },
+          "properties": {
+            "category": "Broken Access Control / Tenant Isolation",
+            "confidence": "high",
+            "findingId": "csf_3c0a4b43825788ac2f640b47",
+            "occurrenceId": "occ_403d6cee89b25121d4e370a5",
+            "severity": "high"
+          },
+          "ruleId": "unvalidated-workspace-namespace",
+          "ruleIndex": 5
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "open-webui SecurityContext commented out"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/apps.go"
+                },
+                "region": {
+                  "endLine": 75,
+                  "startLine": 66
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "Ollama StatefulSet applies hardened SecurityContext (contrast)"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/apps.go"
+                },
+                "region": {
+                  "endLine": 199,
+                  "startLine": 188
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "NewDeployment for Open WebUI comments out both the pod and container SecurityContext, leaving the internet-exposed web UI to run with the upstream image's default user/capabilities. In contrast the Ollama StatefulSet applies defaultSecurityContext()/defaultPodSecurityContext() (RunAsNonRoot, drop ALL caps, readonly rootfs, RuntimeDefault seccomp)."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:c3f3631cd872a862f1260d6361bb3c80e0ff6e94ff28399c8a388b76ed388a10",
+            "primaryLocationLineHash": "12507e90284d1a38:1"
+          },
+          "properties": {
+            "category": "Execution with Unnecessary Privileges",
+            "confidence": "medium",
+            "findingId": "csf_0ed7e74b4987e92c910c99b8",
+            "occurrenceId": "occ_48205f4e62a3918beb36cfe8",
+            "severity": "low"
+          },
+          "ruleId": "openwebui-unrestricted-securitycontext",
+          "ruleIndex": 1
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "reads image tags and defaultDomain without validation"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/config/config.go"
+                },
+                "region": {
+                  "endLine": 71,
+                  "startLine": 44
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "fmt.Sprintf image reference with configmap tag"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/apps.go"
+                },
+                "region": {
+                  "endLine": 154,
+                  "startLine": 49
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "config.GetConfig reads openwebUIImageTag/ollamaImageTag from the operator ConfigMap with no syntax or registry-allowlist validation and concatenates them into `repo:tag` image references applied to every workspace's StatefulSet/Deployment. A malformed tag could alter which registry/image is pulled."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:bd6cd2f5913fa9d46d64c22e6c86f7f68c15925a2d72d9150febff9170e3ff84",
+            "primaryLocationLineHash": "60119f4f8589d388:1"
+          },
+          "properties": {
+            "category": "Supply Chain / Configuration",
+            "confidence": "medium",
+            "findingId": "csf_e4e1460ce177c5b8ea06bb80",
+            "occurrenceId": "occ_580a80725db0b270ff5dcea0",
+            "severity": "low"
+          },
+          "ruleId": "unvalidated-configmap-image-tags",
+          "ruleIndex": 4
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "message": {
+                "text": "/bin/sh -c exec sink"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/common.go"
+                },
+                "region": {
+                  "endLine": 343,
+                  "startLine": 304
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "pods; pods/exec verbs=*"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/rbac/role.yaml"
+                },
+                "region": {
+                  "endLine": 24,
+                  "startLine": 14
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "The manager ClusterRole grants verbs=* on pods and pods/exec across all namespaces, and ExecuteRemoteCommand runs '/bin/sh -c <command>' inside tenant pods via the exec subresource. Today the command is built only from constant mount paths (du -sh), so it is not attacker-controlled; the risk is over-broad privilege plus a latent injection sink for any future caller that concatenates tainted data."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:e7bf5b7f1e3b8d9ffdf294d35e4208f0071f15343c5232c22fc95789e6e776bd",
+            "primaryLocationLineHash": "55d9f9f4a3f5646c:1"
+          },
+          "properties": {
+            "category": "Improper Privilege Management / least privilege",
+            "confidence": "high",
+            "findingId": "csf_c0b5eea7d18451a51d92fc44",
+            "occurrenceId": "occ_73853352ee78f30dd0baca32",
+            "severity": "low"
+          },
+          "ruleId": "overbroad-rbac-pods-exec",
+          "ruleIndex": 2
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "message": {
+                "text": "NewIngress - no TLS, no auth"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/adapters/k8s/common.go"
+                },
+                "region": {
+                  "endLine": 230,
+                  "startLine": 189
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "creates openwebui and ollama ingresses"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/handle_reconcile.go"
+                },
+                "region": {
+                  "endLine": 134,
+                  "startLine": 121
+                }
+              }
+            },
+            {
+              "message": {
+                "text": "setIngressDNSHost builds <workspace>[-api].defaultDomain"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/controller/handle_reconcile.go"
+                },
+                "region": {
+                  "endLine": 163,
+                  "startLine": 153
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "handle_reconcile.go creates Ingresses for both workloads at <workspace>.defaultDomain (openwebui) and <workspace>-api.defaultDomain (ollama). NewIngress defines a path '/' rule with no spec.tls block and no auth annotations, routing to the unauthenticated Ollama API (port 11434) and Open WebUI. The README lists adding auth to the Ollama endpoint as unimplemented roadmap, confirming the surface is intentionally open."
+          },
+          "partialFingerprints": {
+            "codexSecurity/v1": "codex-security/v1:sha256:8db1fe157d226014adc37e9caa63fa8e23527b773ce9af3c1332fdeadaeb21ac",
+            "primaryLocationLineHash": "bc924475d371f0e0:1"
+          },
+          "properties": {
+            "category": "Missing Authentication / Security Misconfiguration",
+            "confidence": "high",
+            "findingId": "csf_651f22407f38726a9472c0ce",
+            "occurrenceId": "occ_90cf3f8966196e227059fa69",
+            "severity": "medium"
+          },
+          "ruleId": "unauthenticated-ollama-ingress",
+          "ruleIndex": 3
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "Codex Security",
+          "rules": [
+            {
+              "id": "modelfile-template-injection",
+              "name": "modelfile-template-injection",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "modelfile-template-injection"
+              }
+            },
+            {
+              "id": "openwebui-unrestricted-securitycontext",
+              "name": "openwebui-unrestricted-securitycontext",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "openwebui-unrestricted-securitycontext"
+              }
+            },
+            {
+              "id": "overbroad-rbac-pods-exec",
+              "name": "overbroad-rbac-pods-exec",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "overbroad-rbac-pods-exec"
+              }
+            },
+            {
+              "id": "unauthenticated-ollama-ingress",
+              "name": "unauthenticated-ollama-ingress",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "unauthenticated-ollama-ingress"
+              }
+            },
+            {
+              "id": "unvalidated-configmap-image-tags",
+              "name": "unvalidated-configmap-image-tags",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "unvalidated-configmap-image-tags"
+              }
+            },
+            {
+              "id": "unvalidated-workspace-namespace",
+              "name": "unvalidated-workspace-namespace",
+              "properties": {
+                "tags": [
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "unvalidated-workspace-namespace"
+              }
+            }
+          ],
+          "version": "1.0"
+        }
+      }
+    }
+  ],
+  "version": "2.1.0"
+}

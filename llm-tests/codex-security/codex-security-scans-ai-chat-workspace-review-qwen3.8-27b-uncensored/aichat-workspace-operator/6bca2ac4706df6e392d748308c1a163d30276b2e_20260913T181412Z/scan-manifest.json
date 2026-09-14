@@ -1,0 +1,43 @@
+{
+  "documentType": "codex-security.scan-manifest",
+  "scan": {
+    "artifacts": [
+      {
+        "mediaType": "application/json",
+        "path": "findings.json",
+        "sha256": "249d23185ab2700609a728eed0ca19789ac45d2370d349db56ab56ac71987461"
+      },
+      {
+        "mediaType": "application/json",
+        "path": "coverage.json",
+        "sha256": "8cb06be4f09f4a0ad2861ce0d94352b497c234de142671a992ec9468c266d16e"
+      }
+    ],
+    "completedAt": "2026-09-13T21:36:48Z",
+    "coverageRef": "coverage.json",
+    "findingsRef": "findings.json",
+    "id": "6bca2ac4706df6e392d748308c1a163d30276b2e_20260913T181412Z",
+    "producer": {
+      "name": "codex-security-plugin",
+      "version": "1.0"
+    },
+    "scope": {
+      "excludePaths": [],
+      "includePaths": [
+        "."
+      ],
+      "summary": "Repository-wide standard security scan of the aichat-workspace-operator Kubernetes operator (Go, kubebuilder) including CRD API, controller reconcile logic, k8s/ollama adapters, shipped kustomize/hack manifests, RBAC, Dockerfile, Makefile, CI workflows, and tests. All 386 repository files were inventoried; all product source was reviewed."
+    },
+    "sealedAt": "2026-09-13T21:36:48Z",
+    "startedAt": "2026-09-13T18:14:12Z",
+    "status": "completed",
+    "target": {
+      "displayName": "aichat-workspace-operator",
+      "kind": "git_revision",
+      "remote": "https://github.com/chaunceyt/aichat-workspace-operator",
+      "revision": "6bca2ac4706df6e392d748308c1a163d30276b2e",
+      "targetId": "codex-security-target/v1:sha256:3a475a0906b184c3994aa0235ad59efbc7f08af55880217f6711047c8f439f83"
+    }
+  },
+  "schemaVersion": "1.0"
+}

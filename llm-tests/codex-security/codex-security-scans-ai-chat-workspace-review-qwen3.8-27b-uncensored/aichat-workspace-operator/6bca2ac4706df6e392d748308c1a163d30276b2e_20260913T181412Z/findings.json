@@ -1,0 +1,864 @@
+{
+  "documentType": "codex-security.findings",
+  "findings": [
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "crd-no-validation",
+            "reconcile-namespace-target",
+            "quota-hard-limits",
+            "delete-trigger",
+            "delete-namespace"
+          ],
+          "outcome": "arbitrary namespace deletion (e.g. kube-system) and ResourceQuota-based availability loss in any namespace",
+          "sink": "cluster-scoped namespace Delete and ResourceQuota/workload Create in any namespace",
+          "source": "attacker-controlled spec.workspaceName string",
+          "summary": "spec.workspaceName (CRD, unvalidated) -> handleReconcile ensure* calls (namespace = Spec.WorkspaceName) -> ResourceQuota/PVC/StatefulSet/Deployment/Service/Ingress created in the chosen namespace -> deleteAIChatWorkspace Delete(namespace=Spec.WorkspaceName) on CR deletion"
+        },
+        "evidenceRefs": [
+          "reconcile-namespace-target",
+          "delete-namespace",
+          "rbac-wildcard",
+          "quota-hard-limits"
+        ],
+        "impact": {
+          "level": "high",
+          "why": "Deleting kube-system destroys cluster control-plane and system workloads; a pods:2 quota in any namespace blocks new and rescheduled workloads; operator-managed ollama/Open WebUI containers execute inside the victim namespace."
+        },
+        "likelihood": {
+          "level": "high",
+          "why": "The value `kube-system` (or any existing namespace) is a valid input; exploitation needs only ordinary CR write permission, no crafted payload or timing."
+        },
+        "limitations": [
+          "The namespace-deletion step requires status.isCreated=true, which holds after one successful happy-path reconcile; deployments where getPodInfo's exec/metrics calls fail would only realize the resource-injection impact."
+        ],
+        "reachability": {
+          "attacker": "any principal with write access to the AIChatWorkspace CRD (a normal multi-tenant grant)",
+          "entrypoint": "create/update of an AIChatWorkspace custom resource",
+          "outcome": "a cluster namespace is destroyed, or its workload admission is throttled to 2 pods / 2 PVCs / 5 services, or operator-managed containers run inside the victim namespace",
+          "summary": "Requires only the standard tenant grant of create on aichatworkspaces in any namespace, plus the operator deployed with the shipped ClusterRole. No special name format is needed: `kube-system` is a legal namespace name."
+        },
+        "summary": "A tenant with write permission on the namespaced AIChatWorkspace CRD creates a CR with `spec.workspaceName` set to an existing namespace such as `kube-system`. The operator's reconcile injects a pods:2 ResourceQuota, PVCs, service accounts, an ollama StatefulSet, an Open WebUI Deployment, and Services into that namespace. Once `status.isCreated` is true, deleting the CR makes the operator delete the entire target namespace."
+      },
+      "codeEvidence": [
+        {
+          "code": "\t// The name of the workspace.\n\t// +kubebuilder:validation:Required\n\t// +kubebuilder:validation:XValidation:rule=\"self == oldSelf\",message=\"WorkspaceName is immutable\"\n\tWorkspaceName string `json:\"workspaceName\"`",
+          "endLine": 28,
+          "explanation": "The CRD field is tenant-controlled. The only validation marker is immutability (`self == oldSelf`); there is no pattern, maxLength, or enum, so any string (e.g. `kube-system`, or dotted names up to 253 chars) is accepted by the API server.",
+          "id": "crd-no-validation",
+          "label": "workspaceName accepted without validation",
+          "language": "go",
+          "path": "api/v1alpha1/aichatworkspace_types.go",
+          "role": "user_input",
+          "startLine": 25
+        },
+        {
+          "code": "\t// ensureNamespace - create the \"aichatworkspace\" namespace that contains all the components required\n\t// to run the AIChat Workspace.\n\tnamespaceDefaultLabels := defaultLabels(aichat.Spec.WorkspaceName, aichat.Spec.WorkspaceName, constants.AIChatWorkspaceName)\n\tresult, err = r.ensureNamespace(ctx, aichat, k8s.NewNamespace(aichat.Spec.WorkspaceName, namespaceDefaultLabels))\n\tif result != nil {\n\t\treturn result, err\n\t}\n\n\t// ensureResourceQuota - creates the ResourceQuota object that limits resources that can be ran in the namespace.\n\tresourceQuotaName := generateName(aichat.Spec.WorkspaceName, constants.ResourceQuotaName)\n\tresourceQuotaDefaultLabels := defaultLabels(aichat.Spec.WorkspaceName, aichat.Spec.WorkspaceName, constants.ResourceQuotaLabelName)\n\tresult, err = r.ensureResourceQuota(ctx, aichat, k8s.NewResourceQuota(aichat.Spec.WorkspaceName, resourceQuotaName, resourceQuotaDefaultLabels))",
+          "endLine": 55,
+          "explanation": "`Spec.WorkspaceName` is used as the Namespace argument for the namespace and the ResourceQuota (and, further down the same function, for the PVC, service accounts, StatefulSet, Deployment, Services, and Ingresses). A CR whose workspaceName equals an existing namespace name therefore writes its resources into that namespace.",
+          "id": "reconcile-namespace-target",
+          "label": "Reconcile targets every resource at spec.WorkspaceName",
+          "language": "go",
+          "path": "internal/controller/handle_reconcile.go",
+          "role": "propagation",
+          "startLine": 44
+        },
+        {
+          "code": "\terr := r.Get(context.TODO(), types.NamespacedName{\n\t\tName: ns.Name,\n\t}, found)\n\n\tif err != nil && errors.IsNotFound(err) {\n\t\tlogger.Info(\"Creating the namespace\", \"instance.Spec.Namespace\", instance.Spec.WorkspaceName)\n\n\t\tcontrollerutil.SetControllerReference(instance, ns, r.Scheme)\n\t\terr = r.Create(context.TODO(), ns)",
+          "endLine": 49,
+          "explanation": "If the namespace already exists the operator proceeds without any check that it is safe or tenant-owned; subsequent ensure* calls then create the operator's objects inside it.",
+          "id": "ensure-namespace-nocheck",
+          "label": "ensureNamespace creates if absent, never validates the target",
+          "language": "go",
+          "path": "internal/controller/namespace.go",
+          "role": "propagation",
+          "startLine": 41
+        },
+        {
+          "code": "\tif isCreated && pendingDeletion {\n\t\tinstance.logger.Info(\"reconciling aichat\", \"aichat\", instance.aichatWorkspaceConfig, \"action\", \"delete\")\n\t\tif controllerutil.ContainsFinalizer(instance.aichatWorkspaceConfig, aichatWorkspaceFinalizerName) {\n\t\t\tif err = instance.r.deleteAIChatWorkspace(instance.ctx, instance.aichatWorkspaceConfig); err != nil {\n\t\t\t\treturn instance.r.finishReconcile(err, false)\n\t\t\t}",
+          "endLine": 45,
+          "explanation": "When the CR is deleted and `status.isCreated` is true, the finalizer path calls `deleteAIChatWorkspace` and then removes the finalizer, so the destructive delete is the terminal action of CR deletion.",
+          "id": "delete-trigger",
+          "label": "Delete step removes the finalizer after deleting the namespace",
+          "language": "go",
+          "path": "internal/controller/delete.go",
+          "role": "propagation",
+          "startLine": 35
+        },
+        {
+          "code": "func (r *AIChatWorkspaceReconciler) deleteAIChatWorkspace(ctx context.Context, instance *appsv1alpha1.AIChatWorkspace) error {\n\tlogger := log.FromContext(ctx)\n\n\tnamespace := &corev1.Namespace{\n\t\tObjectMeta: metav1.ObjectMeta{\n\t\t\tName: instance.Spec.WorkspaceName,\n\t\t},\n\t}\n\terr := r.Delete(context.TODO(), namespace)\n\tif err != nil {\n\t\treturn err\n\t}\n\n\tlogger.Info(\"deleted aichatworkspace\", \"aichatworkspace\", instance.Spec.WorkspaceName, \"action\", \"deleted\")\n\n\treturn nil\n}",
+          "endLine": 248,
+          "explanation": "This is the broken control: a cluster-scoped `Delete` on the namespace whose name is the tenant-supplied `Spec.WorkspaceName`, with no ownership, label, or reserved-name check.",
+          "id": "delete-namespace",
+          "label": "Namespace deleted by spec.WorkspaceName",
+          "language": "go",
+          "path": "internal/controller/aichatworkspace_controller.go",
+          "role": "root_control",
+          "startLine": 232
+        },
+        {
+          "code": "\t\tSpec: corev1.ResourceQuotaSpec{\n\t\t\tHard: corev1.ResourceList{\n\t\t\t\t\"pods\":                   resource.MustParse(constants.MaxPods),\n\t\t\t\t\"persistentvolumeclaims\": resource.MustParse(constants.MaxPersistentVolumeClaims),\n\t\t\t\t\"services\":               resource.MustParse(constants.MaxService),\n\t\t\t},\n\t\t},\n\t}",
+          "endLine": 176,
+          "explanation": "The quota created in the `Spec.WorkspaceName` namespace caps the whole namespace at 2 pods, 2 PVCs, and 5 services \u2014 enough to block new (and rescheduled) workloads in a victim namespace such as kube-system.",
+          "id": "quota-hard-limits",
+          "label": "ResourceQuota hard limits injected into the target namespace",
+          "language": "go",
+          "path": "internal/adapters/k8s/common.go",
+          "role": "sink",
+          "startLine": 169
+        },
+        {
+          "code": "\tResourceQuotaName         = \"rquota\"\n\tMaxPods                   = \"2\"\n\tMaxPersistentVolumeClaims = \"2\"\n\tMaxService                = \"5\"",
+          "endLine": 54,
+          "explanation": "Confirms the injected quota values: a victim namespace is throttled to 2 pods, 2 PVCs, and 5 services.",
+          "id": "quota-limits-value",
+          "label": "Quota limit constants",
+          "language": "go",
+          "path": "internal/constants/constants.go",
+          "role": "sink",
+          "startLine": 51
+        },
+        {
+          "code": "- apiGroups:\n  - \"\"\n  resources:\n  - namespaces\n  - persistentvolumeclaims\n  - pods\n  - pods/exec\n  - resourcequotas\n  - serviceaccounts\n  - services\n  verbs:\n  - '*'",
+          "endLine": 24,
+          "explanation": "The expected control (least privilege) is absent: the manager's ClusterRole has no namespace scoping, so every operation the unvalidated `workspaceName` directs is permitted cluster-wide, including deleting any namespace.",
+          "id": "rbac-wildcard",
+          "label": "Operator ClusterRole grants wildcard verbs cluster-wide",
+          "language": "yaml",
+          "path": "config/rbac/role.yaml",
+          "role": "expected_control",
+          "startLine": 13
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Direct source trace: the CRD Go type and generated CRD schema contain no validation beyond immutability; `deleteAIChatWorkspace` deletes the namespace named by `spec.WorkspaceName` with no ownership or reserved-name check; `handleReconcile` targets every resource at `Spec.WorkspaceName`; the shipped ClusterRole grants wildcard verbs on `namespaces`, `resourcequotas`, and related core resources cluster-wide. No live-cluster reproduction was performed."
+      },
+      "findingId": "csf_27f31a0b85cf77991ea2c736",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:b66a50c3f6bc390519247a0005a20043eecc649a7204b0cf7215923202450ae9"
+      },
+      "identity": {
+        "anchor": "aichatworkspace-spec-workspacename"
+      },
+      "locations": [
+        {
+          "endLine": 248,
+          "path": "internal/controller/aichatworkspace_controller.go",
+          "role": "root_control",
+          "startLine": 232
+        },
+        {
+          "endLine": 28,
+          "path": "api/v1alpha1/aichatworkspace_types.go",
+          "role": "user_input",
+          "startLine": 25
+        },
+        {
+          "endLine": 49,
+          "path": "internal/controller/delete.go",
+          "role": "propagation",
+          "startLine": 35
+        },
+        {
+          "endLine": 55,
+          "path": "internal/controller/handle_reconcile.go",
+          "role": "propagation",
+          "startLine": 44
+        },
+        {
+          "endLine": 49,
+          "path": "internal/controller/namespace.go",
+          "role": "propagation",
+          "startLine": 41
+        },
+        {
+          "endLine": 176,
+          "path": "internal/adapters/k8s/common.go",
+          "role": "sink",
+          "startLine": 169
+        },
+        {
+          "endLine": 54,
+          "path": "internal/constants/constants.go",
+          "role": "sink",
+          "startLine": 51
+        },
+        {
+          "endLine": 24,
+          "path": "config/rbac/role.yaml",
+          "role": "expected_control",
+          "startLine": 13
+        }
+      ],
+      "occurrenceId": "occ_a94e3210921fd323fb3517cb",
+      "preventiveControls": [
+        "Add CRD validation (pattern, maxLength) plus a reserved-namespace deny list for spec.workspaceName.",
+        "Tag operator-created namespaces with an ownership label and restrict deleteAIChatWorkspace to namespaces it created.",
+        "Scope the operator ClusterRole where possible (e.g. exclude system namespaces) so wildcard verbs do not apply to cluster-critical resources."
+      ],
+      "provenance": {
+        "source": "parent-audit"
+      },
+      "remediation": "Validate `spec.workspaceName` against an RFC 1123 label (`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`, maxLength 63), reject reserved/system namespace names (kube-system, kube-public, kube-node-lease, and the operator's own system namespace), and gate `deleteAIChatWorkspace` so it only deletes namespaces the operator created (identified by an ownership label or controller reference).",
+      "remediationTests": [
+        "Create a CR with spec.workspaceName=kube-system and assert the operator neither creates a ResourceQuota/workloads in kube-system nor deletes the namespace on CR deletion.",
+        "Assert the CRD rejects workspaceName values containing '.', values over 63 characters, and reserved system namespace names.",
+        "Assert the finalizer deletion path only deletes namespaces carrying the operator's ownership label or controller reference."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "crd-no-validation",
+          "reconcile-namespace-target",
+          "ensure-namespace-nocheck",
+          "delete-trigger",
+          "delete-namespace",
+          "quota-hard-limits",
+          "quota-limits-value",
+          "rbac-wildcard"
+        ],
+        "summary": "The violated invariant is that a namespaced, tenant-controlled CR field must not directly determine the identity of cluster-scoped resources. `spec.workspaceName` is accepted as an arbitrary string (the generated CRD carries only an immutability CEL rule) and is used verbatim as the target namespace for all `ensure*` create operations and as the name of the namespace deleted by the finalizer, while the operator's ClusterRole grants wildcard verbs on `namespaces`, `resourcequotas`, and related core resources across the whole cluster. No ownership, label, or reserved-name check sits between the CR field and these operations."
+      },
+      "ruleId": "input-validation.workspace-namespace-control",
+      "severity": {
+        "level": "high",
+        "rationale": "A single CR create (or delete) by any user with write access to the namespaced CRD can delete an arbitrary cluster namespace \u2014 including kube-system, destroying all system workloads \u2014 or DoS any namespace by adding a pods:2 ResourceQuota, and can run operator-managed ollama/Open WebUI containers inside the victim namespace. Impact is cluster-wide destruction or availability loss. Likelihood is high: no crafted payload is needed, `kube-system` is a legal namespace name, and CR write access is a normal tenant grant."
+      },
+      "summary": "The AIChatWorkspace CRD accepts `spec.workspaceName` as an arbitrary string with only an immutability CEL rule \u2014 no pattern, length, or reserved-name validation. The reconciler uses the field verbatim as the target namespace for every resource it creates (Namespace, ResourceQuota, PVCs, ServiceAccounts, StatefulSet, Deployment, Services, Ingresses) and the finalizer deletion path deletes the namespace bearing that exact name. Combined with the operator's cluster-wide wildcard RBAC, any principal that can create an AIChatWorkspace CR can inject a ResourceQuota (pods: 2, persistentvolumeclaims: 2, services: 5) and full operator-managed workloads into any existing namespace such as `kube-system`, and delete that namespace when the CR is deleted. Multi-label names (dots are legal namespace names) additionally let a tenant claim arbitrary `<x>.<DefaultDomain>` ingress hostnames.",
+      "taxonomy": {
+        "category": "Input Validation",
+        "cwe": [
+          "CWE-20",
+          "CWE-269"
+        ]
+      },
+      "title": "Unvalidated workspaceName allows deleting arbitrary namespaces and injecting operator-managed resources into any namespace",
+      "validation": {
+        "assertions": [
+          "The CRD schema for spec.workspaceName contains only the immutability CEL rule; no pattern, maxLength, or enum constraint exists.",
+          "deleteAIChatWorkspace deletes the corev1.Namespace whose Name is instance.Spec.WorkspaceName with no ownership or reserved-name check.",
+          "ensureResourceQuota creates a ResourceQuota with hard limits pods=2, persistentvolumeclaims=2, services=5 in the namespace named by Spec.WorkspaceName.",
+          "The manager ClusterRole grants verbs '*' on namespaces, resourcequotas, pods, pods/exec, serviceaccounts, and services without namespace restriction."
+        ],
+        "evidenceRefs": [
+          "crd-no-validation",
+          "reconcile-namespace-target",
+          "delete-trigger",
+          "delete-namespace",
+          "quota-hard-limits",
+          "rbac-wildcard"
+        ],
+        "limitations": [
+          "No live cluster reproduction was performed.",
+          "The namespace-deletion sub-path additionally requires that a successful happy-path reconcile previously set status.isCreated=true (which includes the ollama pod becoming ready and the in-pod exec/metrics calls in getPodInfo succeeding); the resource-injection sub-path has no such prerequisite."
+        ],
+        "method": "static source trace",
+        "summary": "Traced `spec.workspaceName` from the CRD Go type (api/v1alpha1/aichatworkspace_types.go:25-28) and generated CRD schema (only `self == oldSelf`) through `handleReconcile` (handle_reconcile.go:44-131, where every ensure* call uses `Spec.WorkspaceName` as the object namespace) to `deleteAIChatWorkspace` (aichatworkspace_controller.go:232-248), which issues a cluster-level Delete on the namespace named `Spec.WorkspaceName` once `status.isCreated` is true (delete.go:35-45). The shipped ClusterRole (config/rbac/role.yaml:13-24) confirms the operator SA holds wildcard permissions on namespaces and resourcequotas cluster-wide, and the quota constants (constants.go:51-54) confirm the injected limits."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "namespace-from-cr-field",
+            "hostname-derivation",
+            "webui-unauthenticated"
+          ],
+          "outcome": "cross-tenant disclosure of workspace data and uploads",
+          "sink": "first tenant's Open WebUI HTTP service",
+          "source": "second tenant's identical (or guessed) spec.workspaceName",
+          "summary": "spec.workspaceName (both CRs) -> shared namespace and <name>.<DefaultDomain> ingress host -> unauthenticated Open WebUI of the first tenant"
+        },
+        "evidenceRefs": [
+          "crd-scope-namespaced",
+          "hostname-derivation",
+          "webui-unauthenticated"
+        ],
+        "impact": {
+          "level": "medium",
+          "why": "Exposure of one tenant's chat history, uploads, prompts, and model configuration to another tenant or an external party."
+        },
+        "likelihood": {
+          "level": "medium",
+          "why": "Requires a name collision or a successful name guess; plausible with short, human-identifiable workspace names, but not the default outcome for random names."
+        },
+        "limitations": [
+          "The second tenant's own workloads fail to create (name conflicts), so the attacker gets access to the victim's workspace rather than a functional twin workspace."
+        ],
+        "reachability": {
+          "attacker": "second tenant (or an external visitor who learns or guesses the workspace name)",
+          "entrypoint": "creating an AIChatWorkspace CR with a colliding spec.workspaceName, or visiting the victim's hostname",
+          "outcome": "full read (and write) access to the other tenant's workspace data",
+          "summary": "Requires a second CR with a colliding name plus network reachability to the ingress host; no cluster privileges beyond CR write are needed."
+        },
+        "summary": "Tenant B creates an AIChatWorkspace with the same `spec.workspaceName` as tenant A. Both CRs target the same namespace; A's workloads already hold the names, so B's own workloads fail to create while B (or any external observer) visits `<name>.<DefaultDomain>` and is served A's unauthenticated Open WebUI, exposing A's conversations, uploaded documents, and model configuration."
+      },
+      "codeEvidence": [
+        {
+          "code": "  scope: Namespaced",
+          "endLine": 15,
+          "explanation": "The CRD is namespaced, so two tenants in different namespaces can both create CRs; nothing scopes the tenant boundary to the CR's namespace for the resources derived from `spec.workspaceName`.",
+          "id": "crd-scope-namespaced",
+          "label": "CR is namespaced, workspace identity is cluster-global",
+          "language": "yaml",
+          "path": "config/crd/bases/apps.aichatworkspaces.io_aichatworkspaces.yaml",
+          "role": "propagation",
+          "startLine": 15
+        },
+        {
+          "code": "\tnamespaceDefaultLabels := defaultLabels(aichat.Spec.WorkspaceName, aichat.Spec.WorkspaceName, constants.AIChatWorkspaceName)\n\tresult, err = r.ensureNamespace(ctx, aichat, k8s.NewNamespace(aichat.Spec.WorkspaceName, namespaceDefaultLabels))",
+          "endLine": 47,
+          "explanation": "The namespace \u2014 a cluster-scoped resource \u2014 is named solely by `Spec.WorkspaceName`. Two CRs from different tenant namespaces with the same value collide on the same namespace, and the first to reconcile owns the workload names inside it.",
+          "id": "namespace-from-cr-field",
+          "label": "Target namespace is the tenant-chosen name",
+          "language": "go",
+          "path": "internal/controller/handle_reconcile.go",
+          "role": "propagation",
+          "startLine": 46
+        },
+        {
+          "code": "func setIngressDNSHost(config *config.Config, workspace string, workload string) string {\n\tvar dnsName string\n\tswitch workload {\n\tcase \"ollama\":\n\t\tdnsName = fmt.Sprintf(\"%s-api.%s\", workspace, config.DefaultDomain)\n\tcase \"openwebui\":\n\t\tdnsName = fmt.Sprintf(\"%s.%s\", workspace, config.DefaultDomain)\n\t}\n\n\treturn dnsName\n}",
+          "endLine": 163,
+          "explanation": "The ingress host `<name>.<DefaultDomain>` is a deterministic function of the tenant-chosen workspace name, so a colliding (or name-guessing) tenant knows the exact URL of the victim's webui.",
+          "id": "hostname-derivation",
+          "label": "Public hostname derived from the same field",
+          "language": "go",
+          "path": "internal/controller/handle_reconcile.go",
+          "role": "propagation",
+          "startLine": 153
+        },
+        {
+          "code": "\t\t\t\t\t\t\tEnv: []v1.EnvVar{\n\t\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\t\tName:  \"OLLAMA_BASE_URL\",\n\t\t\t\t\t\t\t\t\tValue: ollamaServerURI,\n\t\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\t\tName:  \"OPENAI_API_BASE_URL\",\n\t\t\t\t\t\t\t\t\tValue: openAIURI,\n\t\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\t\tName:  \"ENV\",\n\t\t\t\t\t\t\t\t\tValue: \"dev\",\n\t\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\t\tName:  \"WEBUI_NAME\",\n\t\t\t\t\t\t\t\t\tValue: workspaceName,\n\t\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\t\tName:  \"KEY_FILE\",\n\t\t\t\t\t\t\t\t\tValue: \"/tmp/.webui_secret_key\",\n\t\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t},",
+          "endLine": 97,
+          "explanation": "The broken control is the missing authentication: the webui container env configures no admin user, SSO, or auth proxy, so anyone who reaches the ingress host is admitted to the workspace's data.",
+          "id": "webui-unauthenticated",
+          "label": "Open WebUI deployment carries no authentication",
+          "language": "go",
+          "path": "internal/adapters/k8s/apps.go",
+          "role": "root_control",
+          "startLine": 76
+        }
+      ],
+      "confidence": {
+        "level": "medium",
+        "rationale": "The source establishes the namespaced-CR to cluster-global-namespace mapping (CRD scope Namespaced; ensureNamespace keyed on Spec.WorkspaceName), the predictable hostname derivation (setIngressDNSHost), and the absence of any authentication configuration on the Open WebUI deployment; real-world likelihood depends on the deployment's naming practices and DNS exposure."
+      },
+      "findingId": "csf_91c7f36582951c36a58ba132",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:45d13d30a2466140ce49f47ccf85dfbb55371e70c1c1a97c0ed9c80aa152bf4f"
+      },
+      "identity": {
+        "anchor": "workspace-name-tenant-isolation"
+      },
+      "locations": [
+        {
+          "endLine": 28,
+          "path": "api/v1alpha1/aichatworkspace_types.go",
+          "role": "root_control",
+          "startLine": 25
+        },
+        {
+          "endLine": 15,
+          "path": "config/crd/bases/apps.aichatworkspaces.io_aichatworkspaces.yaml",
+          "role": "propagation",
+          "startLine": 15
+        },
+        {
+          "endLine": 47,
+          "path": "internal/controller/handle_reconcile.go",
+          "role": "propagation",
+          "startLine": 46
+        },
+        {
+          "endLine": 163,
+          "path": "internal/controller/handle_reconcile.go",
+          "role": "propagation",
+          "startLine": 153
+        },
+        {
+          "endLine": 97,
+          "path": "internal/adapters/k8s/apps.go",
+          "role": "sink",
+          "startLine": 76
+        }
+      ],
+      "occurrenceId": "occ_15d436d6cb3864da0c7b8fc4",
+      "preventiveControls": [
+        "Add a validating webhook (or cluster-scoped name lock) enforcing global uniqueness of spec.workspaceName.",
+        "Derive the target namespace from both the CR namespace and workspaceName.",
+        "Enable Open WebUI authentication (admin user or SSO) as a default."
+      ],
+      "provenance": {
+        "source": "parent-audit"
+      },
+      "remediation": "Enforce cluster-wide uniqueness of `spec.workspaceName` (e.g. a validating admission webhook or a cluster-scoped name lock object) and/or derive the target namespace from both the CR namespace and the name. Additionally require authentication on the exposed Open WebUI before public ingress traffic reaches it.",
+      "remediationTests": [
+        "Assert that two CRs in different namespaces with the same spec.workspaceName are rejected or mapped to distinct namespaces and hostnames.",
+        "Assert the Open WebUI deployment enforces authentication before the ingress routes traffic."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "crd-scope-namespaced",
+          "namespace-from-cr-field",
+          "hostname-derivation",
+          "webui-unauthenticated"
+        ],
+        "summary": "The violated invariant is that each tenant's workspace must be addressable only by that tenant. A namespaced CR's cluster-global namespace and ingress hostname are keyed solely on the tenant-chosen `spec.workspaceName` with no uniqueness check, and the workload serving that hostname (Open WebUI) is deployed without authentication, so anyone who collides on or learns the name reaches another tenant's data."
+      },
+      "ruleId": "access-control.workspace-name-collision",
+      "severity": {
+        "level": "medium",
+        "rationale": "Cross-tenant disclosure of a personal AI workspace's data and uploads. Likelihood is medium: it requires two tenants to pick the same (or guessable) workspaceName \u2014 likely with short, human-predictable names such as usernames \u2014 and the webui has no authentication, so knowledge of the name suffices. Impact is medium: disclosure of one workspace's data without cluster-level effect."
+      },
+      "summary": "AIChatWorkspace CRs are namespaced, but `spec.workspaceName` maps to a cluster-scoped namespace and a public ingress hostname with no uniqueness enforcement. Two tenants that choose the same workspaceName target the same namespace: the first reconcile wins the workload names, and the Open WebUI it serves \u2014 deployed with no authentication at `<name>.<DefaultDomain>` \u2014 becomes reachable by the second tenant (and anyone who knows the name), disclosing the first tenant's chat history, uploaded documents, and Ollama model configuration.",
+      "taxonomy": {
+        "category": "Access Control",
+        "cwe": [
+          "CWE-639",
+          "CWE-306"
+        ]
+      },
+      "title": "Cross-tenant workspace-name collision exposes another tenant's unauthenticated Open WebUI",
+      "validation": {
+        "assertions": [
+          "The CRD is Namespaced, so CR identity is per-namespace, while the derived namespace and hostname are cluster-global keys with no uniqueness enforcement.",
+          "The ingress hostname is a deterministic function of spec.workspaceName, making victim URLs predictable.",
+          "The Open WebUI deployment sets no authentication environment or sidecar; the service is reachable unauthenticated at the ingress host."
+        ],
+        "evidenceRefs": [
+          "crd-scope-namespaced",
+          "namespace-from-cr-field",
+          "hostname-derivation",
+          "webui-unauthenticated"
+        ],
+        "limitations": [
+          "Assumes the ingress controller publishes the host to a network the second tenant can reach and that two tenants can choose identical names; likelihood depends on the deployment's naming policy."
+        ],
+        "method": "static source trace",
+        "summary": "The CRD is namespaced (config/crd/bases/...yaml:15) while ensureNamespace/ensureIngress key cluster-scoped and public resources solely on Spec.WorkspaceName (handle_reconcile.go:46-47); setIngressDNSHost (handle_reconcile.go:153-163) derives the public hostname `<name>.<DefaultDomain>` from the same field; NewDeployment (apps.go:76-97) configures Open WebUI with no authentication settings, and no auth layer sits between the ingress and the webui service."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "mysql-plaintext-password",
+            "mysql-secret-weak"
+          ],
+          "outcome": "unauthorized read/write of the workspace database",
+          "sink": "MySQL authentication (user aichatworkspace or root)",
+          "source": "repository-committed credential literals",
+          "summary": "committed manifest literals -> installed Secret and deployment env -> MySQL accounts with known credentials -> database access"
+        },
+        "evidenceRefs": [
+          "mysql-plaintext-password",
+          "mysql-secret-weak",
+          "default-overlay-includes"
+        ],
+        "impact": {
+          "level": "medium",
+          "why": "Grants an attacker the database account's full read/write access, including any workspace data persisted there."
+        },
+        "likelihood": {
+          "level": "medium",
+          "why": "The credentials are public and weak, but exploitation still requires reachability to the database service."
+        },
+        "limitations": [],
+        "reachability": {
+          "attacker": "any principal with network or cluster access to the MySQL service (or repository access to the manifests)",
+          "entrypoint": "MySQL authentication with the shipped account names and passwords",
+          "outcome": "database access with the shipped accounts' privileges",
+          "summary": "Requires network or cluster access to the MySQL service, or repository/manifest access to learn the defaults; no further privileges are needed."
+        },
+        "summary": "An attacker who can reach the MySQL service (from within the cluster or via any exposed endpoint) authenticates as `aichatworkspace`/`aichatworkspace`, or as root using the shipped Secret value `password`, to read or modify the workspace database."
+      },
+      "codeEvidence": [
+        {
+          "code": "        - name: MYSQL_USER\n          value: aichatworkspace\n        - name: MYSQL_PASSWORD\n          value: \"aichatworkspace\"\n        - name: MYSQL_ROOT_PASSWORD\n          valueFrom:\n            secretKeyRef:\n              name: mysql-secret\n              key: password",
+          "endLine": 30,
+          "explanation": "The broken control is the credential itself: `MYSQL_PASSWORD` is the literal string `aichatworkspace` (identical to the username), committed in plaintext in the deployment manifest.",
+          "id": "mysql-plaintext-password",
+          "label": "Application DB user with plaintext password",
+          "language": "yaml",
+          "path": "config/default/mysql-deployment.yaml",
+          "role": "root_control",
+          "startLine": 22
+        },
+        {
+          "code": "type: kubernetes.io/basic-auth\nstringData:\n  password: password",
+          "endLine": 7,
+          "explanation": "The Secret referenced by `MYSQL_ROOT_PASSWORD` stores the literal password `password`, so the database root account is also publicly known.",
+          "id": "mysql-secret-weak",
+          "label": "Root password stored as the literal 'password'",
+          "language": "yaml",
+          "path": "config/default/mysql-secret.yaml",
+          "role": "propagation",
+          "startLine": 5
+        },
+        {
+          "code": "- system-configmap.yaml\n- mysql-secret.yaml\n- mysql-storage.yaml\n- mysql-deployment.yaml\n- mysql-service.yaml",
+          "endLine": 39,
+          "explanation": "The `config/default` overlay \u2014 the stock install surface \u2014 includes both the Secret and the deployment, so the weak credentials apply to a default apply.",
+          "id": "default-overlay-includes",
+          "label": "Default overlay installs both files",
+          "language": "yaml",
+          "path": "config/default/kustomization.yaml",
+          "role": "propagation",
+          "startLine": 35
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "The literal values are present in the committed manifests and wired into the deployment via env vars and secretKeyRef, and the default kustomize overlay includes both files."
+      },
+      "findingId": "csf_4f0c3705cd114824f9b860b4",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:21e4de4ec0ea636f49650509b64d86fbb8d531439f0751f68aad642249817d5b"
+      },
+      "identity": {
+        "anchor": "mysql-credential-defaults"
+      },
+      "locations": [
+        {
+          "endLine": 30,
+          "path": "config/default/mysql-deployment.yaml",
+          "role": "root_control",
+          "startLine": 22
+        },
+        {
+          "endLine": 7,
+          "path": "config/default/mysql-secret.yaml",
+          "role": "propagation",
+          "startLine": 5
+        },
+        {
+          "endLine": 39,
+          "path": "config/default/kustomization.yaml",
+          "role": "propagation",
+          "startLine": 35
+        }
+      ],
+      "occurrenceId": "occ_2cd28a287561a0c4d95494b3",
+      "preventiveControls": [
+        "Use kustomize secretGenerator (or an external secret store) for all database credentials.",
+        "Document credential rotation for clusters installed from the shipped defaults."
+      ],
+      "provenance": {
+        "source": "parent-audit"
+      },
+      "remediation": "Generate strong random credentials at install time (e.g. kustomize `secretGenerator` or an external secret store), remove the literal `aichatworkspace` and `password` values from the repository, and rotate credentials in any deployment that used the shipped defaults.",
+      "remediationTests": [
+        "Assert the rendered default manifests contain no literal password values.",
+        "Assert the mysql-secret value is generated randomly at install time."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "mysql-plaintext-password",
+          "mysql-secret-weak",
+          "default-overlay-includes"
+        ],
+        "summary": "The violated invariant is that shipped deployment manifests must not embed working credentials. `config/default/mysql-deployment.yaml` hardcodes the application user password (`MYSQL_PASSWORD: aichatworkspace`) and points the root password at `config/default/mysql-secret.yaml`, which stores the literal `password`; `config/default/kustomization.yaml` includes both files, so a stock install provisions a database whose credentials are publicly known and trivially guessable."
+      },
+      "ruleId": "hardcoded-credentials.mysql-defaults",
+      "severity": {
+        "level": "medium",
+        "rationale": "Hardcoded, weak credentials for a database that can store workspace data. Impact is medium (known credentials grant database access to anyone who can reach the service or read the repository/manifests); likelihood is medium because the values are public in the repository and the default overlay applies them to real installs."
+      },
+      "summary": "The default deployment overlay ships a MySQL deployment whose application user password is the literal string `aichatworkspace` in plaintext, and a Secret whose root password is the literal string `password`. Both files are included by `config/default/kustomization.yaml`, so a stock install provisions a database with publicly known, dictionary-grade credentials.",
+      "taxonomy": {
+        "category": "Sensitive Data Exposure",
+        "cwe": [
+          "CWE-798",
+          "CWE-1393"
+        ]
+      },
+      "title": "Shipped manifests embed weak, hardcoded database credentials",
+      "validation": {
+        "assertions": [
+          "MYSQL_PASSWORD is the literal string aichatworkspace, identical to MYSQL_USER.",
+          "The referenced Secret stores the literal root password 'password'.",
+          "The config/default kustomize overlay includes both manifests, so a stock install uses these credentials."
+        ],
+        "evidenceRefs": [
+          "mysql-plaintext-password",
+          "mysql-secret-weak",
+          "default-overlay-includes"
+        ],
+        "limitations": [
+          "The MySQL deployment is a supporting component of the default overlay rather than a resource created by the operator's reconcile loop; impact depends on the MySQL service's network reachability and whether the database actually holds sensitive data."
+        ],
+        "method": "static manifest inspection",
+        "summary": "Confirmed the literal values in the committed YAML: MYSQL_PASSWORD is the string aichatworkspace (mysql-deployment.yaml:24-25), the Secret's stringData.password is the string password (mysql-secret.yaml:7), and the default kustomize overlay lists both files (kustomization.yaml:36,38)."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "webui-no-security-context"
+          ],
+          "outcome": "elevated foothold for node escape or persistence",
+          "sink": "root-equivalent code execution inside the webui container",
+          "source": "network attacker reaching the unauthenticated webui",
+          "summary": "webui HTTP request -> application vulnerability -> root container process with default capabilities"
+        },
+        "evidenceRefs": [
+          "webui-no-security-context",
+          "ollama-hardened"
+        ],
+        "impact": {
+          "level": "low",
+          "why": "Expands the blast radius of a webui compromise to the container/node boundary; no direct cluster-level effect without a further escape."
+        },
+        "likelihood": {
+          "level": "low",
+          "why": "Requires a separate webui code-execution vulnerability; hardening absence is a multiplier, not a standalone exploit."
+        },
+        "limitations": [],
+        "reachability": {
+          "attacker": "attacker who compromises the Open WebUI application",
+          "entrypoint": "Open WebUI HTTP service",
+          "outcome": "root-equivalent code execution inside the webui container",
+          "summary": "Requires a code-execution primitive in the Open WebUI application; the missing hardening then determines how far that primitive reaches."
+        },
+        "summary": "An attacker who achieves code execution in the Open WebUI container (via a webui vulnerability or through its unauthenticated interface) inherits root inside the container with default capabilities and a writable root filesystem, raising the likelihood of escaping to the node or persisting tooling compared to the hardened Ollama workload."
+      },
+      "codeEvidence": [
+        {
+          "code": "\t\t\t\tSpec: v1.PodSpec{\n\t\t\t\t\tRestartPolicy:                v1.RestartPolicyAlways,\n\t\t\t\t\tServiceAccountName:           saName,\n\t\t\t\t\tAutomountServiceAccountToken: ptr.To[bool](false),\n\t\t\t\t\t// at the moment having issues getting open webui to run as non-root\n\t\t\t\t\t// SecurityContext:              defaultPodSecurityContext(),\n\t\t\t\t\tContainers: []v1.Container{\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\tName:  constants.OpenwebuiContainerName,\n\t\t\t\t\t\t\tImage: containerImage,\n\t\t\t\t\t\t\t// SecurityContext: defaultSecurityContext(),",
+          "endLine": 75,
+          "explanation": "The broken control: both the pod and container security contexts are commented out (with a note about non-root image issues), so the webui container keeps root privileges, default capabilities, and a writable root filesystem.",
+          "id": "webui-no-security-context",
+          "label": "Webui pod/container security contexts commented out",
+          "language": "go",
+          "path": "internal/adapters/k8s/apps.go",
+          "role": "root_control",
+          "startLine": 65
+        },
+        {
+          "code": "\t\t\t\tSpec: v1.PodSpec{\n\t\t\t\t\tRestartPolicy:                v1.RestartPolicyAlways,\n\t\t\t\t\tServiceAccountName:           saName,\n\t\t\t\t\tAutomountServiceAccountToken: ptr.To[bool](false),\n\t\t\t\t\tSecurityContext:              defaultPodSecurityContext(),\n\t\t\t\t\tContainers: []v1.Container{\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\tName:  constants.OllamaContainerName,\n\t\t\t\t\t\t\tImage: containerImage,\n\t\t\t\t\t\t\tEnv: []v1.EnvVar{\n\t\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\t\tName:  \"OLLAMA_DEBUG\",\n\t\t\t\t\t\t\t\t\tValue: \"1\",\n\t\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\tSecurityContext: defaultSecurityContext(),",
+          "endLine": 199,
+          "explanation": "The expected control exists in the same file: the Ollama pod spec applies defaultPodSecurityContext() (uid/gid 10001) and the container applies defaultSecurityContext() (non-root, no privilege escalation, all capabilities dropped, read-only root filesystem), which the webui path omits.",
+          "id": "ollama-hardened",
+          "label": "Ollama StatefulSet applies the hardened baseline",
+          "language": "go",
+          "path": "internal/adapters/k8s/apps.go",
+          "role": "expected_control",
+          "startLine": 184
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "The commented-out security-context lines and the absence of any runAsNonRoot/capability/read-only-filesystem settings on the webui container are directly visible in source, while the Ollama StatefulSet in the same file applies the hardening helpers."
+      },
+      "findingId": "csf_416c71929aeafca15e1e292a",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:c018f60adef538122f932fcd6cbdc10469dffacf610f04f51923f1f325f2179b"
+      },
+      "identity": {
+        "anchor": "webui-deployment-security-context"
+      },
+      "locations": [
+        {
+          "endLine": 75,
+          "path": "internal/adapters/k8s/apps.go",
+          "role": "root_control",
+          "startLine": 65
+        },
+        {
+          "endLine": 199,
+          "path": "internal/adapters/k8s/apps.go",
+          "role": "expected_control",
+          "startLine": 184
+        }
+      ],
+      "occurrenceId": "occ_13c98d09f51b82c287e1303f",
+      "preventiveControls": [
+        "Apply restricted Pod Security Standards to workspace namespaces.",
+        "Adopt the same security-context helpers for all operator-managed workloads."
+      ],
+      "provenance": {
+        "source": "parent-audit"
+      },
+      "remediation": "Enable the existing `defaultPodSecurityContext()` and `defaultSecurityContext()` (or equivalent restricted Pod Security Standard settings) on the Open WebUI deployment, resolving the non-root image concerns noted in the code comments.",
+      "remediationTests": [
+        "Assert the rendered Open WebUI deployment has runAsNonRoot, dropped capabilities, and a read-only root filesystem."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "webui-no-security-context",
+          "ollama-hardened"
+        ],
+        "summary": "The violated invariant is that network-reachable operator-managed workloads should run under the operator's own hardened baseline. `NewDeployment` comments out the pod and container security contexts and never sets RunAsNonRoot, capability drops, or a read-only root filesystem, so the webui container keeps root privileges and default capabilities \u2014 while the Ollama StatefulSet in the same file applies `defaultPodSecurityContext()` and `defaultSecurityContext()`."
+      },
+      "ruleId": "misconfiguration.webui-security-context",
+      "severity": {
+        "level": "low",
+        "rationale": "Weakens the container-escape boundary for a network-reachable third-party application; exploitation still requires a webui RCE, and the blast radius is the container/node boundary rather than the cluster."
+      },
+      "summary": "`NewDeployment` for Open WebUI ships with both the pod and container SecurityContexts commented out, so the network-exposed, unauthenticated webui container runs as root with default capabilities and a writable root filesystem. The sibling Ollama StatefulSet in the same file applies the hardened `defaultPodSecurityContext()`/`defaultSecurityContext()` helpers, showing the intended baseline that the webui path omits.",
+      "taxonomy": {
+        "category": "Security Misconfiguration",
+        "cwe": [
+          "CWE-250",
+          "CWE-16"
+        ]
+      },
+      "title": "Open WebUI workload is deployed as root without a security context",
+      "validation": {
+        "assertions": [
+          "The Open WebUI deployment's PodSpec and container have no security context set.",
+          "The Ollama StatefulSet's PodSpec and container apply the hardened helpers defined in the same file."
+        ],
+        "evidenceRefs": [
+          "webui-no-security-context",
+          "ollama-hardened"
+        ],
+        "limitations": [
+          "Actual exposure depends on the Open WebUI image's default user and on whether the cluster enforces Pod Security admission policies on the workspace namespaces."
+        ],
+        "method": "static source inspection",
+        "summary": "Confirmed the webui PodSpec and container carry no security context (apps.go:65-75, both lines commented out with a TODO-style note) while the Ollama StatefulSet (apps.go:184-199) applies the hardened helpers defined at apps.go:237-267."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "evidenceRefs": [
+            "debug-server"
+          ],
+          "outcome": "disclosure of the manager's runtime state and arguments",
+          "sink": "unauthenticated debug HTTP endpoints",
+          "source": "attacker code inside the manager pod's network namespace",
+          "summary": "same-pod network access -> localhost:6060 pprof/expvar/statsviz -> runtime state, profiles, and command line"
+        },
+        "evidenceRefs": [
+          "debug-server",
+          "dev-logging"
+        ],
+        "impact": {
+          "level": "low",
+          "why": "Information disclosure and profiling within the manager pod; no direct privilege gain without a further vulnerability."
+        },
+        "likelihood": {
+          "level": "low",
+          "why": "Requires an additional foothold in the manager pod, which the shipped manifests do not provide."
+        },
+        "limitations": [],
+        "reachability": {
+          "attacker": "code executing in the manager pod's network namespace",
+          "entrypoint": "HTTP request to localhost:6060",
+          "outcome": "unauthenticated access to runtime profiles, expvar metrics, and the process command line",
+          "summary": "Requires an existing foothold in the manager pod (sidecar or exec); the debug server then amplifies it with unauthenticated introspection."
+        },
+        "summary": "An attacker who has executed code in the manager pod (e.g. via a co-located sidecar or a `pods/exec` session) queries `localhost:6060` for runtime profiles, command-line arguments, and statistics to aid further compromise or exfiltration."
+      },
+      "codeEvidence": [
+        {
+          "code": "\tgo func() {\n\t\tmux := http.NewServeMux()\n\t\tmux.HandleFunc(\"/debug/pprof/\", pprof.Index)\n\t\tmux.HandleFunc(\"/debug/pprof/cmdline\", pprof.Cmdline)\n\t\tmux.HandleFunc(\"/debug/pprof/profile\", pprof.Profile)\n\t\tmux.HandleFunc(\"/debug/pprof/symbol\", pprof.Symbol)\n\t\tmux.HandleFunc(\"/debug/pprof/trace\", pprof.Trace)\n\t\tmux.Handle(\"/debug/vars/\", expvar.Handler())\n\n\t\tstatsviz.Register(mux)\n\t\thttp.ListenAndServe(\"localhost:6060\", mux)\n\t}()",
+          "endLine": 123,
+          "explanation": "The broken control: the mux is wired with no authentication or authorization and served unconditionally on port 6060; `/debug/pprof/cmdline` additionally discloses the process's command-line arguments.",
+          "id": "debug-server",
+          "label": "Unauthenticated pprof/expvar/statsviz server",
+          "language": "go",
+          "path": "cmd/main.go",
+          "role": "root_control",
+          "startLine": 112
+        },
+        {
+          "code": "\topts := zap.Options{\n\t\tDevelopment: true,\n\t}",
+          "endLine": 85,
+          "explanation": "`Development: true` raises log verbosity in the production manager, increasing the chance that request or state details land in logs that co-located code can read.",
+          "id": "dev-logging",
+          "label": "Development-mode logging enabled",
+          "language": "go",
+          "path": "cmd/main.go",
+          "role": "propagation",
+          "startLine": 83
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "The unauthenticated mux and `localhost:6060` listener, plus `Development: true`, are directly present in the source with no conditional gating."
+      },
+      "findingId": "csf_fae837672b471c465e0cf67e",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:7302b8e4fcf3eb21d44c4e18f5df14219ebbd85160dbabb2c541da8b24bbab3e"
+      },
+      "identity": {
+        "anchor": "manager-debug-server"
+      },
+      "locations": [
+        {
+          "endLine": 123,
+          "path": "cmd/main.go",
+          "role": "root_control",
+          "startLine": 112
+        },
+        {
+          "endLine": 85,
+          "path": "cmd/main.go",
+          "role": "propagation",
+          "startLine": 83
+        }
+      ],
+      "occurrenceId": "occ_282af3778bb69733f09179cf",
+      "preventiveControls": [
+        "Build the debug server into a debug-only binary or guard it with a flag.",
+        "Use a production zap configuration for the shipped image."
+      ],
+      "provenance": {
+        "source": "parent-audit"
+      },
+      "remediation": "Gate the debug server behind a build tag or an explicit flag and disable it by default in production images; use a production zap configuration instead of `Development: true`.",
+      "remediationTests": [
+        "Assert the manager binary exposes no /debug/pprof endpoint when started without an explicit debug flag.",
+        "Assert the default log configuration is production-grade (Development: false)."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "debug-server",
+          "dev-logging"
+        ],
+        "summary": "The violated invariant is that a production manager must not serve unauthenticated debug interfaces. `main()` unconditionally starts an HTTP server on `localhost:6060` wiring pprof (including `/debug/pprof/cmdline`), expvar, and statsviz with no authn/authz, and sets the zap logger to `Development: true`, which raises log verbosity."
+      },
+      "ruleId": "sensitive-data-exposure.debug-endpoints",
+      "severity": {
+        "level": "low",
+        "rationale": "Information disclosure and runtime profiling confined to the manager pod's network namespace; the main container is distroless nonroot and no sidecar is shipped, so reaching the endpoint requires an additional foothold such as pod exec or a co-located container."
+      },
+      "summary": "`cmd/main.go` unconditionally starts an additional HTTP server on `localhost:6060` exposing `net/http/pprof` (including `/debug/pprof/cmdline`), `expvar`, and `statsviz` with no authentication, and initializes the zap logger with `Development: true`. Any code sharing the manager pod's network namespace (a sidecar, a host-network peer, or a `pods/exec` session) can read runtime profiles, command-line arguments, and internal statistics from this unauthenticated surface.",
+      "taxonomy": {
+        "category": "Sensitive Data Exposure",
+        "cwe": [
+          "CWE-200"
+        ]
+      },
+      "title": "Manager exposes unauthenticated pprof/expvar/statsviz debug endpoints and development logging",
+      "validation": {
+        "assertions": [
+          "The /debug/pprof, /debug/vars, and statsviz handlers are registered on a plain http.ServeMux with no authentication.",
+          "The listener binds to localhost:6060 inside the manager pod, reachable from the pod's network namespace.",
+          "The logger runs in Development mode in the production binary."
+        ],
+        "evidenceRefs": [
+          "debug-server",
+          "dev-logging"
+        ],
+        "limitations": [
+          "Bound to localhost inside the manager pod; reachable only from the same pod network namespace or via a pod-exec session."
+        ],
+        "method": "static source inspection",
+        "summary": "Confirmed the debug server starts unconditionally in main() (cmd/main.go:112-123) with pprof/expvar/statsviz handlers and no middleware, and the zap options set Development: true (cmd/main.go:83-85)."
+      }
+    }
+  ],
+  "scanId": "6bca2ac4706df6e392d748308c1a163d30276b2e_20260913T181412Z",
+  "schemaVersion": "1.0"
+}
