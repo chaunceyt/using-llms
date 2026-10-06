@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Skylines</title>
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #0a0e14; }
+    #app { position: fixed; inset: 0; }
+    canvas { display: block; }
+    #err {
+      position: fixed; left: 8px; bottom: 8px; max-width: 60vw;
+      color: #ff9a9a; font: 12px/1.4 ui-monospace, monospace;
+      white-space: pre-wrap; z-index: 50; pointer-events: none; display: none;
+    }
+    #boot {
+      position: fixed; inset: 0; display: grid; place-items: center;
+      color: #6b7686; font: 14px ui-monospace, monospace; z-index: 40;
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/node_modules/three/build/three.module.js",
+        "three/addons/": "/node_modules/three/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="boot">loading…</div>
+  <div id="app"></div>
+  <pre id="err"></pre>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

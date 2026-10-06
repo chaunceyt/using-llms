@@ -1,0 +1,58 @@
+{
+  "documentType": "codex-security.scan-manifest",
+  "schemaVersion": "1.0",
+  "scan": {
+    "id": "scan_c9e4e47fb43a65949bc64f57",
+    "producer": {
+      "name": "codex-security-plugin",
+      "version": "0.1.24"
+    },
+    "status": "completed",
+    "startedAt": "2026-09-23T21:04:35Z",
+    "completedAt": "2026-09-23T21:04:35Z",
+    "target": {
+      "kind": "git_worktree",
+      "targetId": "target_6e8869f9a0f00c035e26d2cbacecb3a04f25a8f6",
+      "displayName": "aichat-workspace-operator",
+      "revision": "6bca2ac4706df6e392d748308c1a163d30276b2e",
+      "snapshotDigest": "codex-security-snapshot/v1:sha256:1239d7cf703fd6ff3b727dd36fd601683b6d42567007d586fd21b865a7f907c7"
+    },
+    "scope": {
+      "includePaths": [
+        "."
+      ],
+      "excludePaths": [],
+      "summary": "Whole repository (Git worktree at main)."
+    },
+    "threatModel": {
+      "summary": "A Kubebuilder/operator written in Go that, for each AIChatWorkspace custom resource, provisions a dedicated namespace and runs Open WebUI (web app) plus Ollama (LLM API) with public DNS-hosted Ingresses. Primary trust boundaries: the K8s API / CR author, the cluster network, and the public internet reaching the Ingress-fronted Ollama and Open WebUI services. Protected assets are each tenant's workspace (models, chat data on PVCs, cluster resources).",
+      "assets": [
+        "Per-workspace Ollama LLM API and stored models",
+        "Per-workspace Open WebUI application, accounts, and chat data (PVC)",
+        "Cluster compute/storage (ResourceQuota-limited namespaces)",
+        "Shared operator service account and cluster RBAC"
+      ],
+      "trustBoundaries": [
+        "Kubernetes API server / AIChatWorkspace CR authors",
+        "Cluster network (svc.cluster.local)",
+        "Public internet -> Ingress controller -> workspace subdomains"
+      ],
+      "attackerCapabilities": [
+        "A user authorized to create/update AIChatWorkspace custom resources (workspace owner)",
+        "An unauthenticated internet user who can resolve/brute-force a workspace subdomain"
+      ],
+      "securityObjectives": [
+        "Isolation of tenant workspaces",
+        "Authentication of external LLM/UI access",
+        "Encryption of credentials in transit",
+        "Bounded operator privileges"
+      ],
+      "assumptions": [
+        "The cluster ingress controller is exposed to the internet (product intent: external LLM-as-a-Service).",
+        "Each workspace is isolated in its own namespace/Ollama instance (no cross-tenant network path in source)."
+      ]
+    },
+    "coverageRef": "coverage.json",
+    "findingsRef": "findings.json"
+  }
+}

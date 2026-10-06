@@ -1,0 +1,397 @@
+{
+  "documentType": "codex-security.findings",
+  "schemaVersion": "1.0",
+  "scanId": "scan_c9e4e47fb43a65949bc64f57",
+  "findings": [
+    {
+      "ruleId": "broken-access-control.ollama-public-api",
+      "identity": {
+        "anchor": "ollama-ingress-no-auth-public-host"
+      },
+      "title": "Unauthenticated Ollama LLM API is publicly exposed via Ingress",
+      "summary": "The operator creates an Ingress that routes the full Ollama API (port 11434) to a public DNS host (<workspace>-api.<defaultDomain>) with no TLS and no authentication. Ollama provides no auth by default and none is configured, so any internet user can run inference, pull, create, and delete models in the workspace.",
+      "severity": {
+        "level": "high",
+        "score": 7.4,
+        "scoringSystem": "CVSS:3.1",
+        "rationale": "Unauthenticated, remote, internet-reachable control plane for a stateful service: enables model tampering/destruction, resource-exhaustion DoS against the quota-limited workspace, and data access. Per-workspace blast radius (tenants are namespace-isolated)."
+      },
+      "confidence": {
+        "level": "medium",
+        "rationale": "Source unambiguously shows a public-host Ingress with no TLS and no auth in front of the Ollama API. Severity assumes the cluster ingress controller is internet-facing, which is the product's stated design but not verifiable from the repository."
+      },
+      "taxonomy": {
+        "category": "broken-access-control",
+        "cwe": [
+          "CWE-306",
+          "CWE-319"
+        ]
+      },
+      "locations": [
+        {
+          "path": "internal/adapters/k8s/common.go",
+          "startLine": 189,
+          "endLine": 231,
+          "role": "sink"
+        },
+        {
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 128,
+          "endLine": 134,
+          "role": "source"
+        },
+        {
+          "path": "internal/adapters/k8s/apps.go",
+          "startLine": 182,
+          "endLine": 219,
+          "role": "context"
+        },
+        {
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 153,
+          "endLine": 162,
+          "role": "context"
+        }
+      ],
+      "codeEvidence": [
+        {
+          "id": "ev1_1",
+          "label": "Ingress built with a Host, no TLS block, no auth annotations",
+          "path": "internal/adapters/k8s/common.go",
+          "startLine": 189,
+          "endLine": 231,
+          "code": "func NewIngress(workspacename, workload, backendName, hostname string, backendPort int32) *networkingv1.Ingress {\n\tpathType := networkingv1.PathTypePrefix\n\treturn &networkingv1.Ingress{...\n\t\tSpec: networkingv1.IngressSpec{\n\t\t\tRules: []networkingv1.IngressRule{\n\t\t\t\t{ Host: hostname,\n\t\t\t\t  IngressRuleValue: ... Path: \"/\" ... }\n\t\t\t}\n\t\t},\n\t}",
+          "explanation": "NewIngress returns an IngressSpec with a single Rule (Host set to the caller-supplied hostname) and no Spec.TLS and no authentication annotations, so the backend is served over HTTP with no access control.",
+          "language": "go"
+        },
+        {
+          "id": "ev1_2",
+          "label": "Ollama Ingress created and reconciled to a public host",
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 128,
+          "endLine": 134,
+          "code": "ollamaBackend := getName(aichat.Spec.WorkspaceName, constants.OllamaName)\nollamaDNSName := setIngressDNSHost(config, aichat.Spec.WorkspaceName, constants.OllamaName)\nresult, err = r.ensureIngress(ctx, aichat, k8s.NewIngress(aichat.Spec.WorkspaceName, constants.OllamaName, ollamaBackend, ollamaDNSName, constants.OllamaPort))",
+          "explanation": "handleReconcile unconditionally creates the Ollama Ingress pointing at the Ollama service port with a public host derived from the workspace name.",
+          "language": "go"
+        },
+        {
+          "id": "ev1_3",
+          "label": "Ollama StatefulSet has no auth; debug enabled",
+          "path": "internal/adapters/k8s/apps.go",
+          "startLine": 189,
+          "endLine": 219,
+          "code": "return &appsv1.StatefulSet{ ... Env: []v1.EnvVar{{Name:\"OLLAMA_DEBUG\",Value:\"1\"}} ... }",
+          "explanation": "The Ollama workload is deployed with no authentication mechanism (no OLLAMA_API_KEY, no proxy, no sidecar) and OLLAMA_DEBUG=1.",
+          "language": "go"
+        }
+      ],
+      "rootCause": {
+        "summary": "The reconciliation path publishes the Ollama API on a public host without any transport or identity layer. Ollama's own API is unauthenticated, so the only barrier is network reachability.",
+        "evidenceRefs": [
+          "ev1_1",
+          "ev1_2",
+          "ev1_3"
+        ]
+      },
+      "attackPath": {
+        "dataFlow": {
+          "summary": "Public internet -> ingress controller (host <w>-api.<domain>) -> Ollama service :11434 -> model store on PVC.",
+          "source": "Unauthenticated internet client",
+          "sink": "Ollama HTTP API (/api/pull, /api/create, /api/delete, /api/generate, /api/tags)",
+          "outcome": "Arbitrary model pull/create/delete and inference, and resource exhaustion, within the target workspace."
+        }
+      },
+      "validation": {
+        "method": "static",
+        "status": "validated",
+        "summary": "Confirmed by reading NewIngress (no TLS/auth), handleReconcile (unconditional public-host Ollama Ingress), the Ollama StatefulSet (no auth), and the Ollama adapter (plain HTTP client to the internal service).",
+        "counterEvidence": [
+          "If the ingress controller is not internet-exposed, or a cluster-level auth proxy (e.g. the envoy-sidecar in hack/) is deployed, the exposure is mitigated.",
+          "Ollama is bound to the internal service; only the Ingress provides the external path."
+        ],
+        "limitations": [
+          "External exposure of the ingress controller and DNS are deployment properties not present in the repository."
+        ]
+      },
+      "remediation": "Add authentication for the Ollama API (basic/JWT/OIDC via an ingress annotation, an authenticating proxy/sidecar, or OLLAMA_API_KEY if available) and enable TLS on the ingress. Restrict the Ollama Ingress to a private/vpc path or require a token before exposing it publicly.",
+      "provenance": {
+        "source": "local_plugin"
+      },
+      "extensions": {}
+    },
+    {
+      "ruleId": "exposure.openwebui-public-cleartext",
+      "identity": {
+        "anchor": "openwebui-ingress-cleartext-open-registration"
+      },
+      "title": "Open WebUI is exposed publicly over cleartext HTTP with open self-registration",
+      "summary": "The operator publishes the Open WebUI application on a public host (<workspace>.<defaultDomain>) over plain HTTP (no TLS on the Ingress) and does not configure authentication. Open WebUI's default allows open self-registration, so any internet user can create an account and use/abuse the workspace; credentials are transmitted in cleartext.",
+      "severity": {
+        "level": "medium",
+        "score": 5.5,
+        "scoringSystem": "CVSS:3.1",
+        "rationale": "Public, unauthenticated account creation plus cleartext credentials against a tenant's LLM UI; lower than the Ollama finding because Open WebUI ships its own (open by default) auth layer."
+      },
+      "confidence": {
+        "level": "high",
+        "rationale": "The Ingress has no TLS and no auth and routes the full web app; the Deployment sets no auth/registration restrictions (KEY_FILE points at ephemeral /tmp). External exposure is an implied deployment property."
+      },
+      "taxonomy": {
+        "category": "security-misconfiguration",
+        "cwe": [
+          "CWE-319",
+          "CWE-311",
+          "CWE-306"
+        ]
+      },
+      "locations": [
+        {
+          "path": "internal/adapters/k8s/common.go",
+          "startLine": 189,
+          "endLine": 231,
+          "role": "sink"
+        },
+        {
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 119,
+          "endLine": 126,
+          "role": "source"
+        },
+        {
+          "path": "internal/adapters/k8s/apps.go",
+          "startLine": 71,
+          "endLine": 97,
+          "role": "context"
+        }
+      ],
+      "codeEvidence": [
+        {
+          "id": "ev2_1",
+          "label": "Open WebUI Ingress created with a public host, no TLS",
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 119,
+          "endLine": 126,
+          "code": "openwebuiDNSName := setIngressDNSHost(config, aichat.Spec.WorkspaceName, constants.OpenwebuiName)\nresult, err = r.ensureIngress(ctx, aichat, k8s.NewIngress(aichat.Spec.WorkspaceName, constants.OpenwebuiName, openwebBackend, openwebuiDNSName, constants.OpenwebuiContainerPort))",
+          "explanation": "Creates the public-host Ingress for the Open WebUI service with the same unauthenticated, non-TLS NewIngress builder.",
+          "language": "go"
+        },
+        {
+          "id": "ev2_2",
+          "label": "Open WebUI Deployment: no auth config, ephemeral secret key",
+          "path": "internal/adapters/k8s/apps.go",
+          "startLine": 71,
+          "endLine": 97,
+          "code": "// at the moment having issues getting open webui to run as non-root\n// SecurityContext: defaultPodSecurityContext(),\n... {Name:\"KEY_FILE\",Value:\"/tmp/.webui_secret_key\"}",
+          "explanation": "The web UI runs without any authentication/registration restriction and keeps its session/JWT secret in ephemeral /tmp, and has no SecurityContext (runs as root).",
+          "language": "go"
+        }
+      ],
+      "rootCause": {
+        "summary": "The web UI is published to a public host over HTTP with no identity layer and no registration restriction, so it is trivially reachable and account-creatable by anyone.",
+        "evidenceRefs": [
+          "ev2_1",
+          "ev2_2"
+        ]
+      },
+      "attackPath": {
+        "dataFlow": {
+          "summary": "Internet -> ingress host <w>.<domain> -> Open WebUI :8080 -> (register) -> LLM via internal Ollama.",
+          "source": "Unauthenticated internet user",
+          "sink": "Open WebUI registration/login and backend LLM access",
+          "outcome": "Unvetted accounts on the tenant's UI and cleartext credential exposure; account takeover of any weak/self-registered credential."
+        }
+      },
+      "validation": {
+        "method": "static",
+        "status": "validated",
+        "summary": "NewIngress adds no TLS/auth; handleReconcile always creates the public Open WebUI Ingress; NewDeployment sets no auth or registration controls.",
+        "counterEvidence": [
+          "Open WebUI does provide its own register/login (just open by default).",
+          "External exposure depends on the cluster's ingress/DNS configuration."
+        ],
+        "limitations": [
+          "Whether registration is truly open at runtime and whether the ingress is public are deployment properties."
+        ]
+      },
+      "remediation": "Enable TLS on the ingress, disable Open WebUI's open self-registration (require an IdP or an admin-managed bootstrap account), and configure a stable persisted session secret; run the container with a SecurityContext (non-root).",
+      "provenance": {
+        "source": "local_plugin"
+      },
+      "extensions": {}
+    },
+    {
+      "ruleId": "insecure-configuration.debug-endpoints",
+      "identity": {
+        "anchor": "pprof-expvar-statsviz-enabled"
+      },
+      "title": "pprof, expvar, and statsviz debug endpoints are enabled in production",
+      "summary": "cmd/main.go unconditionally starts an HTTP server on localhost:6060 exposing /debug/pprof/* (including /debug/pprof/cmdline), expvar (/debug/vars/), and statsviz. These diagnostic surfaces leak process/runtime information and the full command line and are left enabled with no flag or authentication.",
+      "severity": {
+        "level": "low",
+        "score": 3.0,
+        "scoringSystem": "CVSS:3.1",
+        "rationale": "Information disclosure limited to the pod/node (bound to localhost); exploitable only by an attacker already able to reach the port (e.g., same-node, port-forward, or co-located container)."
+      },
+      "confidence": {
+        "level": "high",
+        "rationale": "The code path is unconditional and unconditional in main(); the exposure scope (localhost) is directly readable."
+      },
+      "taxonomy": {
+        "category": "insecure-configuration",
+        "cwe": [
+          "CWE-489",
+          "CWE-215",
+          "CWE-200"
+        ]
+      },
+      "locations": [
+        {
+          "path": "cmd/main.go",
+          "startLine": 113,
+          "endLine": 123,
+          "role": "sink"
+        }
+      ],
+      "codeEvidence": [
+        {
+          "id": "ev3_1",
+          "label": "Unauthenticated debug server on :6060",
+          "path": "cmd/main.go",
+          "startLine": 113,
+          "endLine": 123,
+          "code": "go func() {\n\tmux := http.NewServeMux()\n\tmux.HandleFunc(\"/debug/pprof/\", pprof.Index)\n\tmux.HandleFunc(\"/debug/pprof/cmdline\", pprof.Cmdline)\n\tmux.HandleFunc(\"/debug/pprof/profile\", pprof.Profile)\n\tmux.HandleFunc(\"/debug/pprof/symbol\", pprof.Symbol)\n\tmux.HandleFunc(\"/debug/pprof/trace\", pprof.Trace)\n\tmux.Handle(\"/debug/vars/\", expvar.Handler())\n\n\tstatsviz.Register(mux)\n\thttp.ListenAndServe(\"localhost:6060\", mux)\n}()",
+          "explanation": "A goroutine registers pprof (incl. cmdline), expvar, and statsviz handlers and listens with no authentication.",
+          "language": "go"
+        }
+      ],
+      "rootCause": {
+        "summary": "Diagnostic/debug endpoints are hardwired on and not gated behind a flag or access control.",
+        "evidenceRefs": [
+          "ev3_1"
+        ]
+      },
+      "attackPath": {
+        "dataFlow": {
+          "summary": "Local/port-forwarded client -> :6060 -> /debug/pprof/cmdline, /debug/vars/, statsviz runtime data.",
+          "source": "Same-node / co-located attacker or kubectl port-forward",
+          "sink": "pprof/expvar/statsviz handlers",
+          "outcome": "Disclosure of the operator's command line, environment-derived values, and live runtime/goroutine state."
+        }
+      },
+      "validation": {
+        "method": "static",
+        "status": "validated",
+        "summary": "Read cmd/main.go; the server is always started and binds to localhost:6060 with no auth.",
+        "counterEvidence": [
+          "Binds to localhost, not a public interface, so it is not directly internet-reachable without another access path."
+        ],
+        "limitations": [
+          "Blast radius depends on what else can reach port 6060 in the deployment."
+        ]
+      },
+      "remediation": "Gate the debug server behind a flag (disabled by default) or remove statsviz/expvar in production, and/or restrict it to the pod's loopback with an auth filter and document that it must not be exposed via a Service.",
+      "provenance": {
+        "source": "local_plugin"
+      },
+      "extensions": {}
+    },
+    {
+      "ruleId": "improper-input-validation.workspace-name",
+      "identity": {
+        "anchor": "workspacename-unvalidated-subdomain-and-object-names"
+      },
+      "title": "Unvalidated WorkspaceName is reflected into public DNS subdomains and K8s object names",
+      "summary": "Spec.WorkspaceName has only an immutability rule (no pattern/length validation) and is reflected into the public ingress host (<workspace>.<defaultDomain> / <workspace>-api.<defaultDomain>) and into namespace/object names and labels. A CR author can thus claim an arbitrary single-label subdomain under the shared default domain (subdomain squatting/collision) and shape object names.",
+      "severity": {
+        "level": "low",
+        "score": 3.5,
+        "scoringSystem": "CVSS:3.1",
+        "rationale": "Low impact: Kubernetes name rules bound most abuse and tenants are namespace-isolated, but the shared-domain subdomain is attacker-selectable, enabling collision/impersonation under the operator's default domain."
+      },
+      "confidence": {
+        "level": "medium",
+        "rationale": "Source shows no validation and direct reflection into the host; the concrete impact (collision with a real service under the default domain) depends on the chosen defaultDomain and tenant names."
+      },
+      "taxonomy": {
+        "category": "improper-input-validation",
+        "cwe": [
+          "CWE-20"
+        ]
+      },
+      "locations": [
+        {
+          "path": "api/v1alpha1/aichatworkspace_types.go",
+          "startLine": 24,
+          "endLine": 28,
+          "role": "source"
+        },
+        {
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 153,
+          "endLine": 162,
+          "role": "sink"
+        },
+        {
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 119,
+          "endLine": 134,
+          "role": "context"
+        }
+      ],
+      "codeEvidence": [
+        {
+          "id": "ev4_1",
+          "label": "WorkspaceName spec field: only immutability, no pattern/length",
+          "path": "api/v1alpha1/aichatworkspace_types.go",
+          "startLine": 24,
+          "endLine": 28,
+          "code": "type AIChatWorkspaceSpec struct {\n\t// +kubebuilder:validation:Required\n\t// +kubebuilder:validation:XValidation:rule=\"self == oldSelf\",message=\"WorkspaceName is immutable\"\n\tWorkspaceName string `json:\"workspaceName\"`",
+          "explanation": "The only validation on WorkspaceName is that it is immutable; there is no maxLength or pattern constraint.",
+          "language": "go"
+        },
+        {
+          "id": "ev4_2",
+          "label": "WorkspaceName reflected into the public ingress host",
+          "path": "internal/controller/handle_reconcile.go",
+          "startLine": 153,
+          "endLine": 162,
+          "code": "func setIngressDNSHost(config *config.Config, workspace string, workload string) string {\n\tvar dnsName string\n\tswitch workload {\n\tcase \"ollama\":\n\t\tdnsName = fmt.Sprintf(\"%s-api.%s\", workspace, config.DefaultDomain)\n\tcase \"openwebui\":\n\t\tdnsName = fmt.Sprintf(\"%s.%s\", workspace, config.DefaultDomain)\n\t}\n\treturn dnsName",
+          "explanation": "The unvalidated workspace string is concatenated directly into a public DNS hostname under the shared defaultDomain.",
+          "language": "go"
+        }
+      ],
+      "rootCause": {
+        "summary": "WorkspaceName is an unvalidated, attacker-selectable string that is interpolated into externally-observable DNS hosts and K8s object/label names without a per-tenant subdomain namespace or reserved-word protection.",
+        "evidenceRefs": [
+          "ev4_1",
+          "ev4_2"
+        ]
+      },
+      "attackPath": {
+        "dataFlow": {
+          "summary": "CR author sets workspaceName -> setIngressDNSHost -> Ingress Host under shared defaultDomain.",
+          "source": "AIChatWorkspace CR author (workspaceName)",
+          "sink": "Ingress Host (<w>[ -api].<defaultDomain>) and namespace/object names",
+          "outcome": "Subdomain squatting/collision under the operator's shared domain and control of object naming."
+        }
+      },
+      "validation": {
+        "method": "static",
+        "status": "validated",
+        "summary": "Confirmed no pattern/length validation in the CRD type and direct reflection in setIngressDNSHost.",
+        "counterEvidence": [
+          "Because workspaceName is also the namespace name, the API server enforces DNS-1123 label rules, bounding the set of usable values to a single lowercase label.",
+          "Impact requires the defaultDomain to host other services a tenant could impersonate."
+        ],
+        "limitations": [
+          "Concrete impact depends on the configured defaultDomain and multi-tenant usage."
+        ]
+      },
+      "remediation": "Add +kubebuilder validation:Pattern (DNS-1123 label) and maxLength to WorkspaceName, and/or place each workspace under its own subdomain (e.g. <w>.workspaces.<domain>) with reserved names blocked and collision checks.",
+      "provenance": {
+        "source": "local_plugin"
+      },
+      "extensions": {}
+    }
+  ]
+}

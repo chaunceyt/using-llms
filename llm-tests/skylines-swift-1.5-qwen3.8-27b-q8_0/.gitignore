@@ -1,0 +1,9 @@
+node_modules/
+dist/
+shots/
+*.log
+.DS_Store
+.vite/
+# large downloaded CC0 assets are reproducible via tools/download-assets (keep small manifests)
+public/assets/**/
+!public/assets/manifest.json
