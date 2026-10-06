@@ -1,0 +1,71 @@
+{
+  "documentType": "codex-security.scan-manifest",
+  "scan": {
+    "artifacts": [
+      {
+        "mediaType": "application/json",
+        "path": "findings.json",
+        "sha256": "e4b627736c3891445838c377669e7c3e4e65694417e112ecf05454983206d5c2"
+      },
+      {
+        "mediaType": "application/json",
+        "path": "coverage.json",
+        "sha256": "92a0711c0877e68a816a365db5cbfb5138130c0779c2e10343fb47c1d0a57d26"
+      }
+    ],
+    "completedAt": "2026-09-23T21:06:10Z",
+    "coverageRef": "coverage.json",
+    "findingsRef": "findings.json",
+    "id": "scan_206c456be3120f3577c24f24",
+    "producer": {
+      "name": "codex-security-plugin",
+      "version": "0.1.24"
+    },
+    "scope": {
+      "excludePaths": [],
+      "includePaths": [
+        "."
+      ],
+      "summary": "Whole repository (Git worktree at main)."
+    },
+    "sealedAt": "2026-09-23T21:06:10Z",
+    "startedAt": "2026-09-23T21:06:10Z",
+    "status": "completed",
+    "target": {
+      "displayName": "aichat-workspace-operator",
+      "kind": "git_worktree",
+      "revision": "6bca2ac4706df6e392d748308c1a163d30276b2e",
+      "snapshotDigest": "codex-security-snapshot/v1:sha256:1239d7cf703fd6ff3b727dd36fd601683b6d42567007d586fd21b865a7f907c7",
+      "targetId": "target_6e8869f9a0f00c035e26d2cbacecb3a04f25a8f6"
+    },
+    "threatModel": {
+      "assets": [
+        "Per-workspace Ollama LLM API and stored models",
+        "Per-workspace Open WebUI application, accounts, and chat data (PVC)",
+        "Cluster compute/storage (ResourceQuota-limited namespaces)",
+        "Shared operator service account and cluster RBAC"
+      ],
+      "assumptions": [
+        "The cluster ingress controller is exposed to the internet (product intent: external LLM-as-a-Service).",
+        "Each workspace is isolated in its own namespace/Ollama instance (no cross-tenant network path in source)."
+      ],
+      "attackerCapabilities": [
+        "A user authorized to create/update AIChatWorkspace custom resources (workspace owner)",
+        "An unauthenticated internet user who can resolve/brute-force a workspace subdomain"
+      ],
+      "securityObjectives": [
+        "Isolation of tenant workspaces",
+        "Authentication of external LLM/UI access",
+        "Encryption of credentials in transit",
+        "Bounded operator privileges"
+      ],
+      "summary": "A Kubebuilder/operator written in Go that, for each AIChatWorkspace custom resource, provisions a dedicated namespace and runs Open WebUI (web app) plus Ollama (LLM API) with public DNS-hosted Ingresses. Primary trust boundaries: the K8s API / CR author, the cluster network, and the public internet reaching the Ingress-fronted Ollama and Open WebUI services. Protected assets are each tenant's workspace (models, chat data on PVCs, cluster resources).",
+      "trustBoundaries": [
+        "Kubernetes API server / AIChatWorkspace CR authors",
+        "Cluster network (svc.cluster.local)",
+        "Public internet -> Ingress controller -> workspace subdomains"
+      ]
+    }
+  },
+  "schemaVersion": "1.0"
+}

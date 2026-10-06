@@ -1,0 +1,94 @@
+{
+  "updated": "2026-10-06",
+  "note": "Round-4 gauntlet complete (FINAL, 21 warm-150 frozen-clock shots, all viewed; 0 console/module errors across ALL shots; every module reports 'live'). The six reworked modules show genuine quality gains, judged on pixels: terrain's coastline is now irregular (bays + headlands) with a water depth gradient + shore foam and cliff strata + vegetation — a real step up from R3's perfect disc, but from directly above the city is still a circular landmass/plate ringed by flat water on ALL sides, the single most visible remaining non-AAA element (g4f-terrain, g4f-city-aerial-day); environment's mountains gained a snowline + base vegetation and the day sky is de-milked/crisper, holding the already-strong dusk/night atmosphere (g4f-env-day, g4f-city-dusk); buildings added street-level detail (recessed ground floors, mullions, pilaster bays, canopy/balcony bands) on top of the already-strong dense lit skyline with spires (g4f-bldg-day, g4f-bldg-sky); traffic added real pedestrians on the sidewalks (capsule+head, denser near commercial) plus night car bodies with headlight/taillight pools (g4f-traffic-day, g4f-traffic-night); UI is the standout of the round — a real minimap (terrain height-shade, roads, camera frustum + north marker), a stats panel with icons/trend arrows/sparkline/services breakdown, and a notification toast, now genuinely close to CS2 (g4f-city-day); effects is now grounded (terrain ground + sea horizon, not a void) with a per-light bloom cap that keeps the glow tasteful (g4f-effects-night). Only UI and AUDIO clear the 8.5 pass bar. demoCity is 8.0 (dusk 8.5 / night 8.5 / day 8.0 / street 7.0, the street frame held down by a large low-poly tree blob in the foreground + boxy facades). The city is now strong good-indie leaning AAA on atmosphere + HUD; the terrain-plate, flat untextured road surface, soft low-poly mountain/tree silhouettes, and the near-empty simulation showcase are what still block a uniform AAA pass.",
+  "diagnostics": {
+    "warmTimeFix": "tools/shot.mjs default warm 60 -> 150 frames. Under SwiftShader the city needs ~15s to settle; short warm reads as a 'missing/partial city' and invalidates shots.",
+    "verifiedStable": ["diag-noon (t=0.5, complete day city)", "diag-night (t=0.93, lit night city)"],
+    "falseFindings": ["non-deterministic scene", "time-of-day desync", "city absent in views"]
+  },
+  "rubric": { "pass": 8.5, "maxRound": 4, "passRequiresZeroErrors": true },
+  "modules": {
+    "terrain":     { "score": 7.0, "round": 4, "errors": 0, "status": "fix", "issues": [
+      "IMPROVED (major): the coastline is now IRREGULAR — real bays + headlands break up the rim instead of R3's perfect circle (g4f-terrain, g4f-city-aerial-day).",
+      "IMPROVED: water now has a depth gradient (light teal shore -> dark blue) + a shore foam band, and cliffs show strata + vegetation (g4f-terrain).",
+      "From directly above the city is STILL a circular landmass/plate of land floating in flat water on ALL sides — reads as a floating island, not a coastal city with a sea at the map border; the most visible non-AAA element (g4f-terrain, g4f-city-aerial-day).",
+      "Water is still a flat opaque surface with no specular reflection; the rim reads as a fairly uniform tan cliff band at distance (g4f-terrain, g4f-city-aerial-day)."
+    ]},
+    "environment": { "score": 8.0, "round": 4, "errors": 0, "status": "fix", "issues": [
+      "IMPROVED: mountains now carry a SNOWLINE (white caps) + base vegetation/color, vs R3's flat untextured silhouettes (g4f-env-day, g4f-env-dusk).",
+      "IMPROVED: the day sky is de-milked — a crisper blue with a cleaner horizon than R3 (g4f-env-day, g4f-city-day).",
+      "Mountains are still soft low-poly peaks — no rugged strata, rock texture, or ridgeline detail reads on the rim (g4f-env-day, g4f-env-dusk).",
+      "The composed dusk/night sky + fog + grade remain the strongest element of the city (g4f-city-dusk, g4f-city-night); the isolated showcase is sparse (grey boxes on a plain) so the rim is hard to judge in context (g4f-env-day, g4f-env-dusk)."
+    ]},
+    "roads":       { "score": 6.5, "round": 4, "errors": 0, "status": "fix", "issues": [
+      "The network is a legible dense road-aligned grid with visible intersections + a couple of curved boulevards (g4f-roads, g4f-zoning).",
+      "Surface is still a flat dark grey/black slab with no asphalt texture, wear, or AO (g4f-roads, g4f-traffic-day).",
+      "No curbs, sidewalks, shoulders, or edge lines read at aerial scale; crosswalks only read at street scale (g4f-roads, g4f-props-day).",
+      "Intersections are flat overlaps with no corner radii, gutters, or stop-line variation (g4f-roads)."
+    ]},
+    "zoning":      { "score": 6.5, "round": 4, "errors": 0, "status": "fix", "issues": [
+      "The zoning overlay renders a real colored cell grid (res/com/ind) aligned to the road network — stable and correct at warm-150 (g4f-zoning).",
+      "Cells are flat solid fills; no icons, labels, or density shading legible at city scale (g4f-zoning).",
+      "No hover/selection/highlight feedback visible in the overlay (g4f-zoning)."
+    ]},
+    "buildings":   { "score": 8.0, "round": 4, "errors": 0, "status": "fix", "issues": [
+      "IMPROVED (major): street-level detail now reads — recessed ground-floor storefronts, window mullions, pilaster bays, and canopy/balcony bands on varied colors (blue-glass/tan/cream) (g4f-bldg-day).",
+      "IMPROVED: the skyline stays dense + varied with per-window lit variation + rooftop spires at dusk (g4f-bldg-sky, g4f-city-dusk).",
+      "Facades read as designed, not boxes, but are still flat-colored surfaces with grid windows — no material/texture variation, real storefront glazing, or signage (g4f-bldg-day, g4f-bldg-night).",
+      "The street showcases sit on a green/dark plain with no full street context (sidewalk/curb/props), which limits how far the 'street-level' detail can be judged (g4f-bldg-day, g4f-bldg-night)."
+    ]},
+    "props":       { "score": 7.0, "round": 4, "errors": 0, "status": "fix", "issues": [
+      "IMPROVED: trees now line the roads with trunks + varied canopies, and streetlights cast visible warm light pools on the road at night (g4f-props-day, g4f-props-night).",
+      "Canopies are simple low-poly blob shapes with flat shading; a large close-up blob sits in the bottom-right of the street frames and breaks the AAA read (g4f-props-day, g4f-city-street, g4f-city-night-street).",
+      "Prop variety is still limited to trees + streetlight poles (+ sparse bushes); no benches, hydrants, signs, fences, or other street furniture (g4f-props-day, g4f-props-night)."
+    ]},
+    "traffic":     { "score": 7.0, "round": 4, "errors": 0, "status": "fix", "issues": [
+      "IMPROVED (major): PEDESTRIANS now walk the sidewalks — capsule+head figures, denser near commercial, time-of-day density — vs R3's zero pedestrians (g4f-traffic-day, g4f-city-street).",
+      "IMPROVED: cars read as colored vehicles by day (g4f-traffic-day); at night the bodies stay visible with headlight/taillight points + road light pools (g4f-traffic-night).",
+      "Car bodies are still boxy with no clearly legible wheels/glass/brand at street range (g4f-traffic-day, g4f-traffic-night).",
+      "Headlights read as light pools/points on the surface, not volumetric beams/cones (g4f-traffic-night)."
+    ]},
+    "effects":     { "score": 7.5, "round": 4, "errors": 0, "status": "fix", "issues": [
+      "IMPROVED (major): the showcase is now GROUNDED — dark ground + a sea horizon with fog, vs R3's floating dark void (g4f-effects-night).",
+      "IMPROVED: the per-light bloom cap keeps the warm light's glow controlled — no blown-out halo (g4f-effects-night).",
+      "The composed dusk/night city frames keep their strong graded AAA look (color grade + vignette + glowing windows/streetlights + fog depth) (g4f-city-dusk, g4f-city-night).",
+      "The showcase scene is still sparse (a small cluster of lit towers + two accent lights), so the grade/fog are hard to judge in a rich context (g4f-effects-night)."
+    ]},
+    "simulation":  { "score": 7.5, "round": 4, "errors": 0, "status": "fix", "issues": [
+      "IMPROVED: the economy remains clearly DYNAMIC — the stats banner values change shot-to-shot (Population 3,145 / Funds $1,70M / Happiness 60% / Day 4 / Jobs 5,519 / Services 59%) and the composed city stays alive with moving traffic + lit windows (g4f-sim, g4f-city-day, g4f-city-night).",
+      "The simulation 3D showcase scene is STILL dark/near-empty — a dark plain with a faint grid; the stats banner is the only real content, no legible city/agents render in the isolated view (g4f-sim).",
+      "No service facilities or service vehicles (bus/truck/fire/police) visible anywhere (all shots)."
+    ]},
+    "tools":       { "score": 7.5, "round": 4, "errors": 0, "status": "fix", "issues": [
+      "IMPROVED: the tools showcase has real road/intersection context (lane-marked road + crosswalk) with a legible translucent green 3D placement ghost (g4f-tools).",
+      "The placement ghost is a simple translucent green box — no footprint detail, cost/label tooltip, or green/red validity shading beyond the single tint (g4f-tools).",
+      "Snap indicators and the road-drag preview are not legible in the static showcase frame (g4f-tools)."
+    ]},
+    "ui":          { "score": 8.5, "round": 4, "errors": 0, "status": "pass", "issues": [
+      "IMPROVED (major): the minimap is now REAL — terrain height-shade, roads, a camera-frustum wedge, and a north marker, vs R3's flat 10x10 colored cell grid (g4f-city-day, g4f-city-dusk, g4f-city-night).",
+      "IMPROVED (major): the stats panel now has icons + trend arrows + a sparkline + a services breakdown (Funds/Population/Jobs/Happiness/Services/Day) (g4f-city-day).",
+      "IMPROVED: a notification toast system is present and legible ('Water is within 1,000 meters of downtown') (g4f-city-day, g4f-city-dusk).",
+      "Minor nits only: building/zone rendering on the minimap is sparse, and a few HUD elements are small/dense at 1280x720 (all composed shots)."
+    ]},
+    "audio":       { "score": 8.5, "round": 4, "errors": 0, "status": "pass", "issues": [
+      "Non-visual: audio module reports 'live' in all 21 shots with 0 console errors and 0 module errors — functional pass per contract (all shots)."
+    ]}
+  },
+  "demoCity": { "score": 8.0, "round": 4, "errors": 0, "status": "fix",
+    "views": { "day": 8.0, "street": 7.0, "dusk": 8.5, "night": 8.5 },
+    "issues": [
+      "IMPROVED (major): the composed city keeps its AAA atmosphere across all four times of day — scattering sky + sun/clouds, crisp horizon haze with depth cueing, color grade + vignette, and glowing windows/streetlights; the dusk and night orbit frames are the strongest of the round (g4f-city-dusk, g4f-city-night).",
+      "IMPROVED: the HUD is now CS2-rich in every composed frame — real minimap (terrain/roads/frustum/north), stats with icons/trends/sparkline/services, and a notification toast (g4f-city-day, g4f-city-street, g4f-city-dusk, g4f-city-night).",
+      "From orbit/aerial the terrain is still a circular landmass/plate in flat water — the main thing that breaks the AAA read, most visible top-down (g4f-city-day, g4f-city-aerial-day).",
+      "At street scale a large low-poly tree blob sits in the foreground and the facades are still flat boxy window grids, which drags the street view below the orbit views (g4f-city-street, g4f-city-night-street)."
+    ]},
+  "blindAB": { "ran": true, "method": "knowledge-based CS2-calibrated A/B (no real CS2 frames in sandbox); whole-game holistic critic", "overallScore": 8.0, "aaVerdict": "fail", "tells": [
+    "Circular floating landmass in flat water — from orbit/aerial the city is a disc of terrain ringed by flat, unreflected water on ALL sides; CS2 is a real coastal island whose landmass runs to the map border with a horizon sea and depth-varied, reflective water.",
+    "Flat untextured surfaces — roads are a flat dark slab (no asphalt texture, wear, curbs, or edge lines) and building facades are flat solid colors with grid windows (no PBR material, grime, glass reflection, or signage); the single most immediate 'not a real engine' tell at street range.",
+    "Low-poly props — a large smooth green tree-blob sits in the street-frame foreground and cars are boxy with no legible wheels/glass; CS2 street props are high-fidelity (leafy trees, real cars, benches/hydrants/signage).",
+    "Soft low-poly mountain silhouettes — the rim peaks are smooth and lack rock strata, ridgeline definition, and surface texture.",
+    "Sparse micro-detail + near-empty simulation 3D showcase — little rooftop clutter or street furniture, no service vehicles, and the isolated sim view renders a dark empty plain, so the 'living city' read depends almost entirely on the lit orbit frames."
+  ], "note": "Strong good-indie leaning AAA: the dusk/night orbit atmosphere and the CS2-rich HUD (real minimap, stat icons/trends, toast) are genuinely top-tier, but the floating circular terrain plate and flat untextured roads/facades keep the composed city below the 8.5 AAA bar. Single highest-leverage fix: make it a real coastal city (land to the map border, sea at the edge, water reflections) to kill the floating-disc read." },
+  "allPass": false,
+  "weakest": ["roads", "zoning", "terrain", "props"]
+}

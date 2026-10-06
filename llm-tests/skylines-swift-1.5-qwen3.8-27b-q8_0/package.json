@@ -1,0 +1,18 @@
+{
+  "name": "skylines",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Cities: Skylines II-class city builder in Three.js (plain ES modules). Zero-dep static dev server (Vite's native deps are unfetchable in this sandbox); the browser import map in index.html resolves three/three-addons.",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "node tools/serve.mjs",
+    "start": "node tools/serve.mjs",
+    "shot": "node tools/shot.mjs"
+  },
+  "dependencies": {
+    "three": "file:../../tmp/three-0.186.1.tgz"
+  }
+}

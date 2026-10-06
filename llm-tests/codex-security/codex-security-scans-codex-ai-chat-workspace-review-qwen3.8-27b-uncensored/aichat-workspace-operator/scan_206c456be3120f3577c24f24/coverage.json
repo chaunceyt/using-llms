@@ -1,0 +1,91 @@
+{
+  "completeness": "complete",
+  "deferred": [],
+  "documentType": "codex-security.coverage",
+  "excludePaths": [],
+  "explicitExclusions": [],
+  "includePaths": [
+    "."
+  ],
+  "inventoryStrategy": "repository",
+  "mode": "repository",
+  "openQuestions": [
+    {
+      "followUpPrompt": "Confirm the ingress controller's external exposure and the configured defaultDomain, then re-rank the Ollama/Open WebUI exposure findings.",
+      "question": "Is the cluster ingress controller exposed to the internet, and does the defaultDomain host other services a workspace could collide with? (Affects severity of the external-exposure findings.)"
+    },
+    {
+      "followUpPrompt": "Review the operator ServiceAccount RBAC and whether workload compromise can reach the operator's in-cluster credentials.",
+      "question": "Is the operator's broad RBAC (verbs=* incl. pods/exec) intended, and is the operator isolated from workload code execution?"
+    },
+    {
+      "followUpPrompt": "Check whether an auth proxy/sidecar is part of the deployed topology in front of the Ollama/Open WebUI ingresses.",
+      "question": "Are the hack/envoy-sidecar or basic-auth ingress annotations (seen under hack/) deployed in target environments to add auth to the exposed endpoints?"
+    }
+  ],
+  "scanId": "scan_206c456be3120f3577c24f24",
+  "schemaVersion": "1.0",
+  "surfaces": [
+    {
+      "disposition": "reported",
+      "id": "surface_external_ingress",
+      "label": "Public Ingress exposure of Ollama and Open WebUI",
+      "notes": "Unauthenticated, non-TLS public hosts.",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "surface_ollama_adapter",
+      "label": "Ollama HTTP adapter (pull/create/list via internal service)",
+      "notes": "Client connects only to the workspace's own internal Ollama service; model/pattern values are used by design (system prompts / model names). No SSRF to arbitrary hosts.",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "surface_pod_exec",
+      "label": "ExecuteRemoteCommand (pod exec /bin/sh -c)",
+      "notes": "Command string is a hardcoded constant (du -sh <mount>) today; latent command-exec primitive noted for future features.",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "surface_modelfile_template",
+      "label": "Modelfile / system-prompt template generation",
+      "notes": "Patterns/model names are interpolated into Ollama modelfiles by design (the product feature); embedded data is static (go:embed). No code execution or traversal.",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "surface_operator_rbac",
+      "label": "Operator RBAC breadth (verbs=* on core + networking resources)",
+      "notes": "Operator SA has very broad RBAC incl. pods/exec; large blast radius if the operator is compromised, but not directly attacker-reachable. See report notes.",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "surface_secrets",
+      "label": "Secrets / credential handling",
+      "notes": "No hardcoded credentials; workload pods set automountServiceAccountToken=false; metrics endpoint uses authn/authz filters when secure.",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "no_issue_found",
+      "id": "surface_config",
+      "label": "Config retrieval from ConfigMap",
+      "notes": "Reads operator config from a fixed system-namespace ConfigMap; not attacker-controlled.",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "reported",
+      "id": "surface_debug_endpoints",
+      "label": "pprof/expvar/statsviz diagnostic server",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "reported",
+      "id": "surface_spec_validation",
+      "label": "CRD spec input validation (WorkspaceName/Models/Patterns)",
+      "receiptRefs": []
+    }
+  ]
+}
