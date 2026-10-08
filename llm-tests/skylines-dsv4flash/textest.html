@@ -1,0 +1,32 @@
+<!DOCTYPE html><html><body><script type="module">
+import * as THREE from 'three';
+const c=document.createElement('canvas'); document.body.appendChild(c);
+const r=new THREE.WebGLRenderer({canvas:c,preserveDrawingBuffer:true}); r.setSize(200,200);
+const s=new THREE.Scene(); const cam=new THREE.PerspectiveCamera(50,1,.1,10); cam.position.z=3;
+window.__e=[];
+// 1) CanvasTexture upload
+try{
+  const cv=document.createElement('canvas'); cv.width=128;cv.height=128;
+  const ctx=cv.getContext('2d'); ctx.fillStyle='#ff0000'; ctx.fillRect(0,0,128,128);
+  const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=4;
+  s.add(new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({map:t})));
+}catch(e){window.__e.push('canvasTex setup '+e.message);}
+try{
+  r.render(s,cam);
+  window.__c=1;
+}catch(e){window.__e.push('render canvas '+e.message);}
+// clear and try array-based DataTexture
+s.clear();
+try{
+  const px=new Uint8Array(128*128*3).fill(0);
+  for(let i=0;i<px.length;i+=3){px[i]=255;px[i+1]=0;px[i+2]=0;}
+  const t=new THREE.DataTexture(px,128,128,THREE.RGBFormat); t.needsUpdate=true; t.wrapS=t.wrapT=THREE.RepeatWrapping;
+  s.add(new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({map:t})));
+}catch(e){window.__e.push('dataTex setup '+e.message);}
+try{
+  r.render(s,cam);
+  window.__d=1;
+}catch(e){window.__e.push('render data '+e.message);}
+console.log('TEXRESULT',JSON.stringify({canvas:window.__c,data:window.__d,errors:window.__e}));
+window.__texReady=true;
+</script></body></html>

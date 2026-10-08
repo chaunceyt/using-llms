@@ -1,0 +1,104 @@
+{
+  "generatedAt": "2026-10-07T14:11:32.823Z",
+  "seed": 1337,
+  "appUrl": "http://127.0.0.1:5173/",
+  "gate": "metric-based (no vision model on gateway; visual scored from screenshot stats)",
+  "scores": {
+    "visual": {
+      "score": 8.6,
+      "perShot": {
+        "overview": {
+          "score": 8.6,
+          "note": "colors=147 edgePx=12.9 dark=0.524 sat=0.119"
+        },
+        "street": {
+          "score": 8.5,
+          "note": "colors=183 edgePx=6.4 dark=0.189 sat=0.111"
+        },
+        "night": {
+          "score": 8.2,
+          "note": "colors=122 edgePx=3.8 dark=0.852 sat=0.014"
+        },
+        "sunset": {
+          "score": 8.9,
+          "note": "colors=200 edgePx=6.3 dark=0.484 sat=0.312"
+        }
+      }
+    },
+    "content": {
+      "score": 10,
+      "buildings": 210,
+      "props": 0,
+      "agents": 390,
+      "roads": 42
+    },
+    "sim": {
+      "score": 10,
+      "pop": 142.89866653030882,
+      "jobs": 3264,
+      "demand": {
+        "res": 40,
+        "com": -15,
+        "ind": -15
+      },
+      "budget": 70.59732054406778
+    },
+    "robustness": {
+      "score": 10,
+      "consoleErrors": 0,
+      "deadModules": [],
+      "registered": "12/12"
+    },
+    "performance": {
+      "score": 10,
+      "maxDrawCalls": 290,
+      "budget": 1500,
+      "note": "judged by draw calls (SwiftShader FPS is not representative on this box)"
+    },
+    "composite": {
+      "score": 9.6,
+      "pass": true,
+      "threshold": 8.5
+    }
+  },
+  "openIssues": [
+    "post-processing / bloom: THREE attempts made 2026-10-07. (a) strength 0.6 threshold 0.85 washed out the sunset sky; (b) strength 0.45 threshold 1.05 still blew out the golden-hour sun frame; (c) diagnostic with strength 0 revealed the EffectComposer+OutputPass pipeline ITSELF desaturates the warm sunset (sat 0.31→~0) independent of bloom — root cause is the composer's tone path, not bloom params. All REVERTED to preserve correct rendering on every preset. Real fix needs visual validation this gateway lacks; left as follow-up with a real GPU/vision environment.",
+    "consolidate duplicate sky/fog ownership between effects and environment (benign: environment re-asserts FogExp2 each frame and wins; effects TEMPORARY dome is dead code)",
+    "content.props metric reports 0 because street furniture/trees live in module-local InstancedMesh state, not world.props[] — undercounts real prop density",
+    "non-blocking critic caveats: effects registers cleanup as worldRef._effectsOff on shared world (never removed); effects animates particles CPU-side (full buffer rebuild each frame) vs GPU instancing"
+  ],
+  "buildInfo": {
+    "modulesLoaded": 12,
+    "deadModules": []
+  },
+  "codeReview": {
+    "agent": "general-purpose critic (read-only source audit)",
+    "verdictPreFix": "FAIL",
+    "scoresPreFix": {
+      "determinism": 7,
+      "performance": 8,
+      "isolation": 9,
+      "contract": 9,
+      "craft": 6
+    },
+    "decisiveFinding": "effects/index.js advanced the shared world.rng() per frame for rain/snow respawn, so how many draws occurred depended on framerate — corrupting downstream zoning's deterministic stream. Same seed would NOT always give same city.",
+    "fixApplied": "effects now uses a module-local mulberry32(0x5eed0007); all world.rng()/worldRef.rng() calls replaced with localRng (src/effects/index.js). Sweep confirms no remaining per-frame shared-RNG consumer; other modules use build-time or sim-tick (tick-counted) consumption only.",
+    "fixVerified": "two fresh loads of seed 1337 produce byte-identical building-layout signatures (210 buildings, 210 zones, 42 roads), zero console errors. Determinism regression PASS (2026-10-07).",
+    "verdictPostFix": "PASS",
+    "scoresPostFix": {
+      "determinism": 10,
+      "performance": 8,
+      "isolation": 9,
+      "contract": 9,
+      "craft": 8
+    },
+    "averagePostFix": 8.8,
+    "threshold": 8.5,
+    "postFixNote": "fresh critic re-audit confirms the per-frame shared-stream class of bug is absent across all 13 modules; zero console errors in effects paths.",
+    "craftNotes": [
+      "no bloom/SSAO/post-processing pipeline yet — caps visual richness (see openIssues: tried, root-caused to composer tone path, reverted for correctness)",
+      "duplicate sky/fog systems: effects TEMPORARY atmosphere dome + fog table fights environment's FogExp2 re-asserted every frame; environment wins, effects path is dead code",
+      "some props (bench/hydrant/fence) are flat single-tone MeshStandardMaterial"
+    ]
+  }
+}
