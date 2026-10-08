@@ -1,0 +1,15 @@
+{
+  "app": "http://127.0.0.1:5173/?demo=1",
+  "shotAt": "2026-10-07T14:13:39.292Z",
+  "shots": [
+    {
+      "preset": "overview",
+      "timeOfDaySec": 55200,
+      "fps": 0,
+      "drawCalls": 290,
+      "bytes": 1214096,
+      "errors": 0
+    }
+  ],
+  "errors": []
+}

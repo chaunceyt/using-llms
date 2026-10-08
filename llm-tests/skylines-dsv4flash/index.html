@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Skylines — a city builder</title>
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+    #app { position: fixed; inset: 0; }
+    canvas { display: block; width: 100vw; height: 100vh; }
+    /* UI overlay is injected by the ui module */
+    #ui-root { position: fixed; inset: 0; pointer-events: none; z-index: 10;
+      font-family: system-ui, sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="ui-root"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

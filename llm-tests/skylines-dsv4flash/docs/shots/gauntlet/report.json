@@ -1,0 +1,39 @@
+{
+  "app": "http://127.0.0.1:5173/",
+  "shotAt": "2026-10-07T14:10:15.846Z",
+  "shots": [
+    {
+      "preset": "overview",
+      "timeOfDaySec": 55200,
+      "fps": 0,
+      "drawCalls": 290,
+      "bytes": 1564926,
+      "errors": 0
+    },
+    {
+      "preset": "street",
+      "timeOfDaySec": 36000,
+      "fps": 3,
+      "drawCalls": 173,
+      "bytes": 1328922,
+      "errors": 0
+    },
+    {
+      "preset": "night",
+      "timeOfDaySec": 77400,
+      "fps": 2,
+      "drawCalls": 232,
+      "bytes": 718461,
+      "errors": 0
+    },
+    {
+      "preset": "sunset",
+      "timeOfDaySec": 65520,
+      "fps": 2,
+      "drawCalls": 257,
+      "bytes": 1179023,
+      "errors": 0
+    }
+  ],
+  "errors": []
+}

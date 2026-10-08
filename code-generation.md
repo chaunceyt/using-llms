@@ -109,8 +109,8 @@ Create `$HOME/.codex/config.toml`
 ```
 [model_providers.llama-local]
 name = "Internal LLM via llama.cpp"
-base_url = "http://llama-cpp.internal:11345/v1"
-wire_api = "chat"
+base_url = "http://192.168.4.24:8899/v1"
+wire_api = "responses"
 ```
 
 ```
@@ -148,5 +148,7 @@ Run claude within an existing codebase or start new project.
 claude --version # 2.1.12 (Claude Code)
 
 claude --model local-llm
-# run /init to generate CLAUDE.md file if does not exist.
+
+# Using Openshell as the runtime
+claude --model local-llm --dangerously-skip-permissions
 ```
